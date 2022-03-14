@@ -41,7 +41,7 @@ private.* You can install the released version of RWRtools from
 [GitHub](https://github.com/dkainer/RWRtools/) with:
 
 ``` r
-devtools::install_github("dkainer/RWRtools")
+devtools::install_github("dkainer/RWRtoolkit")
 ```
 
 *Note: add in details about where to find the CLI scripts in
