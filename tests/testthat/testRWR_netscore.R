@@ -8,9 +8,9 @@ library(mockery)
 ########################################################################
 # Global Variables/Functions
 ########################################################################
-gold_standard_network = 'tests/testSTRINGDB/rwr_netscore/combined_score-random-gold.tsv'
-test_network = 'tests/testSTRINGDB/rwr_netscore/combined_score-random-test.tsv'
-reference_geneset = 'tests/testSTRINGDB/rwr_netscore/refgenes.tsv'
+gold_standard_network = '../testSTRINGDB/rwr_netscore/combined_score-random-gold.tsv'
+test_network = '../testSTRINGDB/rwr_netscore/combined_score-random-test.tsv'
+reference_geneset = '../testSTRINGDB/rwr_netscore/refgenes.tsv'
 outdir = 'tmp'
 
 
@@ -26,9 +26,9 @@ outdir = 'tmp'
 #     } else {
 #         path = dirname(path)
 #     }
-# }
-path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
-setwd(path_to_rwrtools)
+# # }
+# path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
+# setwd(path_to_rwrtools)
 # message(getwd())
 
 ########################################################################
@@ -62,4 +62,9 @@ describe('permutations test', {
         ) 
     })    
 })
+
+teardown({
+    # setwd(path_to_rwrtools)
+    system('rm -rf ./tmp') 
+}, env=parent.frame())
 

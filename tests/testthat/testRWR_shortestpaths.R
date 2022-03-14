@@ -8,13 +8,13 @@ library(mockery)
 ########################################################################
 # Global Variables/Functions
 ########################################################################
-data = 'tests/testSTRINGDB/string_interactions.Rdata'
-geneset1 = 'tests/testSTRINGDB/geneset1.tsv'
-geneset2 = 'tests/testSTRINGDB/geneset2.tsv'
+data = '../testSTRINGDB/string_interactions.Rdata'
+geneset1 = '../testSTRINGDB/geneset1.tsv'
+geneset2 = '../testSTRINGDB/geneset2.tsv'
 outdir = 'tmp'
 
-path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
-setwd(path_to_rwrtools)
+# path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
+# setwd(path_to_rwrtools)
 
 ########################################################################
 # Tests
@@ -77,8 +77,6 @@ describe('basic test', {
     })    
 })
 
-
-# This doesn't do anything ...
 teardown(
     {
         system('rm -rf ./tmp')
