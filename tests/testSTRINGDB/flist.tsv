@@ -1,0 +1,9 @@
+tests/testSTRINGDB/layers/automated_textmining.tsv	automated_textmining	1
+tests/testSTRINGDB/layers/coexpression.tsv	coexpression	1
+tests/testSTRINGDB/layers/combined_score.tsv	combined_score	1
+tests/testSTRINGDB/layers/database_annotated.tsv	database_annotated	1
+tests/testSTRINGDB/layers/experimentally_determined_interaction.tsv	experimentally_determined_interaction	1
+tests/testSTRINGDB/layers/gene_fusion.tsv	gene_fusion	1
+tests/testSTRINGDB/layers/homology.tsv	homology	1
+tests/testSTRINGDB/layers/neighborhood_on_chromosome.tsv	neighborhood_on_chromosome	1
+tests/testSTRINGDB/layers/phylogenetic_cooccurrence.tsv	phylogenetic_cooccurrence	1
