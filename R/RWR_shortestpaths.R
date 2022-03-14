@@ -27,7 +27,7 @@ merge_networks = function(nw.mpo) {
     return(nw_merged)
 }
 
-get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads=1) {
+get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads=NULL) {
     # For each gene in source_geneset, get the shortest path to each gene in target_geneset.
     targets <- which(igraph::V(nw_merged)$name %in% target_geneset$gene)
     wt <- 1-igraph::E(nw_merged)$weightnorm
