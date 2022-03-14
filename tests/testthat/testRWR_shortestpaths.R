@@ -13,8 +13,7 @@ geneset1 = 'tests/testSTRINGDB/geneset1.tsv'
 geneset2 = 'tests/testSTRINGDB/geneset2.tsv'
 outdir = 'tmp'
 
-# setwd('~/src/RWRtools')  # [TODO] Remove this.
-path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtools')
+path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
 setwd(path_to_rwrtools)
 
 ########################################################################

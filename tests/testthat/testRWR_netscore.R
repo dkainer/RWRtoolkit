@@ -27,7 +27,7 @@ outdir = 'tmp'
 #         path = dirname(path)
 #     }
 # }
-path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtools')
+path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
 setwd(path_to_rwrtools)
 # message(getwd())
 
