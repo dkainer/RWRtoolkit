@@ -13,24 +13,6 @@ test_network = '../testSTRINGDB/rwr_netscore/combined_score-random-test.tsv'
 reference_geneset = '../testSTRINGDB/rwr_netscore/refgenes.tsv'
 outdir = 'tmp'
 
-
-# path = getwd()
-# while (TRUE) {
-#     current_dir = basename(path)
-#     if (current_dir == 'RWRtools') {
-#         setwd(path)
-#         message(sprintf('Found RWRtools; setting working directory to %s', path))
-#         break
-#     } else if (path == '/') {
-#         stop('Cannot find RWRtools')
-#     } else {
-#         path = dirname(path)
-#     }
-# # }
-# path_to_rwrtools = stringr::str_extract(getwd(), '.*RWRtoolkit')
-# setwd(path_to_rwrtools)
-# message(getwd())
-
 ########################################################################
 # Tests
 ########################################################################
