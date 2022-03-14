@@ -46,7 +46,7 @@ load_geneset = function(path, nw.mpo=NULL, verbose=FALSE) {
             message(sprintf('%s genes from geneset (%s) are present in the multiplex', nrow(geneset), path))
             extras          <- geneset_orig %>% dplyr::slice(which(!geneset_orig$gene %in% nw.mpo$Pool_of_Nodes))
             warning(sprintf('WARNING:: %s genes from geneset (%s) were not found in multiplex: %s', nrow(extras), path, list(extras)))
-            #print(extras)
+            warning(sprintf('Please ensure your geneset files are formated: [ setids | genes | weights (if weights exist) ]'))
         } else {
             message(sprintf('All %s genes in the geneset (%s) are present in the multiplex', nrow(geneset), path))
         }
