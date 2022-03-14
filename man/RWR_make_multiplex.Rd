@@ -43,7 +43,7 @@ Mutliplex object is saved to a file (.rdata) to load into subsequent functions.
 \examples{
 # 
 # An example of a default RWR Make Multiplex with an output "network.Rdata"
-extdata.dir <- system.file("example_data", package="RWRtools")
+extdata.dir <- system.file("example_data", package="RWRtoolkit")
 outdir <- paste(extdata.dir, '/out/rwr_make_multiplex', sep='')
 
 layers.path <- paste(extdata.dir, '/layers/', sep='')

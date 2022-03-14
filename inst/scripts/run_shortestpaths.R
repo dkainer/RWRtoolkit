@@ -3,7 +3,7 @@
 # Find shortest paths between genes in the given gene sets.
 ########################################################################
 
-library(RWRtools)
+library(RWRtoolkit)
 
 ## Parse args function
 parse_arguments = function() {
@@ -127,7 +127,7 @@ main = function() {
     opt = parse_arguments()
 
     ## Call to ShortestPaths
-    RWRtools::RWR_ShortestPaths(
+    RWRtoolkit::RWR_ShortestPaths(
         data=opt$data,
         source_geneset=opt$source_geneset,
         target_geneset=opt$target_geneset,

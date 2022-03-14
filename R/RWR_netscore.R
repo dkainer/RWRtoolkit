@@ -33,14 +33,14 @@
 #' @return Returns a table of metrics as a comparison between networks
 #' @examples
 #' 
-#' extdata.dir <- system.file("example_data", package="RWRtools")
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
 #' multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
 #' geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
 #' geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
 #' outdir <- paste(extdata.dir, '/out/rwr_netscore', sep='') 
 #' 
 #' # An example of Running RWR_ShortestPaths
-#' netscore_table <- RWRtools::RWR_ShortestPaths(data=multiplex_object_filepath,
+#' netscore_table <- RWRtoolkit::RWR_ShortestPaths(data=multiplex_object_filepath,
 #'                                               source_geneset=geneset1_filepath,
 #'                                               target_geneset=geneset2_filepath,
 #'                                               write_to_file=TRUE,

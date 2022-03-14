@@ -1,4 +1,4 @@
-library(RWRtools)
+library(RWRtoolkit)
 
 ## Parse args function
 parse_arguments <- function() {
@@ -100,4 +100,4 @@ opt = parse_arguments()
 print(opt)
 
 ## Call to LOE
-RWRtools::RWR_LOE(data=opt$data, seed_geneset=opt$seed_geneset, query_geneset=opt$query_geneset, restart=opt$restart, tau=opt$tau, outdir=opt$outdir, numranked=opt$numranked, eval=opt$eval, modname=opt$modname, cyto=opt$cyto, verbose=opt$verbose)
+RWRtoolkit::RWR_LOE(data=opt$data, seed_geneset=opt$seed_geneset, query_geneset=opt$query_geneset, restart=opt$restart, tau=opt$tau, outdir=opt$outdir, numranked=opt$numranked, eval=opt$eval, modname=opt$modname, cyto=opt$cyto, verbose=opt$verbose)

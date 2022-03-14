@@ -1,5 +1,5 @@
 ########################################################################
-# Common functions for RWRtools.
+# Common functions for RWRtoolkit.
 ########################################################################
 
 load_geneset = function(path, nw.mpo=NULL, verbose=FALSE) {

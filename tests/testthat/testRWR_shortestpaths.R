@@ -1,5 +1,5 @@
 # context("RWR_shortestpaths Tests")
-library(RWRtools)
+library(RWRtoolkit)
 library(RandomWalkRestartMH)
 library(vctrs)
 library(igraph)
@@ -25,11 +25,11 @@ describe('merged multiplex', {
             'PKM', 'PMM1', 'TALDO1', 'TKT', 'TPI1', 'KHK', 'PMM2'
         )
         load(data)
-        geneset1_plus_extras = RWRtools::load_geneset(geneset1, nw.mpo)
+        geneset1_plus_extras = RWRtoolkit::load_geneset(geneset1, nw.mpo)
         source_genes = geneset1_plus_extras[[1]]
-        geneset2_plus_extras = RWRtools::load_geneset(geneset2, nw.mpo)
+        geneset2_plus_extras = RWRtoolkit::load_geneset(geneset2, nw.mpo)
         target_genes = geneset2_plus_extras[[1]]
-        nw_merged = RWRtools::merge_networks(nw.mpo)
+        nw_merged = RWRtoolkit::merge_networks(nw.mpo)
         returned_nodes = names(V(nw_merged))
 
         expect_equal(
@@ -44,12 +44,12 @@ describe('shortest paths result', {
     it('has correct dimensions', {
         #### of dimensionality 
         load(data)
-        geneset1_plus_extras = RWRtools::load_geneset(geneset1, nw.mpo)
+        geneset1_plus_extras = RWRtoolkit::load_geneset(geneset1, nw.mpo)
         source_genes = geneset1_plus_extras[[1]]
-        geneset2_plus_extras = RWRtools::load_geneset(geneset2, nw.mpo)
+        geneset2_plus_extras = RWRtoolkit::load_geneset(geneset2, nw.mpo)
         target_genes = geneset2_plus_extras[[1]]
-        nw_merged = RWRtools::merge_networks(nw.mpo)
-        res = RWRtools::get_shortest_paths(nw_merged, source_genes, target_genes)
+        nw_merged = RWRtoolkit::merge_networks(nw.mpo)
+        res = RWRtoolkit::get_shortest_paths(nw_merged, source_genes, target_genes)
 
         expect_equal(
             dim(res),
@@ -62,7 +62,7 @@ describe('shortest paths result', {
 describe('basic test', {
     it('runs normally', {
         expect_message(
-            RWRtools::RWR_ShortestPaths(
+            RWRtoolkit::RWR_ShortestPaths(
                 data=data,
                 source_geneset=geneset1,
                 target_geneset=geneset2,

@@ -130,7 +130,7 @@ make_heterogeneous_multiplex <- function(nw.groups, delta, lambda, out, verbose)
 #' @examples
 #' # 
 #' # An example of a default RWR Make Multiplex with an output "network.Rdata"
-#' extdata.dir <- system.file("example_data", package="RWRtools")
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
 #' outdir <- paste(extdata.dir, '/out/rwr_make_multiplex', sep='')
 #' 
 #' layers.path <- paste(extdata.dir, '/layers/', sep='')
@@ -168,7 +168,7 @@ RWR_make_multiplex <- function(flist='',  delta=0.5, lambda=0.5, output="network
 
     if (test == TRUE) {
         #Dynamically create flist file with full path
-        basePath=paste(.libPaths()[1],"/RWRtools/scripts/example_data/toy_example/",sep="")
+        basePath=paste(.libPaths()[1],"/RWRtoolkit/scripts/example_data/toy_example/",sep="")
         outputFilePath=paste(basePath,"testFlist_dynamic.txt",sep="")
         tmp=paste(basePath,"m1.txt m1 1\n",basePath,"m2.txt m2 1",sep="")
         write(tmp,outputFilePath)

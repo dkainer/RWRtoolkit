@@ -107,7 +107,7 @@ parse_arguments = function() {
 
 main = function() {
     opt = parse_arguments()
-    RWRtools::RWR_netscore(
+    RWRtoolkit::RWR_netscore(
         gold=opt$gold,
         network=opt$network,
         reference_geneset=opt$refgenes,

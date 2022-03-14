@@ -1,5 +1,5 @@
 context("Random Walk Restart Tests")
-library(RWRtools)
+library(RWRtoolkit)
 library(RandomWalkRestartMH)
 library(vctrs)
 library(igraph)
@@ -70,7 +70,7 @@ runTestForDifferingGraphData <- function(nw.groups, delta, outputFileName, verbo
     expected_nonNormalizedMatrix <- supraAdjMatrices[[1]]
     expected_normalizedMatrix <- supraAdjMatrices[[2]]
 
-    invisible(RWRtools::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
+    invisible(RWRtoolkit::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
     load(outputFileName)
 
     expect_equal(nw.adjnorm, expected_normalizedMatrix)
@@ -80,7 +80,7 @@ runTestForDifferingGraphData <- function(nw.groups, delta, outputFileName, verbo
 describe('make_multiplex', {
     it('throws an error when fed an flist tibble with non-existant files', {
         nw.groups <- list_of(nwTibbleBadPath)
-        expect_error(RWRtools::make_multiplex(nw.groups[[1]]))
+        expect_error(RWRtoolkit::make_multiplex(nw.groups[[1]]))
     })
 
     it('also makes a multiplex', {
@@ -100,7 +100,7 @@ describe('make_multiplex', {
         expectedNumLayers <- 2
         expectedNumNodes <- 4
 
-        invisible(capture.output(output <- RWRtools::make_multiplex(nw.groups[[1]])))
+        invisible(capture.output(output <- RWRtoolkit::make_multiplex(nw.groups[[1]])))
 
         expect_equal(output$Number_of_Layers, expectedNumLayers)
         expect_equal(output$Number_of_Nodes_Multiplex, expectedNumNodes)
@@ -127,7 +127,7 @@ describe('make_homogenous_network', {
         outputFileName <- 'testthatOutput.txt'
         verbose <- FALSE
 
-        invisible(RWRtools::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
+        invisible(RWRtoolkit::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
 
         expect_true(outputFileName %in% list.files())
     })
@@ -174,7 +174,7 @@ describe('make_homogenous_network', {
         expected_normalizedMatrix <- as(normalizedMatrix, 'dgCMatrix')
         colnames(expected_normalizedMatrix) <- colNames
 
-        invisible(RWRtools::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
+        invisible(RWRtoolkit::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
         load(outputFileName)
 
         expect_equal(nw.adj, expected_nonNormalizedMatrix)
@@ -256,7 +256,7 @@ describe('make_homogenous_network', {
         outputFileName <- 'testthatOutputP7.txt'
         verbose <- FALSE
         
-        expect_error(RWRtools::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
+        expect_error(RWRtoolkit::make_homogenous_network(nw.groups, delta, outputFileName, verbose))
     })
 
 
@@ -290,7 +290,7 @@ describe('make_heterogeneous_multiplex', {
         lambda <- 0.6
         out <- "network.Rdata"
 
-        invisible(RWRtools::make_heterogeneous_multiplex(nw.groupsInput, delta, lambda, out))
+        invisible(RWRtoolkit::make_heterogeneous_multiplex(nw.groupsInput, delta, lambda, out))
 
     })
 
@@ -300,13 +300,13 @@ describe('RWR_make_multiplex.R:', {
     it('throws an error if flist is empty', {
         flist <- ''
         
-        expect_error(RWRtools::RWR_make_multiplex(flist))
+        expect_error(RWRtoolkit::RWR_make_multiplex(flist))
     })
 
     it('throws an error if flist elements contain bad paths', {
         badFlist <- '../testFlists/testFlist_badPaths.txt'
         
-        expect_error(RWRtools::RWR_make_multiplex(badFlist))
+        expect_error(RWRtoolkit::RWR_make_multiplex(badFlist))
     })
 
     it('takes flist and makes a homogenous multiplex with default parameters', {
@@ -315,10 +315,10 @@ describe('RWR_make_multiplex.R:', {
 
         makeHomogenousStub = mock()
         makeHeterogenousStub = mock()
-        stub(RWRtools::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
-        stub(RWRtools::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
         
-        invisible(RWRtools::RWR_make_multiplex(flistFilePath))
+        invisible(RWRtoolkit::RWR_make_multiplex(flistFilePath))
 
         expect_called(makeHomogenousStub, 1)
         expect_args(makeHomogenousStub, 1, nw.groupsInput, 0.5, 'network.Rdata', FALSE)
@@ -335,10 +335,10 @@ describe('RWR_make_multiplex.R:', {
         
         makeHomogenousStub = mock()
         makeHeterogenousStub = mock()
-        stub(RWRtools::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
-        stub(RWRtools::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
         
-        invisible(RWRtools::RWR_make_multiplex(flistFilePath, delta=delta, output=outputFile, verbose=verbose))
+        invisible(RWRtoolkit::RWR_make_multiplex(flistFilePath, delta=delta, output=outputFile, verbose=verbose))
 
         expect_called(makeHomogenousStub, 1)
         expect_args(makeHomogenousStub, 1, nw.groupsInput, delta, outputFile, verbose)
@@ -350,10 +350,10 @@ describe('RWR_make_multiplex.R:', {
 
         makeHomogenousStub = mock()
         makeHeterogenousStub = mock()
-        stub(RWRtools::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
-        stub(RWRtools::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
         
-        expect_error(RWRtools::RWR_make_multiplex(flistFilePath))
+        expect_error(RWRtoolkit::RWR_make_multiplex(flistFilePath))
         expect_called(makeHomogenousStub, 0)
         expect_called(makeHeterogenousStub, 0)
     })
@@ -365,10 +365,10 @@ describe('RWR_make_multiplex.R:', {
 
         makeHomogenousStub = mock()
         makeHeterogenousStub = mock()
-        stub(RWRtools::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
-        stub(RWRtools::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_homogenous_network', makeHomogenousStub)
+        stub(RWRtoolkit::RWR_make_multiplex, 'make_heterogeneous_multiplex', makeHeterogenousStub)
         
-        invisible(RWRtools::RWR_make_multiplex(flistFilePath))
+        invisible(RWRtoolkit::RWR_make_multiplex(flistFilePath))
 
         expect_called(makeHomogenousStub, 0)
         expect_called(makeHeterogenousStub, 1)

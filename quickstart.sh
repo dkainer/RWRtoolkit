@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 # Usage:
-#   $ cd RWRtools
+#   $ cd RWRtoolkit
 #   $ bash quickstart.sh
 # Or:
-#   $ bash path/to/quickstart.sh path/to/RWRtools
+#   $ bash path/to/quickstart.sh path/to/RWRtoolkit
 
 set -e
 
-export PATH_TO_RWRTOOLS="${1:-$PWD}"
-echo "PATH_TO_RWRTOOLS=$PATH_TO_RWRTOOLS"
+export PATH_TO_RWRtoolkit="${1:-$PWD}"
+echo "PATH_TO_RWRtoolkit=$PATH_TO_RWRtoolkit"
 
-rwr_cv="$PATH_TO_RWRTOOLS/inst/scripts/run_cv.R"
-rwr_loe="$PATH_TO_RWRTOOLS/inst/scripts/run_loe.R"
-rwr_make_multiplex="$PATH_TO_RWRTOOLS/inst/scripts/run_make_multiplex.R"
-rwr_netscore="$PATH_TO_RWRTOOLS/inst/scripts/run_netscore.R"
-rwr_shortestpaths="$PATH_TO_RWRTOOLS/inst/scripts/run_shortestpaths.R"
+rwr_cv="$PATH_TO_RWRtoolkit/inst/scripts/run_cv.R"
+rwr_loe="$PATH_TO_RWRtoolkit/inst/scripts/run_loe.R"
+rwr_make_multiplex="$PATH_TO_RWRtoolkit/inst/scripts/run_make_multiplex.R"
+rwr_netscore="$PATH_TO_RWRtoolkit/inst/scripts/run_netscore.R"
+rwr_shortestpaths="$PATH_TO_RWRtoolkit/inst/scripts/run_shortestpaths.R"
 
-out_dir="$PATH_TO_RWRTOOLS/tmp"
+out_dir="$PATH_TO_RWRtoolkit/tmp"
 
 echo "Checking help ..."
 Rscript $rwr_make_multiplex -h > /dev/null

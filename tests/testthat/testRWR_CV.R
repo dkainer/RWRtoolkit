@@ -1,5 +1,5 @@
 context("Random Walk Restart Tests")
-library(RWRtools)
+library(RWRtoolkit)
 library(RandomWalkRestartMH)
 library(vctrs)
 library(igraph)
@@ -55,7 +55,7 @@ describe('updateFoldsByMethod_cv', {
         method <-  'unsupported_method'
         numFolds <- 5
 
-        expect_error(RWRtools::updateFoldsByMethod_cv(geneset, method, numFolds)) 
+        expect_error(RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)) 
     })    
 
     it ('sets folds to the number of rows within the geneset for LOO', {
@@ -65,7 +65,7 @@ describe('updateFoldsByMethod_cv', {
         expected_chunks <- NULL
         expected_method <- 'loo'
 
-        output <- RWRtools::updateFoldsByMethod_cv(geneset, method, numFolds)
+        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -84,7 +84,7 @@ describe('updateFoldsByMethod_cv', {
         expected_folds <- 3
         expected_method <- 'loo'
 
-        output <- RWRtools::updateFoldsByMethod_cv(geneset, method, numFolds)
+        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -99,7 +99,7 @@ describe('updateFoldsByMethod_cv', {
         expected_chunks <- NULL
         expected_method <- 'singletons'
 
-        output <- RWRtools::updateFoldsByMethod_cv(geneset, method, NA)
+        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, NA)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -138,8 +138,8 @@ describe('updateFoldsByMethod_cv', {
         expected_method <- 'kfold'
 
         mock_sample <- mock(sequence(3), gene)
-        stub(RWRtools::updateFoldsByMethod_cv, 'sample', mock_sample)
-        output <- RWRtools::updateFoldsByMethod_cv(geneset, method, numFolds)
+        stub(RWRtoolkit::updateFoldsByMethod_cv, 'sample', mock_sample)
+        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -455,13 +455,13 @@ describe("RWR", {
                                     third_mockLayer)
                                     
         # Stub functions with mocks
-        stub(RWRtools::RWR, 'updateFoldsByMethod_cv', mock_updateFoldsByMethod_cv)
-        stub(RWRtools::RWR, 'extract_leftout_and_seed_genes_cv', mock_extract_leftout_and_seed_genes_cv)
-        stub(RWRtools::RWR, 'RandomWalkRestartMH::Random.Walk.Restart.Multiplex', mock_RWRMH)
-        stub(RWRtools::RWR, 'create_rankings_cv', mock_create_rankings_cv)
+        stub(RWRtoolkit::RWR, 'updateFoldsByMethod_cv', mock_updateFoldsByMethod_cv)
+        stub(RWRtoolkit::RWR, 'extract_leftout_and_seed_genes_cv', mock_extract_leftout_and_seed_genes_cv)
+        stub(RWRtoolkit::RWR, 'RandomWalkRestartMH::Random.Walk.Restart.Multiplex', mock_RWRMH)
+        stub(RWRtoolkit::RWR, 'create_rankings_cv', mock_create_rankings_cv)
         expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)
         
-        response <- RWRtools::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
+        response <- RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
 
         expect_equal(response, expected_response)
         expect_args(mock_updateFoldsByMethod_cv, 1, geneset_3genes, method, expected_folds)
@@ -543,7 +543,7 @@ describe("Post Processing",{
                                 "networks"= expected_networks, "fold"= expected_fold, "modname"=expected_name, "geneset"= expected_geneset,
                                 "seed"= expected_seed, "leftout"= expected_lefout, "method"=expected_method)
 
-            output <- RWRtools::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
+            output <- RWRtoolkit::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
 
             expect_equal(output, expected_output)
         })
@@ -587,7 +587,7 @@ describe("Post Processing",{
                                 "seed"= expected_seed, "leftout"= expected_lefout, "method"=expected_method)
 
 
-            output <- RWRtools::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
+            output <- RWRtoolkit::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
             expect_equal(output, expected_output)
         })
 
@@ -629,7 +629,7 @@ describe("Post Processing",{
             layer1 <- generate_expected_rwr_cv_layer(first_fold_nodes, first_fold_scores, first_fold_invalset, num_in_network, rep(1, repititions), rep(first_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
             layer2 <- generate_expected_rwr_cv_layer(second_fold_nodes, second_fold_scores, second_fold_invalset, num_in_network, rep(2, repititions), rep(second_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
             layer3 <- generate_expected_rwr_cv_layer(third_fold_nodes, third_fold_scores, third_fold_invalset, num_in_network, rep(3, repititions), rep(third_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
-            # RWRtools::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds)
+            # RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds)
 
             res <- list(layer1, layer2, layer3)
             setid <- c('setA','setA')
@@ -670,7 +670,7 @@ describe("Post Processing",{
                                 "seed"= expected_seed, "leftout"= expected_leftout, "method"=expected_method)
 
 
-            output <- RWRtools::post_process_rwr_output_cv(res, extras, folds, nw.mpo) 
+            output <- RWRtoolkit::post_process_rwr_output_cv(res, extras, folds, nw.mpo) 
 
             expect_equal(output, expected_output)
         })
@@ -714,7 +714,7 @@ describe("Post Processing",{
                 num_in_network=c(4,4,4,4)
             )
 
-            output <- RWRtools::calculate_average_rank_across_folds_cv(res_combined)
+            output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined)
 
             expect_equal(output, expected_output)
         })
@@ -766,7 +766,7 @@ describe("Post Processing",{
                 num_in_network=c(4,4,4,4,4,4)
             )
 
-            output <- RWRtools::calculate_average_rank_across_folds_cv(res_combined)
+            output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined)
             expect_equal(output, expected_output)
         })
 
@@ -807,7 +807,7 @@ describe("Post Processing",{
             layer1 <- generate_expected_rwr_cv_layer(first_fold_nodes, first_fold_scores, first_fold_invalset, num_in_network, rep(1, repititions), rep(first_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
             layer2 <- generate_expected_rwr_cv_layer(second_fold_nodes, second_fold_scores, second_fold_invalset, num_in_network, rep(2, repititions), rep(second_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
             layer3 <- generate_expected_rwr_cv_layer(third_fold_nodes, third_fold_scores, third_fold_invalset, num_in_network, rep(3, repititions), rep(third_fold_leftout, repititions), seeds, networks, c('setA', 'setA', 'setA'), rep(method, repititions), num_seeds, num_leftout, name)
-            # RWRtools::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds)
+            # RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds)
 
             res <- list(layer1, layer2, layer3)
             setid <- c('setA','setA')
@@ -857,7 +857,7 @@ describe("Post Processing",{
                 num_in_network=c(3,3,3,3,3,3)
             )            
 
-            output <- RWRtools::calculate_average_rank_across_folds_cv(res_combined_loo)
+            output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined_loo)
 
             expect_equal(output, expected_output)
 

@@ -1,5 +1,5 @@
 # context("RWR_netscore Tests")
-library(RWRtools)
+library(RWRtoolkit)
 library(RandomWalkRestartMH)
 library(vctrs)
 library(igraph)
@@ -19,7 +19,7 @@ outdir = 'tmp'
 describe('basic test', {
     it('runs normally', {
         expect_message(
-            RWRtools::RWR_netscore(
+            RWRtoolkit::RWR_netscore(
                 gold=gold_standard_network,
                 network=test_network,
                 outdir = 'tmp'
@@ -33,7 +33,7 @@ describe('basic test', {
 describe('permutations test', {
     it('runs normally', {
         expect_message(
-            RWRtools::RWR_netscore(
+            RWRtoolkit::RWR_netscore(
                 gold=gold_standard_network,
                 network=test_network,
                 outdir='tmp',
@@ -46,7 +46,7 @@ describe('permutations test', {
 })
 
 teardown({
-    # setwd(path_to_rwrtools)
+    # setwd(path_to_RWRtoolkit)
     system('rm -rf ./tmp') 
 }, env=parent.frame())
 

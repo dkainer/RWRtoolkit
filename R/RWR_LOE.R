@@ -190,7 +190,7 @@ save_plots_loe <- function(metrics, seed_geneset, query_geneset, outdir, modname
 #' @examples
 #' # An example of a default RWR LOE with one geneset which will return a ranked list 
 #' 
-#' extdata.dir <- system.file("example_data", package="RWRtools")
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
 #' multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
 #' geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
 #' geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')

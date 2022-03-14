@@ -1,12 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# RWRtools
+# RWRtoolkit
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-RWRtools enables easy use of RandomWalk with Restart on multiplex
+RWRtoolkit enables easy use of RandomWalk with Restart on multiplex
 networks. These functions are an extension to the
 [RandomWalkRestartMH](https://github.com/alberto-valdeolivas/RandomWalkRestartMH)
 R package. Also provided are scripts for use as command line tools.
@@ -17,7 +17,7 @@ R package. Also provided are scripts for use as command line tools.
 
 Installation of this R package requires R and r-devtools. If you use
 prefer the use of conda you can create the base environment with
-`conda create --name r-rwrtools -c conda-forge r-base=4.0.2 r-devtools`. You
+`conda create --name r-RWRtoolkit -c conda-forge r-base=4.0.2 r-devtools`. You
 can also install devtools from within a base R environment with
 `install.packages("devtools")`.
 
@@ -26,8 +26,8 @@ can also install devtools from within a base R environment with
 You may clone this repo and install directly. This is particularly
 useful to use the CLI scripts or for development purposes.
 
-    git clone https://github.com/dkainer/RWRtools.git
-    cd RWRtools
+    git clone https://github.com/dkainer/RWRtoolkit.git
+    cd RWRtoolkit
     git checkout packageAttempt1
     R
     devtools::install()
@@ -37,8 +37,8 @@ From a clean environment this may take a while (\~20 min).
 ##### Secondary Method (install as an R package directly)
 
 *Note: this method is not yet available for general use as repository is
-private.* You can install the released version of RWRtools from
-[GitHub](https://github.com/dkainer/RWRtools/) with:
+private.* You can install the released version of RWRtoolkit from
+[GitHub](https://github.com/dkainer/RWRtoolkit/) with:
 
 ``` r
 devtools::install_github("dkainer/RWRtoolkit")
@@ -47,24 +47,24 @@ devtools::install_github("dkainer/RWRtoolkit")
 *Note: add in details about where to find the CLI scripts in
 /bin/library ??*
 
-## Running RWRtools
+## Running RWRtoolkit
 
 ### General:
 
-RWRtools enables RandomWalk with Restart (RWR) on both homogenous and
+RWRtoolkit enables RandomWalk with Restart (RWR) on both homogenous and
 heterogeneous multiplex networks. A heterogeneous network is used when
 integrating multiple network sources; for example in building a
 multiplex network with a gene-to-gene network and a disease-to-disease
 networks and combining them by defining a gene-to-disease network which
-serves as the bi-partite edges. RWRtools provides functions for both
+serves as the bi-partite edges. RWRtoolkit provides functions for both
 creating the muliplex networks and running RWR.
 
 ### Usage Options:
 
-The tools provided by RWRtools can be used either directly in R or by
+The tools provided by RWRtoolkit can be used either directly in R or by
 use of command line scripts. The R functions follow the convention of
-`RWRtools::RWR_func` such as `RWRtools::RWR_make_multiplex`. View help
-with `?RWRtools::RWR_make_multiplex`. The command line scripts are
+`RWRtoolkit::RWR_func` such as `RWRtoolkit::RWR_make_multiplex`. View help
+with `?RWRtoolkit::RWR_make_multiplex`. The command line scripts are
 available in `./inst/scripts` and can be used with `Rscript` such as
 `Rscript run_make_multiplex.R`. Run `Rscript run_make_multiplex.R -h` to
 view the help. You can use these scripts from any location, but remember
@@ -73,7 +73,7 @@ when applicable.
 
 ### Inital Step:
 
-The first step in RWRtools is to build the RData object that represents
+The first step in RWRtoolkit is to build the RData object that represents
 the multiplex network using `RWR_make_multiplex`. This function requires
 an `flist` (a **f**ile **list**) input file which represents the set of
 networks to create the multiplex object. Each row in the flist is a
@@ -118,7 +118,7 @@ Examples
 
 -   **Running in R**
 
-        RWRtools::RWR_make_multiplex(
+        RWRtoolkit::RWR_make_multiplex(
           flist="./inst/example_data/flist.tsv",
           delta=0.25,
           lambda=0.75, 
@@ -136,7 +136,7 @@ Examples
 ### Next Steps:
 
 The choice of the next script depends on the type of analysis desired.
-RWRtools provides several different workflows outlined below.
+RWRtoolkit provides several different workflows outlined below.
 
 #### RWR\_CV.R
 
@@ -157,7 +157,7 @@ Examples
 
 -   **Running in R**
 
-        RWRtools::RWR_CV(
+        RWRtoolkit::RWR_CV(
           dataPath="./inst/example_data/string_interactions.Rdata",
           genesetPath="./inst/example_data/geneset1.txt",
           outdirPath="./outdir")
@@ -188,7 +188,7 @@ Examples
 
 -   **Running in R**
 
-        RWRtools::RWR_LOE(
+        RWRtoolkit::RWR_LOE(
           data="./inst/example_data/string_interactions.Rdata",
           seed_geneset="./inst/example_data/geneset1.txt",
           tau="1.0,1.0",
@@ -218,7 +218,7 @@ Examples
 
 -   **Running in R**
 
-        RWRtools::RWR_netscore(
+        RWRtoolkit::RWR_netscore(
           gold="./inst/example_data/netscore/combined_score-random-gold.tsv",
           network="./inst/example_data/netscore/combined_score-random-test.tsv",
           outdir="./outdir")
@@ -250,7 +250,7 @@ Examples
 
 -   **Running in R**
 
-        RWRtools::RWR_ShortestPaths(
+        RWRtoolkit::RWR_ShortestPaths(
             data="./inst/example_data/string_interactions.Rdata",
             source_geneset="./inst/example_data/geneset1.txt",
             target_geneset="./inst/example_data/geneset2.txt",

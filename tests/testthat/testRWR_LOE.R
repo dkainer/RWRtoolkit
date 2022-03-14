@@ -1,5 +1,5 @@
 context("RWR_LOE Tests")
-library(RWRtools)
+library(RWRtoolkit)
 
 ########################################################################
 # Global Variables/Functions
@@ -72,23 +72,23 @@ res_tibble_dummy <- generate_mock_rwr_result_tibble(res_dummy, Seeds)
 ########################################################################
 describe('RWR_LOE calc_metrics_loe', {
   it('throws a warning if there are query genes in the seed geneset', {
-    expect_warning(RWRtools::calc_metrics_loe(res_dummy,genesetA_2genes,genesetB_3genes))
+    expect_warning(RWRtoolkit::calc_metrics_loe(res_dummy,genesetA_2genes,genesetB_3genes))
   })
   
   it('returns a list of two objects back', {
-    output <- RWRtools::calc_metrics_loe(res_dummy,genesetA_2genes,genesetC_2genes)
+    output <- RWRtoolkit::calc_metrics_loe(res_dummy,genesetA_2genes,genesetC_2genes)
     
     expect_equal(2,length(output))
   })
   
   it('results contain the correct amount of genes (no dupes)', {
-    output <- RWRtools::calc_metrics_loe(res_dummy,genesetA_2genes,genesetC_2genes)
+    output <- RWRtoolkit::calc_metrics_loe(res_dummy,genesetA_2genes,genesetC_2genes)
     
     expect_equal(nrow(output$result),nrow(genesetC_2genes))
   })
   
   it('results contain the correct amount of genes (with dupes)', {
-    output <- expect_warning(RWRtools::calc_metrics_loe(res_dummy,genesetA_2genes,genesetB_3genes))
+    output <- expect_warning(RWRtoolkit::calc_metrics_loe(res_dummy,genesetA_2genes,genesetB_3genes))
   
     ## Expected output's length with duplicates is because all 3 one of the query set genes is also 
     ## in the seed genes.  
@@ -108,9 +108,9 @@ describe('RWR_LOE save_plots_loe', {
     test_query_geneset <- genesetB_3genes
     test_outdir <- "plots"
     test_modname <- "testmod"
-    expected_outputFileName <- RWRtools::get_file_path(test_seed_geneset$setid[1], test_query_geneset$setid[1], test_modname, outdir=test_outdir, ext="metrics.png")
+    expected_outputFileName <- RWRtoolkit::get_file_path(test_seed_geneset$setid[1], test_query_geneset$setid[1], test_modname, outdir=test_outdir, ext="metrics.png")
     
-    RWRtools::save_plots_loe(metrics=test_metrics, seed_geneset=test_seed_geneset, query_geneset=test_query_geneset, outdir=test_outdir, modname=test_modname)
+    RWRtoolkit::save_plots_loe(metrics=test_metrics, seed_geneset=test_seed_geneset, query_geneset=test_query_geneset, outdir=test_outdir, modname=test_modname)
 
     expect_true(expected_outputFileName %in% list.files(recursive = TRUE))
     system(paste('rm -r plots'))
@@ -122,20 +122,20 @@ describe('RWR_LOE save_plots_loe', {
 ########################################################################
 describe('RWR_LOE parameter tests', {
   it('throws an error if all parameters are missing', {
-    expect_error(RWRtools::RWR_LOE())
+    expect_error(RWRtoolkit::RWR_LOE())
   })
   
   it('throws an error if seed_geneset parameter is missing', {
     test_data <- "../testNetworks/network_m1m2.rdata"
     
-    expect_error(RWRtools::RWR_LOE(data=test_data))
+    expect_error(RWRtoolkit::RWR_LOE(data=test_data))
   })
   
   it('throws an error if Rdata file does not exist', {
     test_data <- "./fake/path/network.Rdata"
     test_seed_geneset <- "../testGenesets/testGeneset1.tsv"
     
-    expect_error(invisible(RWRtools::RWR_LOE(data=test_data,seed_geneset=test_seed_geneset)))
+    expect_error(invisible(RWRtoolkit::RWR_LOE(data=test_data,seed_geneset=test_seed_geneset)))
   })
   
   it('if eval mode is turned on, metrics are computed and saved', {
@@ -149,11 +149,11 @@ describe('RWR_LOE parameter tests', {
     stub_calc_metrics_loe = mock()
     stub_save_plots_loe = mock()
     stub_write_table = mock()
-    stub(RWRtools::RWR_LOE, 'calc_metrics_loe', stub_calc_metrics_loe)
-    stub(RWRtools::RWR_LOE, 'save_plots_loe', stub_save_plots_loe)
-    stub(RWRtools::RWR_LOE, 'write_table', stub_write_table)
+    stub(RWRtoolkit::RWR_LOE, 'calc_metrics_loe', stub_calc_metrics_loe)
+    stub(RWRtoolkit::RWR_LOE, 'save_plots_loe', stub_save_plots_loe)
+    stub(RWRtoolkit::RWR_LOE, 'write_table', stub_write_table)
     
-    invisible(RWRtools::RWR_LOE(data=test_data, seed_geneset=test_seed_geneset, query_geneset=test_query_geneset, tau=test_tau, eval=test_eval))
+    invisible(RWRtoolkit::RWR_LOE(data=test_data, seed_geneset=test_seed_geneset, query_geneset=test_query_geneset, tau=test_tau, eval=test_eval))
     expect_called(stub_calc_metrics_loe, 1)
     expect_called(stub_save_plots_loe,  1)
   })
@@ -167,10 +167,10 @@ describe('RWR_LOE parameter tests', {
     #stub functions
     stub_calc_metrics = mock()
     stub_save_plots2 = mock()
-    stub(RWRtools::RWR_LOE, 'calc_metrics', stub_calc_metrics)
-    stub(RWRtools::RWR_LOE, 'save_plots2', stub_save_plots2)
+    stub(RWRtoolkit::RWR_LOE, 'calc_metrics', stub_calc_metrics)
+    stub(RWRtoolkit::RWR_LOE, 'save_plots2', stub_save_plots2)
     
-    expect_warning(RWRtools::RWR_LOE(data=test_data, seed_geneset=test_seed_geneset, tau=test_tau, eval=test_eval))
+    expect_warning(RWRtoolkit::RWR_LOE(data=test_data, seed_geneset=test_seed_geneset, tau=test_tau, eval=test_eval))
     expect_called(stub_calc_metrics, 0)
     expect_called(stub_save_plots2,  0)
   })
@@ -197,7 +197,7 @@ describe('RWR_LOE funtional tests', {
     
     expected_seeds=c("1","2")
         
-    invisible(capture.output(result <- RWRtools::RWR_LOE(data="../testNetworks/network_m1m2.rdata",seed_geneset="../testGenesets/testGeneset1.tsv", tau="1,1")))
+    invisible(capture.output(result <- RWRtoolkit::RWR_LOE(data="../testNetworks/network_m1m2.rdata",seed_geneset="../testGenesets/testGeneset1.tsv", tau="1,1")))
     expect_equal(result$RWRM_Results, expected_RWRM_Results, tolerance=1e-3)
     expect_equal(result$Seed_Nodes, expected_seeds)
   })
@@ -221,7 +221,7 @@ describe('RWR_LOE funtional tests', {
 
     expected_seeds=c("1","2")
     
-    invisible(capture.output(result <- RWRtools::RWR_LOE(data="../testNetworks/network_m1m2.rdata",seed_geneset="../testGenesets/testGeneset1.tsv", query_geneset="../testGenesets/testGeneset2.tsv", tau="1,1")))
+    invisible(capture.output(result <- RWRtoolkit::RWR_LOE(data="../testNetworks/network_m1m2.rdata",seed_geneset="../testGenesets/testGeneset1.tsv", query_geneset="../testGenesets/testGeneset2.tsv", tau="1,1")))
     expect_equal(result$RWRM_Results, expected_RWRM_Results, tolerance=1e-3)
     expect_equal(result$Seed_Nodes, expected_seeds)
   })

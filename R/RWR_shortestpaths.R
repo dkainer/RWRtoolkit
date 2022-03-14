@@ -133,7 +133,7 @@ open_cytoscape = function(res, source_geneset, target_geneset) {
 #' 
 #' # An example of Running RWR_ShortestPaths
 #'
-#' extdata.dir <- system.file("example_data", package="RWRtools")
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
 #' multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
 #' geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
 #' geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')

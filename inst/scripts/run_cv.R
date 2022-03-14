@@ -151,18 +151,18 @@ parse_arguments = function() {
 
 main <- function(opt) {
 
-    # # Try to use PATH_TO_RWRTOOLS; warn the user if it's set but doesn't exist.
-    # path_to_rwrtools = Sys.getenv('PATH_TO_RWRTOOLS', unset=NA)
-    # if (is.na(path_to_rwrtools)) {
-    #     path_to_rwrtools = '.'
-    # } else if (!dir.exists(path_to_rwrtools)) {
-    #     message(sprintf('WARNING: PATH_TO_RWRTOOLS is set but the directory does not exist: %s', path_to_rwrtools))
+    # # Try to use PATH_TO_RWRtoolkit; warn the user if it's set but doesn't exist.
+    # path_to_RWRtoolkit = Sys.getenv('PATH_TO_RWRtoolkit', unset=NA)
+    # if (is.na(path_to_RWRtoolkit)) {
+    #     path_to_RWRtoolkit = '.'
+    # } else if (!dir.exists(path_to_RWRtoolkit)) {
+    #     message(sprintf('WARNING: PATH_TO_RWRtoolkit is set but the directory does not exist: %s', path_to_RWRtoolkit))
     #     message('WARNING: Defaulting to local directory.')
-    #     path_to_rwrtools = '.'
+    #     path_to_RWRtoolkit = '.'
     # }
     # 
     # # Source the utils.R file; exit with error if it does not exist.
-    # utils_path = file.path(path_to_rwrtools, 'utils.R')
+    # utils_path = file.path(path_to_RWRtoolkit, 'utils.R')
     # if (file.exists(utils_path)) {
     #     source(utils_path)
     # } else {
@@ -182,7 +182,7 @@ main <- function(opt) {
     # })
     # options(dplyr.summarise.inform = FALSE)
 
-    RWRtools::RWR_CV(
+    RWRtoolkit::RWR_CV(
         dataPath=opt$data,
         genesetPath=opt$geneset,
         method=opt$method,
