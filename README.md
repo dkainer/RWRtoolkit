@@ -17,7 +17,7 @@ R package. Also provided are scripts for use as command line tools.
 
 Installation of this R package requires R and r-devtools. If you use
 prefer the use of conda you can create the base environment with
-`conda create --name r-RWRtoolkit -c conda-forge r-base=4.0.2 r-devtools`. You
+`conda create --name r-RWRtoolkit -c conda-forge r-base r-devtools`. You
 can also install devtools from within a base R environment with
 `install.packages("devtools")`.
 
@@ -28,7 +28,6 @@ useful to use the CLI scripts or for development purposes.
 
     git clone https://github.com/dkainer/RWRtoolkit.git
     cd RWRtoolkit
-    git checkout packageAttempt1
     R
     devtools::install()
 
@@ -36,18 +35,64 @@ From a clean environment this may take a while (\~20 min).
 
 ##### Secondary Method (install as an R package directly)
 
-*Note: this method is not yet available for general use as repository is
-private.* You can install the released version of RWRtoolkit from
+You can install the released version of RWRtoolkit from
 [GitHub](https://github.com/dkainer/RWRtoolkit/) with:
 
 ``` r
 devtools::install_github("dkainer/RWRtoolkit")
 ```
 
-*Note: add in details about where to find the CLI scripts in
-/bin/library ??*
-
 ## Running RWRtoolkit
+
+### Loading RWRtoolkit:
+
+RWRtoolkit can be run as either an R package or a command line tool
+depending on your preferences.
+
+-   **R Package:** Simply loading the library with the `library`
+    function in R loads RWRtoolkit:
+
+    ``` r
+    library(RWRtoolkit)
+    ```
+
+-   **Command Line Tool:**  
+    If you have downloaded the code via GitHub, you can access the
+    command line script code by navigating to the
+    `RWRtoolkit/inst/scripts` directory.
+
+    If you have downloaded the code via `devtools::install_github` open
+    an R session and type:
+
+    ``` r
+    library(RWRtoolkit)
+    .libPaths()
+    ```
+
+    Which ought to output a path similar to:
+
+        /Library/Frameworks/R.framework/Versions/4.0/Resources/library/
+
+    This is the directory in which your installed R libraries exist.
+
+    From the above directory (hereby referred to as
+    `<LIBPATHS_DIRECTORY>` ), the script files can be found on the path:
+
+        <LIBPATHS_DIRECTORY>/RWRtoolkit/scripts
+
+    Note: the paths are not the same as the GitHub repository due to the
+    `devtools::install` function’s lifting of all directories within the
+    `inst` directory during the build/installation phase.
+
+    From the above path, all scripts can be accessed as:
+
+    ``` bash
+    Rscript <LIBPATHS_DIRECTORY>/RWRtoolkit/scripts/run_loe.R 
+      --data            <LIBPATHS_DIRECTORY>/RWRtoolkit/example_data/string_interactions.Rdata \
+      --seed_geneset    <LIBPATHS_DIRECTORY>/RWRtoolkit/example_data/geneset1.txt \
+      --tau             "1.0,1.0" \
+      -o                ./outdir
+    ```
 
 ### General:
 
@@ -63,9 +108,9 @@ creating the muliplex networks and running RWR.
 
 The tools provided by RWRtoolkit can be used either directly in R or by
 use of command line scripts. The R functions follow the convention of
-`RWRtoolkit::RWR_func` such as `RWRtoolkit::RWR_make_multiplex`. View help
-with `?RWRtoolkit::RWR_make_multiplex`. The command line scripts are
-available in `./inst/scripts` and can be used with `Rscript` such as
+`RWRtoolkit::RWR_func` such as `RWRtoolkit::RWR_make_multiplex`. View
+help with `?RWRtoolkit::RWR_make_multiplex`. The command line scripts
+are available in `./inst/scripts` and can be used with `Rscript` such as
 `Rscript run_make_multiplex.R`. Run `Rscript run_make_multiplex.R -h` to
 view the help. You can use these scripts from any location, but remember
 to either use complete paths or paths local to where you are running
@@ -73,16 +118,17 @@ when applicable.
 
 ### Inital Step:
 
-The first step in RWRtoolkit is to build the RData object that represents
-the multiplex network using `RWR_make_multiplex`. This function requires
-an `flist` (a **f**ile **list**) input file which represents the set of
-networks to create the multiplex object. Each row in the flist is a
-triple defining the network: {file\_path, name, group}. In a homogenous
-network the group is all `1`. In a heterogeneous network, one set of
-networks will use `1` (e.g. gene-to-gene), the other will use `2`
-(e.g. disease-to-disease), and `3` for the connecting network
-(e.g. gene-to-disease). An example flist for a homegenous networks looks
-like (seperated by any of the following delimiters `,\t |;`):
+The first step in RWRtoolkit is to build the RData object that
+represents the multiplex network using `RWR_make_multiplex`. This
+function requires an `flist` (a **f**ile **list**) input file which
+represents the set of networks to create the multiplex object. Each row
+in the flist is a triple defining the network: {file\_path, name,
+group}. In a homogenous network the group is all `1`. In a heterogeneous
+network, one set of networks will use `1` (e.g. gene-to-gene), the other
+will use `2` (e.g. disease-to-disease), and `3` for the connecting
+network (e.g. gene-to-disease). An example flist for a homegenous
+networks looks like (seperated by any of the following delimiters
+`,\t |;`):
 
 |   **file\_path**   | **name**  | **group** |
 |:------------------:|:---------:|:---------:|
@@ -116,22 +162,34 @@ to where you run `scripts/run_make_multiplex.R` in your `flist`.
 
 Examples
 
--   **Running in R**
+-   **Running in R** The below code assumes an R session was initialized
+    from within the `inst` directory of RWRtoolkit. Output will be
+    within the `RWRtoolkit/inst` directory. (This is necessary due to
+    the files within `flist.tsv` having relative paths)
 
-        RWRtoolkit::RWR_make_multiplex(
-          flist="./inst/example_data/flist.tsv",
-          delta=0.25,
-          lambda=0.75, 
-          output="./outdir/myExampleNetwork.Rdata"
-        )
+    ``` r
+    RWRtoolkit::RWR_make_multiplex(
+      flist="./example_data/flist.tsv",
+      delta=0.25,
+      lambda=0.75, 
+      output="./outdir/myExampleNetwork.Rdata"
+    )
+    ```
 
--   **Running CLI**
+-   **Running CLI** If running the code from the cloned GitHub
+    repository, the below code ought to be run from within the `inst`
+    directory. If running from the `devtools::install_github` method,
+    the below code ought to be run from with the RWRtoolkit directory
+    located at `<LIBPATHS_DIRECTORY>/RWRtoolkit`. Output will be saved
+    to your home directory.
 
-        Rscript run_make_multiplex.R 
-          --flist tests/testSTRINGDB/flist.tsv \
-          --delta 0.25,
-          --lambda 0.75,
-          --out ./outdir/myExampleNetwork.Rdata
+    ``` bash
+    Rscript scripts/run_make_multiplex.R \
+      --flist example_data/flist.tsv \
+      --delta 0.25 \
+      --lambda 0.75 \
+      --out ~/RWRtoolkitOutput/myExampleNetwork.Rdata
+    ```
 
 ### Next Steps:
 
@@ -157,17 +215,33 @@ Examples
 
 -   **Running in R**
 
-        RWRtoolkit::RWR_CV(
-          dataPath="./inst/example_data/string_interactions.Rdata",
-          genesetPath="./inst/example_data/geneset1.txt",
-          outdirPath="./outdir")
+    ``` r
+    # Can be run from anywhere so long as RWRtoolkit is installed. 
+    extdata.dir <- system.file("example_data", package="RWRtoolkit")
 
--   **Running CLI**
+    string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
+    geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
+    outdir.path <- '~/RWRtoolkitOutput/'
 
-        Rscript run_cv.R
-          --data ./inst/example_data/string_interactions.Rdata \
-          --geneset ./inst/example_data/geneset1.txt \
-          -o ./outdir
+    RWRtoolkit::RWR_CV(
+      dataPath = string.interactions.fp ,
+      genesetPath = geneset.path,
+      outdirPath = outdir.path)
+    ```
+
+-   **Running CLI** If running the code from the cloned GitHub
+    repository, the below code ought to be run from within the `inst`
+    directory. If running from the `devtools::install_github` method,
+    the below code ought to be run from with the RWRtoolkit directory
+    located at `<LIBPATHS_DIRECTORY>/RWRtoolkit`. Output will be saved
+    to your home directory.
+
+    ``` bash
+    Rscript ./scripts/run_cv.R \
+      --data ./example_data/string_interactions.Rdata \
+      --geneset ./example_data/geneset1.tsv \
+      -o ./outdircli
+    ```
 
 #### RWR\_LOE.R
 
@@ -188,19 +262,30 @@ Examples
 
 -   **Running in R**
 
-        RWRtoolkit::RWR_LOE(
-          data="./inst/example_data/string_interactions.Rdata",
-          seed_geneset="./inst/example_data/geneset1.txt",
-          tau="1.0,1.0",
-          outdir="./outdir")
+    ``` r
+    # Can be run from anywhere so long as RWRtoolkit is installed. 
+    extdata.dir <- system.file("example_data", package="RWRtoolkit")
+
+    string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
+    geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
+    outdir.path <- '~/RWRtoolkitOutput/'
+
+    RWRtoolkit::RWR_LOE(
+      data= string.interactions.fp,
+      seed_geneset= geneset.path,
+      tau = c(1, 1, 1, 1, 1, 1, 1, 1, 1),
+      outdir= outdir.path )
+    ```
 
 -   **Running CLI**
 
-        Rscript run_loe.R 
-          --data            ./inst/example_data/string_interactions.Rdata \
-          --seed_geneset    ./inst/example_data/geneset1.txt \
-          --tau             "1.0,1.0" \
-          -o                ./outdir
+    ``` bash
+    Rscript scripts/run_loe.R \
+      --data            ./example_data/string_interactions.Rdata \
+      --seed_geneset    ./example_data/geneset1.tsv \
+      --tau             "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0" \
+      -o                ./outdir
+    ```
 
 #### RWR\_netscore.R
 
@@ -214,21 +299,33 @@ will score the strength of the intersect with multiple metrics.
 -   **Output:** A table containing multiple metrics including the edge
     intersect between the input network and the gold standard network.
 
+​  
 Examples
 
 -   **Running in R**
 
-        RWRtoolkit::RWR_netscore(
-          gold="./inst/example_data/netscore/combined_score-random-gold.tsv",
-          network="./inst/example_data/netscore/combined_score-random-test.tsv",
-          outdir="./outdir")
+    ``` r
+    # Can be run from anywhere so long as RWRtoolkit is installed. 
+    extdata.dir <- system.file("example_data", package="RWRtoolkit")
+
+    gold.fp <- paste(extdata.dir, "netscore/combined_score-random-gold.tsv", sep='/')
+    network.fp <- paste(extdata.dir, "netscore/combined_score-random-test.tsv", sep='/')
+    outdir.path <- "~/RWRtoolkitOutput/"
+
+    RWRtoolkit::RWR_netscore(
+      gold = gold.fp,
+      network = network.fp,
+      outdir = outdir.path)
+    ```
 
 -   **Running CLI**
 
-        Rscript run_loe.R \
-          --gold    ./inst/example_data/netscore/combined_score-random-gold.tsv \
-          --network ./inst/example_data/netscore/combined_score-random-test.tsv \
-          --outdir  ./outdir
+    ``` bash
+    Rscript scripts/run_netscore.R \
+      --gold    ./example_data/netscore/combined_score-random-gold.tsv \
+      --network ./example_data/netscore/combined_score-random-test.tsv \
+      --outdir  ./outdir
+    ```
 
 #### RWR\_shortestpaths.R
 
@@ -250,17 +347,31 @@ Examples
 
 -   **Running in R**
 
-        RWRtoolkit::RWR_ShortestPaths(
-            data="./inst/example_data/string_interactions.Rdata",
-            source_geneset="./inst/example_data/geneset1.txt",
-            target_geneset="./inst/example_data/geneset2.txt",
-            outdir="./outdir"
-        )
+    ``` r
+    # Can be run from anywhere so long as RWRtoolkit is installed. 
+    extdata.dir <- system.file("example_data", package="RWRtoolkit")
+
+    string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
+    source.geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
+    target.geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
+    outdir.path <- '~/RWRtoolkitOutput/'
+
+
+
+    RWRtoolkit::RWR_ShortestPaths(
+        data = string.interactions.fp,
+        source_geneset = source.geneset.path,
+        target_geneset = target.geneset.path,
+        outdir = outdir.path
+    )
+    ```
 
 -   **Running CLI**
 
-        Rscript run_shortestpaths.R \
-            --data ./inst/example_data/string_interactions.Rdata \
-            --source-geneset ./inst/example_data/geneset1.txt \
-            --target-geneset ./inst/example_data/geneset2.txt \
-            -o ./outdir
+    ``` bash
+    Rscript scripts/run_shortestpaths.R \
+        --data ./example_data/string_interactions.Rdata \
+        --source-geneset ./example_data/geneset1.tsv \
+        --target-geneset ./example_data/geneset2.tsv \
+        -o ./outdir
+    ```

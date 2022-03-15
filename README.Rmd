@@ -319,7 +319,7 @@ Examples
 
 - **Running CLI**
 
-    ```
+    ```bash
     Rscript scripts/run_shortestpaths.R \
         --data ./example_data/string_interactions.Rdata \
         --source-geneset ./example_data/geneset1.tsv \
