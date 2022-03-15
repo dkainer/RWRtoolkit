@@ -1,0 +1,14 @@
+.RData
+.Rhistory
+.Rproj*
+.Rbuildignore
+*.Rproj
+*network.Rdata
+*example.flist*
+*.swp
+*.o
+.Rproj.user
+.html
+tmp
+*.DS_Store
+inst/*out*

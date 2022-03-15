@@ -1,0 +1,36 @@
+Package: RWRtoolkit
+Title: Random Walk with Restart Tool Suite
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "David",
+           family = "Kainer",
+           role = c("aut", "cre"),
+           email = "david.kainer@ornl.gov",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This package is a tool suite that utilizes Random Walk with Restart. 
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Depends: 
+    R (>= 4.0.2),
+Imports:
+    igraph (>= 1.2.5),
+    tidyverse,
+    BiocManager,
+    data.table,
+    doParallel,
+    foreach,
+    IRkernel,
+    optparse,
+    patchwork,
+    remotes,
+    iterators,
+    dplyr,
+    RandomWalkRestartMH 
+Suggests: 
+    testthat, 
+    mockery
+Remotes:
+    github::dkainer/RandomWalkRestartMH

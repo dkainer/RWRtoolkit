@@ -1,0 +1,2 @@
+../testNetworks/m1.txt m1 1
+../I_AM_A_BAD_PATH/m2.txt m2 1

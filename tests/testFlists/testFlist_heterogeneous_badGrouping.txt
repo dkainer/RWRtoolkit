@@ -1,0 +1,3 @@
+../testNetworks/m1.txt m1 1
+../testNetworks/i1.txt i2 2
+../testNetworks/n1.txt m2 1

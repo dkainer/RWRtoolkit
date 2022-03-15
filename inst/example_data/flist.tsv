@@ -1,0 +1,9 @@
+example_data/layers/automated_textmining.tsv	automated_textmining	1
+example_data/layers/coexpression.tsv	coexpression	1
+example_data/layers/combined_score.tsv	combined_score	1
+example_data/layers/database_annotated.tsv	database_annotated	1
+example_data/layers/experimentally_determined_interaction.tsv	experimentally_determined_interaction	1
+example_data/layers/gene_fusion.tsv	gene_fusion	1
+example_data/layers/homology.tsv	homology	1
+example_data/layers/neighborhood_on_chromosome.tsv	neighborhood_on_chromosome	1
+example_data/layers/phylogenetic_cooccurrence.tsv	phylogenetic_cooccurrence	1
