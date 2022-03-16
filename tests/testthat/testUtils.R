@@ -2,8 +2,7 @@ context("Utils Tests")
 library(RWRtoolkit)
 library(vctrs)
 library(mockery)
-load('../testMultiplex/testNetwork.Rdata')
-
+load('../testMultiplex/unitTestMultiplex.Rdata')
 
 describe('load_geneset', {
     it('loads genes with sharps within the names', {
@@ -124,6 +123,7 @@ describe('load_geneset', {
 describe('get_or_set_tau', {
     it('Returns numeric value if tau is numeric', {
         # Where tau values for layer one = 1.25 and layer 2 = 0.75
+
         optTau <- c(1.25, 0.75)
         expectedOutput <- optTau
 

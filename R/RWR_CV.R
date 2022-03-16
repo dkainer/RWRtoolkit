@@ -681,7 +681,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #' @param outMedianRanks Specify the full path for the median results. Ignores outdirPath and modName, using this path instead. Default NULL
 #' @param threads Specify the number of threads to use. Default for your system is all cores - 1.
 #' @param verbose Verbose mode. Default FALSE
-#' @param write_to_file Also write the result to a file.
+#' @param write_to_file Also write the result to a file. Default FALSE, however, if output paths are included, the boolean is switched to true. 
 #' @return Returns a list of four data tables: fullranks, medianranks, metrics, and summary.
 #' @examples
 #'
@@ -731,6 +731,11 @@ RWR_CV <- function(
     if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object")
 
 
+    if ( (!is.null(outdirPath) | !is.null(outFullRanks) | !is.null(outMedianRanks)) & write_to_file == FALSE  ) {
+        warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE."))
+        write_to_file = TRUE
+    }
+
     # TODO: Figure out optTau. As a passed in value -  the default may be problematic in that it
     # sends a warning to the user if they have more than 2 layers.
     # Tau must match the network layers.
@@ -762,7 +767,7 @@ RWR_CV <- function(
         out_path = get_file_path("RWR-CV_",res_combined$geneset[1],basename(dataPath),modname,
                                  outdir=outdirPath, ext=".fullranks.tsv")
     }
-
+    
     if(write_to_file){
         combined <- res_combined %>%
                         dplyr::group_by(fold) %>%

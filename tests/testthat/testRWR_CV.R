@@ -402,7 +402,7 @@ describe("RWR", {
 
     chunks <- list(c('1', '2'), c('3'))
     names(chunks) <- c('1','2')
-    load('../testMultiplex/testNetwork.Rdata')
+    load('../testMultiplex/unitTestMultiplex.Rdata')
 
     it('runs rwr on all folds and returns list of rankings', {
         method <- 'singletons'
@@ -514,7 +514,7 @@ describe("Post Processing",{
     describe("post_process_rwr_output_cv", {
         it('binds rows and arranges by rank with no extras', {
             extras <- NULL
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
             
             #because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
             expected_nodenames <- c(first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1],
@@ -553,7 +553,7 @@ describe("Post Processing",{
             gene <- c('5','6')
             weight <- c(0.6,0.9)
             extras <- data.frame(setid, gene, weight)
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
             
             #because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
             expected_nodenames <- c(first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1],
@@ -595,7 +595,7 @@ describe("Post Processing",{
         it('binds rows and arranges by rank with extras from LOO', {
             method <- 'loo'
             numfolds <- 3 ## immiterial as singletons uses nrows of geneset
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
             
             setid <- c('setA', 'setA', 'setA')
             gene <- c('1','2', '3')
@@ -636,7 +636,7 @@ describe("Post Processing",{
             gene <- c('5','6')
             weight <- c(0.6,0.9)
             extras <- data.frame(setid, gene, weight)
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
 
             
             expected_nodenames <- c( first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1], 
@@ -724,7 +724,7 @@ describe("Post Processing",{
             gene <- c('5','6')
             weight <- c(0.6,0.9)
             extras <- data.frame(setid, gene, weight)
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
             
             #because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
             nodenames <- c(first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1],
@@ -773,7 +773,7 @@ describe("Post Processing",{
         it('takes the combined folds from LOO and calculates the average of them', {
             method <- 'loo'
             numfolds <- 3 ## immiterial as singletons uses nrows of geneset
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
             
             setid <- c('setA', 'setA', 'setA')
             gene <- c('1','2', '3')
@@ -814,7 +814,7 @@ describe("Post Processing",{
             gene <- c('5','6')
             weight <- c(0.6,0.9)
             extras <- data.frame(setid, gene, weight)
-            load('../testMultiplex/testNetwork.Rdata') #load nw.mpo
+            load('../testMultiplex/unitTestMultiplex.Rdata') #load nw.mpo
 
             
             nodenames <- c( first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1], 
