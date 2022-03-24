@@ -48,9 +48,11 @@ Imports:
     remotes,
     iterators,
     dplyr,
-    RandomWalkRestartMH 
+    RandomWalkRestartMH ,
+    RCy3
 Suggests: 
     testthat, 
     mockery
 Remotes:
     github::dkainer/RandomWalkRestartMH
+    
