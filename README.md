@@ -17,8 +17,8 @@ R package. Also provided are scripts for use as command line tools.
 
 Installation of this R package requires R and r-devtools. If you use
 prefer the use of conda you can create the base environment with
-`conda create --name r-RWRtoolkit -c conda-forge r-base r-devtools`. You
-can also install devtools from within a base R environment with
+`conda create --name r-RWRtoolkit -c conda-forge r-base r-devtools r-irkernel`.
+You can also install devtools from within a base R environment with
 `install.packages("devtools")`.
 
 ##### Primary Method
