@@ -42,7 +42,6 @@ Imports:
     data.table,
     doParallel,
     foreach,
-    IRkernel,
     optparse,
     patchwork,
     remotes,
