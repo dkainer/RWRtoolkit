@@ -48,10 +48,11 @@ Imports:
     iterators,
     dplyr,
     RandomWalkRestartMH ,
+    IRkernel,
     RCy3
 Suggests: 
     testthat, 
     mockery
 Remotes:
-    github::dkainer/RandomWalkRestartMH
-    
+    github::dkainer/RandomWalkRestartMH, 
+    bioc::RCy3
