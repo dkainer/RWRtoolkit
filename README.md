@@ -21,6 +21,15 @@ prefer the use of conda you can create the base environment with
 You can also install devtools from within a base R environment with
 `install.packages("devtools")`.
 
+**Note**: Depending on how your packages were installed, you may run
+into an SSL issue when attempting to install devtools. This is due to
+the installation of `gert`, which requires an installation of `libgit2`
+(installable via the [binaries](https://libgit2.org/),
+[conda](https://anaconda.org/conda-forge/libgit2),
+[homebrew](https://formulae.brew.sh/formula/libgit2),
+[yum](https://yum-info.contradodigital.com/view-package/epel/libgit2/),
+or package manager of your choice).
+
 ##### Primary Method
 
 You may clone this repo and install directly. This is particularly
