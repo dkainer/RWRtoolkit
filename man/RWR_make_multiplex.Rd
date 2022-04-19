@@ -64,7 +64,7 @@ RWR_make_multiplex(flist="example.flist",
 
 # An example of an RWR Make Multiplex with a non-default delta and 
 # lambda with a specified output filename. 
-outfile <- paste(outdir, '/multiplex_d25_l75.Rdata')
+outfile <- paste(outdir, '/multiplex_d25_l75.Rdata', sep='')
 RWR_make_multiplex(flist="example.flist", 
                      delta=0.25, 
                      lambda=0.75,

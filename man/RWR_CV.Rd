@@ -27,7 +27,7 @@ RWR_CV(
 
 \item{genesetPath}{The path to the gene set file. It must have the following first two columns with no headers tab-delimited: {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL}
 
-\item{method}{Cross-validation method. 'kfold', 'loo', or 'singletons' Default 'kfold'}
+\item{method}{Cross-validation method. Choice of: 'kfold', 'loo', or 'singletons' Default 'kfold'}
 
 \item{folds}{Number (k) of folds to use in k-fold CV. Default 5}
 
@@ -51,7 +51,7 @@ RWR_CV(
 
 \item{verbose}{Verbose mode. Default FALSE}
 
-\item{write_to_file}{Also write the result to a file.}
+\item{write_to_file}{Also write the result to a file. Default FALSE, however, if output paths are included, the boolean is switched to true.}
 }
 \value{
 Returns a list of four data tables: fullranks, medianranks, metrics, and summary.

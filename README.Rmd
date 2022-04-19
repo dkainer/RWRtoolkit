@@ -107,7 +107,7 @@ RWRtoolkit enables RandomWalk with Restart (RWR) on both homogenous and heteroge
 ### Usage Options:
 The tools provided by RWRtoolkit can be used either directly in R or by use of command line scripts.  The R functions follow the convention of `RWRtoolkit::RWR_func` such as `RWRtoolkit::RWR_make_multiplex`.  View help with `?RWRtoolkit::RWR_make_multiplex`.  The command line scripts are available in `./inst/scripts` and can be used with `Rscript` such as `Rscript run_make_multiplex.R`.  Run `Rscript run_make_multiplex.R -h` to view the help.  You can use these scripts from any location, but remember to either use complete paths or paths local to where you are running when applicable.
 
-### Inital Step: 
+### Initial Step: 
 
 The first step in RWRtoolkit is to build the RData object that represents the multiplex network using `RWR_make_multiplex`.  This function requires an `flist` (a **f**ile **list**) input file which represents the set of networks to create the multiplex object.  Each row in the flist is a triple defining the network: \{file_path, name, group\}.  In a homogenous network the group is all `1`.  In a heterogeneous network, one set of networks will use `1` (e.g. gene-to-gene), the other will use `2` (e.g. disease-to-disease), and `3` for the connecting network (e.g. gene-to-disease).  An example flist for a homegenous networks looks like (seperated by any of the following delimiters  `,\t |;`):
 

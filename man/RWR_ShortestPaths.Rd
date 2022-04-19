@@ -38,7 +38,9 @@ be generated with different suffixes.  Default "."}
 \item{threads}{Number of threads to use.}
 
 \item{cyto}{Include this parameter if you wish to see the shortest paths in
-Cytoscape. Cytoscape must already be running first!  Default FALSE}
+Cytoscape. Cytoscape must already be running first!  If your geneset(s) are
+large (e.g. 100+) then loading all the shortest paths fully into cytoscape
+can take a while. Default FALSE}
 
 \item{verbose}{Verbose mode.  Default FALSE}
 

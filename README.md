@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-RWRtoolkit enables easy use of Random Walk with Restart on multiplex
+RWRtoolkit enables easy use of RandomWalk with Restart on multiplex
 networks. These functions are an extension to the
 [RandomWalkRestartMH](https://github.com/alberto-valdeolivas/RandomWalkRestartMH)
 R package. Also provided are scripts for use as command line tools.
@@ -125,7 +125,7 @@ view the help. You can use these scripts from any location, but remember
 to either use complete paths or paths local to where you are running
 when applicable.
 
-### Inital Step:
+### Initial Step:
 
 The first step in RWRtoolkit is to build the RData object that
 represents the multiplex network using `RWR_make_multiplex`. This
