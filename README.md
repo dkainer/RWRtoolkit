@@ -131,15 +131,15 @@ The first step in RWRtoolkit is to build the RData object that
 represents the multiplex network using `RWR_make_multiplex`. This
 function requires an `flist` (a **f**ile **list**) input file which
 represents the set of networks to create the multiplex object. Each row
-in the flist is a triple defining the network: {file\_path, name,
-group}. In a homogenous network the group is all `1`. In a heterogeneous
+in the flist is a triple defining the network: {file_path, name, group}.
+In a homogeneous network the group is all `1`. In a heterogeneous
 network, one set of networks will use `1` (e.g. gene-to-gene), the other
 will use `2` (e.g. disease-to-disease), and `3` for the connecting
-network (e.g. gene-to-disease). An example flist for a homegenous
-networks looks like (seperated by any of the following delimiters
+network (e.g. gene-to-disease). An example flist for a homogeneous
+networks looks like (separated by any of the following delimiters
 `,\t |;`):
 
-|   **file\_path**   | **name**  | **group** |
+|   **file_path**    | **name**  | **group** |
 |:------------------:|:---------:|:---------:|
 | /path/to/file1.txt |    PPI    |     1     |
 | /path/to/file2.txt | Co-Domain |     1     |
@@ -205,7 +205,7 @@ Examples
 The choice of the next script depends on the type of analysis desired.
 RWRtoolkit provides several different workflows outlined below.
 
-#### RWR\_CV.R
+#### RWR_CV.R
 
 *RWR Cross Validation* performs K-fold cross validation on a single gene
 set, finding the RWR rank of the left-out genes. Can choose between
@@ -252,7 +252,7 @@ Examples
       -o ./outdircli
     ```
 
-#### RWR\_LOE.R
+#### RWR_LOE.R
 
 *RWR Lines of Evidence* has two possible functions. Given one geneset of
 seeds, rankings for all other genes in the network will be returned.
@@ -296,7 +296,7 @@ Examples
       -o                ./outdir
     ```
 
-#### RWR\_netscore.R
+#### RWR_netscore.R
 
 *RWR Net Score* performs a network intersect between an input network
 (`network`) and a gold truth network (`gold`), e.g. the GO network. It
@@ -308,7 +308,6 @@ will score the strength of the intersect with multiple metrics.
 -   **Output:** A table containing multiple metrics including the edge
     intersect between the input network and the gold standard network.
 
-​  
 Examples
 
 -   **Running in R**
@@ -336,7 +335,7 @@ Examples
       --outdir  ./outdir
     ```
 
-#### RWR\_shortestpaths.R
+#### RWR_shortestpaths.R
 
 Find shortest paths between genes in gene sets. Given a single gene set,
 find the shortest paths between the genes in that gene set. Given two

@@ -24,11 +24,13 @@ RWRtoolkit enables easy use of RandomWalk with Restart on multiplex networks.  T
 ## Installation
 
 ##### Dependencies
+
 Installation of this R package requires R and r-devtools.  If you use prefer the use of conda you can create the base environment with `conda create --name r-RWRtoolkit -c conda-forge r-base r-devtools r-irkernel`.  You can also install devtools from within a base R environment with `install.packages("devtools")`.
 
 **Note**: Depending on how your packages were installed, you may run into an SSL issue when attempting to install devtools. This is due to the installation of `gert`, which requires an installation of `libgit2` (installable via the [binaries](https://libgit2.org/), [conda](https://anaconda.org/conda-forge/libgit2), [homebrew](https://formulae.brew.sh/formula/libgit2), [yum](https://yum-info.contradodigital.com/view-package/epel/libgit2/), or package manager of your choice).  
 
 ##### Primary Method
+
 You may clone this repo and install directly.  This is particularly useful to use the CLI scripts or for development purposes.
 
 ```
@@ -42,6 +44,7 @@ From a clean environment this may take a while (~20 min).
 
 
 ##### Secondary Method (install as an R package directly)
+
 You can install the released version of RWRtoolkit from [GitHub](https://github.com/dkainer/RWRtoolkit/) with:
 
 ``` r
@@ -51,6 +54,7 @@ devtools::install_github("dkainer/RWRtoolkit")
 
 
 ## Running RWRtoolkit
+
 ### Loading RWRtoolkit:
 
 RWRtoolkit can be run as either an R package or a command line tool depending on your preferences.
@@ -105,11 +109,12 @@ RWRtoolkit can be run as either an R package or a command line tool depending on
 RWRtoolkit enables RandomWalk with Restart (RWR) on both homogenous and heterogeneous multiplex networks.  A heterogeneous network is used when integrating multiple network sources; for example in building a multiplex network with a gene-to-gene network and a disease-to-disease networks and combining them by defining a gene-to-disease network which serves as the bi-partite edges.  RWRtoolkit provides functions for both creating the muliplex networks and running RWR.
 
 ### Usage Options:
+
 The tools provided by RWRtoolkit can be used either directly in R or by use of command line scripts.  The R functions follow the convention of `RWRtoolkit::RWR_func` such as `RWRtoolkit::RWR_make_multiplex`.  View help with `?RWRtoolkit::RWR_make_multiplex`.  The command line scripts are available in `./inst/scripts` and can be used with `Rscript` such as `Rscript run_make_multiplex.R`.  Run `Rscript run_make_multiplex.R -h` to view the help.  You can use these scripts from any location, but remember to either use complete paths or paths local to where you are running when applicable.
 
 ### Initial Step: 
 
-The first step in RWRtoolkit is to build the RData object that represents the multiplex network using `RWR_make_multiplex`.  This function requires an `flist` (a **f**ile **list**) input file which represents the set of networks to create the multiplex object.  Each row in the flist is a triple defining the network: \{file_path, name, group\}.  In a homogenous network the group is all `1`.  In a heterogeneous network, one set of networks will use `1` (e.g. gene-to-gene), the other will use `2` (e.g. disease-to-disease), and `3` for the connecting network (e.g. gene-to-disease).  An example flist for a homegenous networks looks like (seperated by any of the following delimiters  `,\t |;`):
+The first step in RWRtoolkit is to build the RData object that represents the multiplex network using `RWR_make_multiplex`.  This function requires an `flist` (a **f**ile **list**) input file which represents the set of networks to create the multiplex object.  Each row in the flist is a triple defining the network: \{file_path, name, group\}.  In a homogeneous network the group is all `1`.  In a heterogeneous network, one set of networks will use `1` (e.g. gene-to-gene), the other will use `2` (e.g. disease-to-disease), and `3` for the connecting network (e.g. gene-to-disease).  An example flist for a homogeneous networks looks like (separated by any of the following delimiters  `,\t |;`):
 
 |      **file_path**     |    **name**   | **group** |
 |:----------------------:|:-------------:|:---------:|
@@ -152,6 +157,7 @@ Examples
     ```
 
 ### Next Steps: 
+
 The choice of the next script depends on the type of analysis desired.
 RWRtoolkit provides several different workflows outlined below.
 
@@ -253,7 +259,6 @@ of the intersect with multiple metrics.
 between the input network and the gold standard network.
 
 
-​    
 Examples
 
 - **Running in R**
