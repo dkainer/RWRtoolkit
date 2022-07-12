@@ -487,7 +487,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         
         # ranking distribution of hits in bins of 100 for median of folds
         p6 <- ggplot2::ggplot(metrics$res_avg %>% dplyr::filter(InValset==1)) + 
-            ggplot2::geom_histogram(aes(x=rerank), binwidth=100, fill="darkred") + 
+            ggplot2::geom_histogram(ggplot2::aes(x=rerank), binwidth=100, fill="darkred") + 
             ggplot2::xlab("CV median rank (binwidth=100)") + 
             ggplot2::ylab("Geneset genes in bin")
         
