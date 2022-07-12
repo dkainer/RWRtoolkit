@@ -256,6 +256,18 @@ calc_metrics_cv <- function(res_combined, res_avg) {
 
 }
 
+calculate_max_precision <- function(pr, metrics){
+    maxprec <- foreach::foreach(f=pr$fold@.Data, r = pr$recall, .combine = c) %do%
+    {
+        prec <- metrics$res_combined  %>% dplyr::filter(fold==f, REC >= r) %>% dplyr::pull(PREC)
+        if(length(prec)>0)
+            max(prec)
+        else
+            return(0)
+    }
+    maxprec
+}
+
         # save_plots_cv(metrics, geneset, folds, dataPath, modname, outdirPath)
 save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath)
 {
@@ -308,14 +320,8 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         ### Interpolated PRC
         # for each fold, interpolating the PR values at specific recall (x-axis) positions
         pr          <- expand.grid(fold=as.factor(seq(1,folds,by=1)), recall = seq(0,1,by=0.1))
-        pr$maxprec  <- foreach::foreach(f=pr$fold, r = pr$recall, .combine = c) %do%
-            {
-                prec <- metrics$res_combined  %>% dplyr::filter(fold==f, REC >= r) %>% dplyr::pull(PREC)
-                if(length(prec)>0)
-                    max(prec)
-                else
-                    return(0)
-            }
+        pr$maxprec <- calculate_max_precision(pr, metrics)
+
         # make it into a step curve for each fold
         lag1 <- pr %>% dplyr::group_by(fold) %>% dplyr::mutate(maxprec = lag(maxprec,1)) %>% dplyr::slice(-1)
         stepcurve <- rbind(pr, lag1) %>% dplyr::arrange(recall, dplyr::desc(maxprec))
@@ -437,14 +443,9 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         ### Interpolated PRC
         # for each fold, interpolating the PR values at specific recall (x-axis) positions
         pr          <- expand.grid(fold=as.factor(seq(1, folds,by=1)), recall = seq(0,1,by=0.1))
-        pr$maxprec  <- foreach::foreach(f=pr$fold, r = pr$recall, .combine = c) %do%
-            {
-                prec <- metrics$res_combined  %>% dplyr::filter(fold==f, REC >= r) %>% dplyr::pull(PREC)
-                if(length(prec)>0)
-                    max(prec)
-                else
-                    return(0)
-            }
+
+        pr$maxprec <- calculate_max_precision(pr, metrics)
+
         # make it into a step curve for each fold
         lag1 <- pr %>% dplyr::group_by(fold) %>% dplyr::mutate(maxprec = lag(maxprec,1)) %>% dplyr::slice(-1)
         stepcurve <- rbind(pr, lag1) %>% dplyr::arrange(recall, dplyr::desc(maxprec))
