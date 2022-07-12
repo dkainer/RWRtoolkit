@@ -24,22 +24,101 @@ library(RWRtoolkit)
 library(igraph)
 ```
 
-# https://stackoverflow.com/questions/34535155/figure-size-in-r-markdown
-```{r Fig1, echo=FALSE, fig.height=5, figwidth=15}
+### a. Network Layer Generation
+```{r Fig1, echo=FALSE, fig.height=15, figwidth=5}
 set.seed(42)
 layer1 <- igraph::erdos.renyi.game(5, 1/4)
 layer2 <- igraph::erdos.renyi.game(20, 1/8)
 layer3 <- igraph::erdos.renyi.game(10, 1/3)
 
-par(mfrow=c(1,3), mar=c(4,4,4,1), oma=c(0.5,0.5,0.5,0))
 igraph::plot.igraph(layer1)
 igraph::plot.igraph(layer2)
 igraph::plot.igraph(layer3)
 ```
 
-Once the networks have been generated, we can save these as an edge list and generate an flist for `RWR_make_multiplex`. 
-
+Once the networks have been generated, we can save these as an edge list
 ```{r}
 
+## Function to convert edgelists from graphs and save to file. 
+writeEdgelistToFile <- function(filename, layer){
+    # Create Edgelist and rename columns 
+    edgelist <- data.frame(as_edgelist(layer))
+    colnames(edgelist) <- c('node1', 'node2')
+
+    # Generate Weight list of all 1s (i.e. to make network unweighted)
+    weights <- rep(1, nrow(edgelist)) 
+    edgelist$weights <- weights    
+
+    # save to file
+    write.table(edgelist, filename, sep='\t', row.names = FALSE, quote= FALSE)
+}
+
+## Writing Layers to File
+writeEdgelistToFile('layer1.tsv', layer1)
+writeEdgelistToFile('layer2.tsv', layer2)
+writeEdgelistToFile('layer3.tsv', layer3)
+```
+### b. `flist` and Multiplex Generation
+
+To create the multiplex, first we need an flist (i.e. a file containing the file paths, short names, and grouplist ) pointing to our saved files and create our multiplex. We use 1s for all group values because we are making a node-to-node multiplex (i.e. treating all nodes as the same type such as gene to gene). 
+
+```{r}
+# Creating the FLIST
+fileList <- c('layer1.tsv', 'layer2.tsv', 'layer3.tsv')
+shortNameList <- c('L1', 'L2', 'L3')
+
+groupList <- c(1, 1, 1)   
+flistDF <- data.frame(fileList, shortNameList, groupList)
+write.table(flistDF,'flistDF.tsv', sep='\t', col.names = FALSE, row.names = FALSE, quote = FALSE)
+
+multiplexNetworkPath <- './toy_network.Rdata'
+
+RWRtoolkit::RWR_make_multiplex(
+   flist = './flistDF.tsv',
+   output = './toy_network.Rdata',
+   verbose = TRUE
+ )
+```
+
+
+### c. Creating Goldset Genes
+
+We can arbitrarily create a goldset of "functionally related" genes. We can designate genes 1, 2, 3, 4 to be in our original gold set given that we know these genes are highly connected within the previously created arbitrary layers (Typically, gold set genes are those annotated by a similar GO term or exist within the same biochemical pathway). 
 
 ```
+1 goldSet
+2 goldSet
+3 goldSet
+4 goldSet
+```
+
+We can then use our genes 1, 2, 3, 4 as seeds within our network to see how 
+
+```{r}
+goldsetGenes <- c(1, 3, 2, 4)
+goldsetSetIDs <- c('goldSet', 'goldSet', 'goldSet', 'goldSet')
+goldsetDF <- data.frame(goldsetSetIDs, goldsetGenes)
+
+goldsetPath <- './goldsetCV.tsv'
+write.table(goldsetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep='\t', quote=FALSE)
+```
+
+## Running RWR_CV
+
+With our multiplex and gold set genes in place, we can run `RWR_CV`. First, let's run `loo` on the gold set genes to see how well they perform: 
+
+```{r}
+goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
+    dataPath = multiplexNetworkPath,
+    genesetPath = genesetPath,
+    method = 'loo', 
+    restart = 0.7, 
+    tau=c(1,1,1),
+    verbose=TRUE
+)
+
+goldsetCV_looOutput$medianranks
+```
+
+Above, we can see the `$medianranks` output. For each node, the median value is taken across all full ranks (generated from running loo on each of the 4 seed genes).  All data can be seen by accessing the `$fullranks` of the output data. Metrics for each individual node can be found by accessing the `$metrics` data, and metrics for the entire network as a whole can be found under the `$summary` tag. 
+
