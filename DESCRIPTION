@@ -51,8 +51,11 @@ Imports:
     IRkernel,
     RCy3
 Suggests: 
-    testthat, 
-    mockery
+    testthat,
+    mockery,
+    knitr,
+    rmarkdown
 Remotes:
     github::dkainer/RandomWalkRestartMH, 
     bioc::RCy3
+VignetteBuilder: knitr

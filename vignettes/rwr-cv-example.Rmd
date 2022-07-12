@@ -1,0 +1,45 @@
+---
+title: "rwr-cv-example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rwr-cv-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## 1. Introduction
+This document descibes the usage of RWR_CV from the creation of a multiplex network from scratch to the parsing of RWR_CV's output. 
+
+## 2. Setup
+In order to run `RWR_CV`, we will need to generate an `mpo` object from the `RWRtoolkit::RWR_make_multiplex`.  An flist is first required to create an `mpo` object. We can generate random graphs using `igraph::erdos.renyi.game`. 
+
+```{r setup}
+library(RWRtoolkit)
+library(igraph)
+```
+
+# https://stackoverflow.com/questions/34535155/figure-size-in-r-markdown
+```{r Fig1, echo=FALSE, fig.height=5, figwidth=15}
+set.seed(42)
+layer1 <- igraph::erdos.renyi.game(5, 1/4)
+layer2 <- igraph::erdos.renyi.game(20, 1/8)
+layer3 <- igraph::erdos.renyi.game(10, 1/3)
+
+par(mfrow=c(1,3), mar=c(4,4,4,1), oma=c(0.5,0.5,0.5,0))
+igraph::plot.igraph(layer1)
+igraph::plot.igraph(layer2)
+igraph::plot.igraph(layer3)
+```
+
+Once the networks have been generated, we can save these as an edge list and generate an flist for `RWR_make_multiplex`. 
+
+```{r}
+
+
+```
