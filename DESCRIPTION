@@ -53,6 +53,7 @@ Imports:
 Suggests: 
     testthat,
     mockery,
+    gostres,
     knitr,
     rmarkdown
 Remotes:
