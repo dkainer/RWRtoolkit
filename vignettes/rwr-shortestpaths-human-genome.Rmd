@@ -1,0 +1,19 @@
+---
+title: "Using RWR Shortest Paths to Explore Connectivity"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using RWR Shortest Paths to Explore Connectivity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(RWRtoolkit)
+```
