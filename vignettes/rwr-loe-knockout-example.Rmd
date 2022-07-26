@@ -28,6 +28,7 @@ library(gprofiler2)
 Load Previously defined R libraries from the RWR toolkit Kbase networks: 
 ### Expression/Regulation Multiplex
 
+We will load a previously created regulation multiplex from the RWRtoolkit-Data github repository: 
 
 | **Const** | Expression_Regulation_AT_d0.5_v01.RData |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
