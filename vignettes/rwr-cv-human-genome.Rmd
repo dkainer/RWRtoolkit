@@ -26,7 +26,7 @@ From Sullivan et al. `<<CITE KYLE @ GRIN PAPER>>`'s work with the GRIN, we wish 
 library(RWRtoolkit)
 
 humanMultiplexURL <- 'https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true'
-humanMultiplexPath <- url(grinMultiplexURL)
+humanMultiplexPath <- url(humanMultiplexURL)
 
 load(humanMultiplexPath)
 ```
