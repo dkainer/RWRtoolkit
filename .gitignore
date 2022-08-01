@@ -12,3 +12,6 @@
 tmp
 *.DS_Store
 inst/*out*
+inst/doc
+/doc/
+/Meta/
