@@ -1,0 +1,130 @@
+---
+title: "RWR Netscore"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rwr-netscore-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Netscore: 
+## NETSCORE - if you have network layer acting as a gold set you can use it to determine how truthfule the another network is as a biological 
+- You can also test how similar two differnt networks are 
+
+
+## 1. Introduction
+This document descibes the usage of RWR_netscore. This tool performs a network intersect between your input network (`–network`) and a gold truth network (`–gold`). It scores the strength of that intersect with multiple metrics.
+
+## 2. Setup
+Unlike other functions in the RWRtoolkit, the `RWR_netscore` function does not requre an `mpo` R object. Both the network layer (`-network`) and the truth network against which you are testing (`-gold`) are evaluated from their edgelist form: `<Source> <Target> <Weight>`. 
+
+In order to deomonstrate `RWR_Netscore`, we will need to generate a network. 
+
+```{r setup}
+library(ggplot2)
+library(igraph)
+library(patchwork)
+library(RWRtoolkit)
+```
+
+###- Network Layer Generation
+```{r}
+set.seed(42)
+nVertices <- 15
+goldLayer <- igraph::erdos.renyi.game(nVertices, 1/5)
+goldLayer <- set_vertex_attr(goldLayer, "name", 1:nVertices, LETTERS[1:nVertices])
+
+#generate permutation: 
+sampledVertices <- sample(vcount(goldLayer))
+sortedSampledNames <- lapply(sampledVertices, function(x) V(goldLayer)$name[x])
+
+permutedGoldLayer <- permute(goldLayer, sampledVertices)
+permutedGoldLayer <- set_vertex_attr(permutedGoldLayer, "name", 1:nVertices, unlist(sortedSampledNames))
+```
+
+```{r Fig1, echo=FALSE}
+igraph::plot.igraph(goldLayer)
+igraph::plot.igraph(permutedGoldLayer)
+```
+Once the "truth set" gold network has been generated, we can save this as an edge list:
+```{r}
+## Function to convert edgelist from graph and save to file.
+writeEdgelistToFile <- function(filename, layer){
+    # Create Edgelist and rename columns 
+    edgelist <- data.frame(as_edgelist(layer))
+    colnames(edgelist) <- c('node1', 'node2')
+
+    # Generate Weight list of all 1s (i.e. to make network unweighted)
+    weights <- rep(1, nrow(edgelist)) 
+    edgelist$weights <- weights    
+
+    # save to file
+    write.table(edgelist, filename, sep='\t', row.names = FALSE, quote= FALSE)
+}
+
+## Writing Layers to File
+writeEdgelistToFile('gold.tsv', goldLayer)
+writeEdgelistToFile('permutedGold.tsv', permutedGoldLayer)
+```
+
+## 3. Running Netscore 
+First and foremost, let's see a perfect intesect by using our gold network as both the gold and the user network: 
+
+```{r}
+RWRtoolkit::RWR_netscore(gold = './gold.tsv',network = './gold.tsv')
+```
+We see here we have complete overlap with 100% intersection.
+
+Let's now see what happens when we remove vertices from our network: 
+
+```{r}
+testNet <- goldLayer
+netscores <- NULL
+LETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
+
+for (i in 0:nVertices) {
+  if (i != 0){
+    vertexForDeletion <- LETTERS[i]
+    vertexForAddition <- LETTERS[i+nVertices]
+    print(paste('Removing node', vertexForDeletion))
+    testNet <- delete.vertices(testNet, vertexForDeletion)
+    testNet <- add.vertices(testNet, 1, attr= list(name=vertexForAddition))
+    random_target <- sample(V(testNet)$name, 1)
+    print(paste('Adding node', vertexForAddition, 'with target', random_target ))
+    testNet <- add.edges(testNet, c(vertexForAddition, random_target))
+  }
+  filename <- paste('testNet_',i,'.tsv',sep='')
+  writeEdgelistToFile(filename, testNet)
+  
+  igraph::plot.igraph(testNet)
+  netscore <- RWR_netscore(gold='./gold.tsv', filename) 
+  netscore$step <- i
+  netscores <- rbind(netscores, netscore) 
+}
+  
+netscores
+```
+
+Analyzing the output of the `netscores`, we can see that as we remove nodes and their corresponding edges from the network, we can see that the netscore decreases over time. This is expected as we are individually removing gold network nodes and replacing them at each iteration, as illustrated below.  
+
+```{r}
+p1 <- ggplot(data=netscores, aes(x=step)) + 
+  geom_line(aes(y=intersecting_edges), color='darkred') 
+
+p2 <- ggplot(data=netscores, aes(x=step)) + 
+  geom_line(aes(y=nodes_in_common), color='forestgreen') 
+
+p3 <- ggplot(data=netscores, aes(x=step, y=intersect_perc)) +
+  geom_line(color = "steelblue")+
+  geom_point()
+
+p1 + p2 + p3
+```
+
