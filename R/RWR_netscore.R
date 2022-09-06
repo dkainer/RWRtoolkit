@@ -42,7 +42,19 @@
 #' @param outdir Output directory. Default "."
 #' @param write_to_file Also write the result to a file. Default FALSE
 #' @param verbose Verbose mode. Default FALSE
-#' @return Returns a table of metrics as a comparison between networks
+#' @return Returns a table of metrics as a comparison between networks with parameters:
+#'              network:  Original Network input.
+#'              gold:   Gold Network comparison. 
+#'              network_nodes : Number of connected nodes within network (i.e. singleton nodes will not be counted)
+#'              gold_nodes:     Number of nodes within the gold network
+#'              network_edges:  Total number of edges within the network. 
+#'              gold_edges:     Total number of edges within the gold network
+#'              nodes_in_common:  Number of nodes existing within both input and gold networks.
+#'              intersecting_edges: Number of edges existing within both input and gold networks.
+#'              intersect_perc: Percentage of intersecting nodes 
+#'              intersect_score:  @dkainer
+#'              score_per_network_edge: @dkainer
+#'
 #' @examples
 #' 
 #' extdata.dir <- system.file("example_data", package="RWRtoolkit")
