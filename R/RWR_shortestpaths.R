@@ -79,11 +79,17 @@ save_results = function(rwr_result, source_geneset=NULL, target_geneset=NULL, ou
     } else if (!is.null(out_path)) {
         out_path = out_path
     } else {
-        if (is.null(target_geneset)) {
-            out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], outdir=outdir)
-        } else {
-            out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], target_geneset$setid[1], outdir=outdir)
-        }
+        # if (is.null(target_geneset)) {
+        #     out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], outdir=outdir)
+        # } else {
+        #     out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], target_geneset$setid[1], outdir=outdir)
+        # }
+        out_path = get_file_path(
+            "RWR-SPATHS",
+            slug="edges"
+            modname=modname,
+            outdir=outdir
+        )
     }
 
     # If out_path is still NULL, there's nothing to do.
