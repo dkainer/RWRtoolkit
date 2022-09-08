@@ -777,11 +777,23 @@ RWR_CV <- function(
     if (!is.null(outFullRanks)) {
         out_path = outFullRanks
     } else {
-        out_path = get_file_path("RWR-CV_",res_combined$geneset[1],basename(dataPath),modname,
-                                 outdir=outdirPath, ext=".fullranks.tsv")
+        # out_path = get_file_path(
+        #     "RWR-CV_",
+        #     res_combined$geneset[1],
+        #     basename(dataPath),
+        #     modname,
+        #     outdir=outdirPath,
+        #     ext=".fullranks.tsv"
+        # )
+        out_path = get_file_path(
+            "RWR-CV",
+            slug="fullranks"
+            modname=modname,
+            outdir=outdirPath
+        )
     }
     
-    if(write_to_file){
+    if (write_to_file) {
         combined <- res_combined %>%
                         dplyr::group_by(fold) %>%
                         dplyr::slice_head(prop=numranked)
@@ -794,11 +806,17 @@ RWR_CV <- function(
     if (!is.null(outMedianRanks)) {
         out_path = outMedianRanks
     } else {
-        out_path = get_file_path("RWR-CV_",res_avg$geneset[1],basename(dataPath),modname,
-                                 outdir=outdirPath, ext=".medianranks.tsv")
+        # out_path = get_file_path("RWR-CV_",res_avg$geneset[1],basename(dataPath),modname,
+        #                          outdir=outdirPath, ext=".medianranks.tsv")
+        out_path = get_file_path(
+            "RWR-CV",
+            slug="medianranks"
+            modname=modname,
+            outdir=outdirPath
+        )
     }
 
-    if(write_to_file){
+    if (write_to_file) {
         write_table(res_avg %>%
                     dplyr::slice_head(prop=numranked),
                 out_path)
@@ -806,12 +824,24 @@ RWR_CV <- function(
 
     ############# Save metrics  ################################################
 
-    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath),modname,
-                             outdir=outdirPath, ext=".metrics.tsv")
+    # out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath),modname,
+    #                          outdir=outdirPath, ext=".metrics.tsv")
+    out_path = get_file_path(
+        "RWR-CV",
+        slug="metrics"
+        modname=modname,
+        outdir=outdirPath
+    )
     if(write_to_file){write_table(metrics$res_avg, out_path)}
 
-    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath), modname,
-                             outdir=outdirPath, ext=".summary.tsv")
+    # out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath), modname,
+    #                          outdir=outdirPath, ext=".summary.tsv")
+    out_path = get_file_path(
+        "RWR-CV",
+        slug="summary"
+        modname=modname,
+        outdir=outdirPath
+    )
     if(write_to_file){write_table(metrics$summary, out_path)}
 
     ############# Save plots  ##################################################
