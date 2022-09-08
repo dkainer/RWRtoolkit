@@ -114,7 +114,7 @@ describe('RWR_LOE save_plots_loe', {
     # same parameters to test the output file name.
     expected_outputFileName <- RWRtoolkit::get_file_path(
         "RWR-LOE",
-        slug="metrics"
+        slug="metrics",
         modname=modname,
         outdir=outdir,
         ext='.png'

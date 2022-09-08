@@ -787,7 +787,7 @@ RWR_CV <- function(
         # )
         out_path = get_file_path(
             "RWR-CV",
-            slug="fullranks"
+            slug="fullranks",
             modname=modname,
             outdir=outdirPath
         )
@@ -810,7 +810,7 @@ RWR_CV <- function(
         #                          outdir=outdirPath, ext=".medianranks.tsv")
         out_path = get_file_path(
             "RWR-CV",
-            slug="medianranks"
+            slug="medianranks",
             modname=modname,
             outdir=outdirPath
         )
@@ -828,7 +828,7 @@ RWR_CV <- function(
     #                          outdir=outdirPath, ext=".metrics.tsv")
     out_path = get_file_path(
         "RWR-CV",
-        slug="metrics"
+        slug="metrics",
         modname=modname,
         outdir=outdirPath
     )
@@ -838,7 +838,7 @@ RWR_CV <- function(
     #                          outdir=outdirPath, ext=".summary.tsv")
     out_path = get_file_path(
         "RWR-CV",
-        slug="summary"
+        slug="summary",
         modname=modname,
         outdir=outdirPath
     )

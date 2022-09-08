@@ -167,7 +167,7 @@ RWR_netscore <- function(
         # )
         out_path = get_file_path(
             "NETSCORE",
-            slug="scores"
+            slug="scores",
             modname=NULL,
             outdir=outdir
         )

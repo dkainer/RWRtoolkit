@@ -170,7 +170,7 @@ save_plots_loe <- function(metrics, seed_geneset, query_geneset, outdir, modname
     # out_path    <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir = outdir, ext = "metrics.png")
     out_path = get_file_path(
         "RWR-LOE",
-        slug="metrics"
+        slug="metrics",
         modname=modname,
         outdir=outdir,
         ext='.png'
@@ -293,7 +293,7 @@ RWR_LOE <- function(data=NULL, seed_geneset=NULL, query_geneset=NULL, restart=0.
     # }
     out_path = get_file_path(
         "RWR-LOE",
-        slug="ranks"
+        slug="ranks",
         modname=modname,
         outdir=outdir
     )
@@ -309,7 +309,7 @@ RWR_LOE <- function(data=NULL, seed_geneset=NULL, query_geneset=NULL, restart=0.
         # out_path <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir=outdir, ext="metrics.tsv")
         out_path = get_file_path(
             "RWR-LOE",
-            slug="ranks"
+            slug="ranks",
             modname=modname,
             outdir=outdir
         )

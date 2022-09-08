@@ -86,7 +86,7 @@ save_results = function(rwr_result, source_geneset=NULL, target_geneset=NULL, ou
         # }
         out_path = get_file_path(
             "RWR-SPATHS",
-            slug="edges"
+            slug="edges",
             modname=modname,
             outdir=outdir
         )
