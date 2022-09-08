@@ -167,7 +167,6 @@ save_plots_loe <- function(metrics, seed_geneset, query_geneset, outdir, modname
     p4 <- ggplot2::ggplot(metrics$results %>% dplyr::filter(InQueryGeneset==1)) + 
         ggplot2::geom_histogram(ggplot2::aes(x=rank), alpha=1, binwidth=100)
     
-    # out_path    <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir = outdir, ext = "metrics.png")
     out_path = get_file_path(
         "RWR-LOE",
         slug="metrics",

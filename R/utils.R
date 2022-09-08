@@ -247,16 +247,6 @@ write_table = function(table, path, verbose=FALSE) {
     }
 }
 
-# get_file_path = function(..., outdir=NULL, ext='.tsv') {
-#     filename = paste(..., sep='_')
-#     filename = substr(filename, 1, 99)
-#     filename = paste0(filename, ext)
-#     if (!is.null(outdir)) {
-#         filename = file.path(outdir, filename)
-#     }
-#     return(filename)
-# }
-
 get_file_path = function(script_name, slug=NULL, modname=NULL, outdir=NULL, ext='.tsv', sep='__') {
     filename = script_name
     if (!is.null(slug)) {

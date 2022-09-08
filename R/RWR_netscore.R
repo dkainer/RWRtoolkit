@@ -160,11 +160,6 @@ RWR_netscore <- function(
     }
     
     if (write_to_file) {
-        # out_path = get_file_path(
-        #      "NETSCORE_",
-        #      tools::file_path_sans_ext(basename(network)),
-        #      outdir=outdir
-        # )
         out_path = get_file_path(
             "NETSCORE",
             slug="scores",

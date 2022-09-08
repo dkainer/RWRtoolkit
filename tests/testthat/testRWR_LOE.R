@@ -106,17 +106,16 @@ describe('RWR_LOE save_plots_loe', {
     test_metrics <- generate_mock_metrics_list()
     test_seed_geneset <- genesetA_2genes
     test_query_geneset <- genesetB_3genes
-    test_outdir <- "plots"
     test_modname <- "testmod"
-    # expected_outputFileName <- RWRtoolkit::get_file_path(test_seed_geneset$setid[1], test_query_geneset$setid[1], test_modname, outdir=test_outdir, ext="metrics.png")
+    test_outdir <- "plots"
 
     # The save_plots_loe fxn internally calls get_file_path, so we can use the
     # same parameters to test the output file name.
     expected_outputFileName <- RWRtoolkit::get_file_path(
         "RWR-LOE",
         slug="metrics",
-        modname=modname,
-        outdir=outdir,
+        modname=test_modname,
+        outdir=test_outdir,
         ext='.png'
     )
     
