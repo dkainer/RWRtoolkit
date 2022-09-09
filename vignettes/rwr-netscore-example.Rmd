@@ -38,6 +38,9 @@ library(RWRtoolkit)
 ```{r}
 set.seed(42)
 nVertices <- 15
+
+# overwrite letters to contain letter combinations for more options
+LETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
 goldLayer <- igraph::erdos.renyi.game(nVertices, 1/5)
 goldLayer <- set_vertex_attr(goldLayer, "name", 1:nVertices, LETTERS[1:nVertices])
 
@@ -87,7 +90,6 @@ Let's now see what happens when we remove vertices from our network:
 ```{r}
 testNet <- goldLayer
 netscores <- NULL
-LETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
 
 for (i in 0:nVertices) {
   if (i != 0){
@@ -127,4 +129,3 @@ p3 <- ggplot(data=netscores, aes(x=step, y=intersect_perc)) +
 
 p1 + p2 + p3
 ```
-
