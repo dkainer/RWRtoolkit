@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 # Netscore: 
-## NETSCORE - if you have network layer acting as a gold set you can use it to determine how truthfule the another network is as a biological 
+If you have network layer acting as a gold set you can use it to determine how truthfule the another network is. 
 - You can also test how similar two differnt networks are 
 
 
@@ -129,3 +129,69 @@ p3 <- ggplot(data=netscores, aes(x=step, y=intersect_perc)) +
 
 p1 + p2 + p3
 ```
+
+## Working with Real Data
+
+Let's take our multiplex layers from the `RWR_make_multiplex` example (however, because Netscore uses the filepaths we need only the layer files, and do not need to compute the whole multiplex): 
+
+```{r}
+# An example of a default RWR Make Multiplex with an output "network.Rdata"
+extdata.dir <- system.file("example_data", package="RWRtoolkit")
+outdir <- paste(extdata.dir, '/out/rwr_make_multiplex', sep='')
+
+layers.path <- paste(extdata.dir, '/layers/', sep='')
+layers <- list.files(layers.path)
+layer_with_paths <- paste(layers.path, layers, sep='')
+layer_names <- sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(layers))
+```
+
+Now, we have our multiplex data, we can test each of the layers against each other to see how well they're connected. We can easily visualize this with a network such that each vertex is a layer, and the edge thickness illustrates how well the edges score with respect to their intersect:
+
+```{r}
+# Loading the data
+networkEdgeList <- NULL
+
+for (i in 1:length(layers)){
+    sourcePath <- layer_with_paths[i]
+    sourceName <- layer_names[i]
+    
+    for (j in 1:length(layers)){
+      if (i == j) next
+      targetPath <- layer_with_paths[j]
+      targetName <- layer_names[j]
+      
+      netscore <- RWR_netscore(sourcePath, targetPath)
+      intersectPct <- netscore$intersect_perc
+      
+      edgeRow <- list(source=sourceName, target=targetName, weight=intersectPct)
+      networkEdgeList <- rbind(networkEdgeList, edgeRow)      
+    }
+}
+rownames(networkEdgeList) <- NULL
+networkEdgeListDF <- as.data.frame(networkEdgeList)
+
+layerNetwork <- igraph::graph_from_data_frame(networkEdgeListDF)
+weights <- unlist(networkEdgeList[,3 ]) / 100
+scale <- colorRamp(c('cyan','tomato'))
+colorLegend <- apply(scale(weights), 1, function(x) rgb(x[1]/255,x[2]/255,x[3]/255))
+
+E(layerNetwork)$weight <- weights * 5
+E(layerNetwork)$color <- colorLegend
+
+plot.igraph(layerNetwork, edge.width=E(layerNetwork)$weight, layout=igraph::layout_in_circle(layerNetwork))
+```
+
+In the above network, we can see that all of our nodes do have some highly intersecting scores. There is nothing specifically wrong with having a low score between layers, however, it is desirable to be sure that your layers at least highly intersect with some other layers within your network (i.e. having a layer with low intersection to all other layers _could_ likely result in low scores for all nodes within that network during a random walk). 
+
+
+
+
+todo
+show INTERSECTION OF PERMUTED**
+
+
+
+In CV: look at full ranks will have the ranked genes with respect to the seed genes. You'll have length(V(g)) * length(seeds)
+
+ping kyle to go over loo junks
+
