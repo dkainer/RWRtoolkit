@@ -14,29 +14,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Average precision vs AUPRC
-- This is curious - read up on me 
-
-
-## TopologicalEnrichment
-- Do null distribution fo fake go terms with bullshit random genes in them, then test against the actual output to calculate p value. 
-- Do LOO, save, for the futue when you want to do mapman or kegg, then does preceision calculations against go terms that you give it.
-    - Could do.... calculate topGO. 
-  -David wants to inclue the Oboe file? 
-    using ontology index (get ontology then loads an oboe file and makes a DF )
-
-# Netscore: 
-## NETSCORE - if you have network layer acting as a gold set you can use it to determine how truthfule the another network is as a biological 
-- You can also test how similar two differnt networks are 
-
-
-Give demo of calculating tau. 
-
-Run netscore on each individual layer w/ go network against all others ( OR some other layer - it's just 1v1 layer a to b )
-
-Explain what the outputs are saying. 
-
-# GGRAPH:  https://paulvanderlaken.com/2017/10/31/network-visualization-with-igraph-and-ggraph/
 ## 1. Introduction
 This document descibes the usage of RWR_CV from the creation of a multiplex network from scratch to the parsing of RWR_CV's output. 
 
