@@ -167,7 +167,13 @@ save_plots_loe <- function(metrics, seed_geneset, query_geneset, outdir, modname
     p4 <- ggplot2::ggplot(metrics$results %>% dplyr::filter(InQueryGeneset==1)) + 
         ggplot2::geom_histogram(ggplot2::aes(x=rank), alpha=1, binwidth=100)
     
-    out_path    <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir = outdir, ext = "metrics.png")
+    out_path = get_file_path(
+        "RWR-LOE",
+        slug="metrics",
+        modname=modname,
+        outdir=outdir,
+        ext='.png'
+    )
     png(out_path, width = 1200, height=1000)
     
     grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
@@ -279,11 +285,17 @@ RWR_LOE <- function(data=NULL, seed_geneset=NULL, query_geneset=NULL, restart=0.
     print(head(results$RWRM_Results))
 
     # Define output path 
-    if(!is.null(query_geneset)) {
-        out_path = get_file_path("RWR-LOE", seed_geneset$setid[1],"vs", query_geneset$setid[1], modname, outdir=outdir, ext=".ranks.tsv")
-    } else {
-        out_path = get_file_path("RWR-LOE", seed_geneset$setid[1], modname, outdir=outdir, ext=".ranks.tsv")
-    }
+    # if(!is.null(query_geneset)) {
+    #     out_path = get_file_path("RWR-LOE", seed_geneset$setid[1],"vs", query_geneset$setid[1], modname, outdir=outdir, ext=".ranks.tsv")
+    # } else {
+    #     out_path = get_file_path("RWR-LOE", seed_geneset$setid[1], modname, outdir=outdir, ext=".ranks.tsv")
+    # }
+    out_path = get_file_path(
+        "RWR-LOE",
+        slug="ranks",
+        modname=modname,
+        outdir=outdir
+    )
     message(paste('Output path:', out_path))
 
     # Save the table of results, ie, scores and ranks for each gene in the network.
@@ -293,7 +305,13 @@ RWR_LOE <- function(data=NULL, seed_geneset=NULL, query_geneset=NULL, restart=0.
     if (!is.null(query_geneset) & eval) {
         message("evaluating metrics for finding query genes from seeds")
         metrics  <- calc_metrics_loe(results$RWRM_Results, seed_geneset, query_geneset)
-        out_path <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir=outdir, ext="metrics.tsv")
+        # out_path <- get_file_path(seed_geneset$setid[1], query_geneset$setid[1], modname, outdir=outdir, ext="metrics.tsv")
+        out_path = get_file_path(
+            "RWR-LOE",
+            slug="ranks",
+            modname=modname,
+            outdir=outdir
+        )
         write_table(metrics$summary, out_path)
         message(paste('Saved metrics summary to file:', out_path))
         save_plots_loe(metrics, seed_geneset, query_geneset, outdir, modname)

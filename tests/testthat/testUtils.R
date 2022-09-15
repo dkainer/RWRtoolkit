@@ -253,6 +253,15 @@ describe('get_file_path', {
 
         expect_equal(outputFileName, expectedFileName)
     })
+    it('appends the slug to the base filename of the scriptname with default extension', {
+        baseFileName <- 'baseFile'
+        slugName <- 'slugName'
+
+        outputFileName <- RWRtoolkit::get_file_path(baseFileName, slugName)
+
+        expectedFileName <- paste(baseFileName, '__', slugName, '.tsv', sep='')
+        expect_equal(expectedFileName, outputFileName)
+    })
 })
 
 describe('dump_layers', {
