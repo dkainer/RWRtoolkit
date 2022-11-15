@@ -30,24 +30,33 @@
 # Internal Functions
 ########################################################################
 
-merge_networks <- function(nw.mpo) {
+merge_networks <- function(nw_mpo) {
     # Merge the subnetworks into one big network.
     message("Merging network layers down...")
-    nl          <- nw.mpo$Number_of_Layers
-    nw_dflist   <- lapply(nw.mpo[1:nl], igraph::as_data_frame)
+    nl          <- nw_mpo$Number_of_Layers
+    print("merged down")
+    nw_dflist   <- lapply(nw_mpo[1:nl], igraph::as_data_frame)
     nw_df       <- do.call(rbind, nw_dflist)
+    print("bound")
     nw_df       <- nw_df %>% 
                     dplyr::group_by(type) %>%
                     dplyr::mutate(weightnorm = weight / sum(weight))
+    print("grouped")
     nw_merged   <- igraph::graph_from_data_frame(nw_df, directed = FALSE)
     message("Done.")
     return(nw_merged)
 }
 
-get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads=1) {
-    # For each gene in source_geneset, get the shortest path to each gene in target_geneset.
+get_shortest_paths <- function(
+                        nw_merged,
+                        source_geneset,
+                        target_geneset,
+                        threads=1) {
+    # For each gene in source_geneset, get the 
+    # shortest path to each gene in target_geneset.
+
     targets <- which(igraph::V(nw_merged)$name %in% target_geneset$gene)
-    wt <- 1-igraph::E(nw_merged)$weightnorm
+    wt <- 1 - igraph::E(nw_merged)$weightnorm
 
     message(sprintf(
         "Calculating Shortest paths for %d x %d = %d gene pairs",
@@ -59,7 +68,7 @@ get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads
     doParallel::registerDoParallel(cores = threads)
     res <- foreach::foreach(g = source_geneset$gene, .combine = rbind) %:%
         foreach::foreach(t = targets, .combine = rbind) %dopar% {
-            # Only get the shortest path if the start and end 
+            # Only get the shortest path if the start and end
             # nodes are not the same!
             if (igraph::V(nw_merged)$name[t] != g) {
                 sp <- igraph::shortest_paths(
@@ -70,7 +79,7 @@ get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads
                                 weights = wt)
 
 
-                sg <- igraph::as_data_frame(
+                sg_df <- igraph::as_data_frame(
                         igraph::induced_subgraph(
                             nw_merged,
                             vids = sp$vpath[[1]],
@@ -79,13 +88,21 @@ get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads
                         )
 
 
-                sg$pathname <- paste(g, igraph::V(nw_merged)$name[t], sep="_")
+                sg_df$pathname <- paste(g,
+                                        igraph::V(nw_merged)$name[t],
+                                        sep = "_")
 
-                sg$pathlength <- length(sp$vpath[[1]])
+                sg_df$pathlength <- length(sp$vpath[[1]])
 
-                path_string <- paste(lapply(sp$vpath[[1]], function(x) igraph::V(nw_merged)$name[x]), collapse='->')
-                sg$pathelements <- path_string
-                sg
+                path_string <- paste(
+                                lapply(
+                                    sp$vpath[[1]],
+                                    function(x) igraph::V(nw_merged)$name[x]),
+                                    collapse = "->"
+                                )
+
+                sg_df$pathelements <- path_string
+                sg_df
             }
         }
     doParallel::stopImplicitCluster()
@@ -94,35 +111,47 @@ get_shortest_paths = function(nw_merged, source_geneset, target_geneset, threads
     return(res)
 }
 
-save_results = function(rwr_result, source_geneset=NULL, target_geneset=NULL, outdir=NULL, out_path=NULL) {
+save_results <- function(rwr_result,
+                        source_geneset = NULL,
+                        target_geneset = NULL,
+                        outdir = NULL,
+                        out_path = NULL) {
+
     # First, generate the out_path.
     if (is.null(outdir) && is.null(out_path)) {
-        warning('You must provide either `outdir` or `out_path`.')
+        warning("You must provide either `outdir` or `out_path`.")
     } else if (!is.null(out_path)) {
-        out_path = out_path
+        out_path <- out_path
     } else {
         if (is.null(target_geneset)) {
-            out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], outdir=outdir)
+            out_path <- get_file_path(
+                "RWR-SPATHS_",
+                source_geneset$setid[1],
+                outdir = outdir)
         } else {
-            out_path = get_file_path("RWR-SPATHS_", source_geneset$setid[1], target_geneset$setid[1], outdir=outdir)
+            out_path <- get_file_path(
+                "RWR-SPATHS_",
+                source_geneset$setid[1],
+                target_geneset$setid[1],
+                outdir = outdir)
         }
     }
 
     # If out_path is still NULL, there's nothing to do.
     if (!is.null(out_path)) {
         if (!dir.exists(dirname(out_path))) {
-            dir.create(dirname(out_path), recursive=TRUE)
+            dir.create(dirname(out_path), recursive = TRUE)
         }
-
         write_table(rwr_result, out_path)
-        message(sprintf('Saved results to file:\n  %s', out_path))
+        message(sprintf("Saved results to file:\n  %s", out_path))
     }
 }
 
-open_cytoscape = function(res, source_geneset, target_geneset) {
+open_cytoscape <- function(res, source_geneset, target_geneset) {
     # Visualize in Cyto.
-    ig <- igraph::graph_from_data_frame(res, directed=F)
-    igraph::V(ig)$endpoint <- igraph::V(ig)$name %in% c(source_geneset$gene,target_geneset$gene)
+    ig <- igraph::graph_from_data_frame(res, directed = F)
+    igraph::V(ig)$endpoint <- igraph::V(ig)$name %in%
+                                 c(source_geneset$gene, target_geneset$gene)
     RCy3::cytoscapePing()
     RCy3::createNetworkFromIgraph(ig,"myIgraph")
     RCy3::setNodeBorderColorDefault(new.color = "#666666")
@@ -134,18 +163,17 @@ extract_node_from_row <- function (
     path_df,
     node_name,
     known_path = NULL,
-    is_penultimate = F,
+    is_penultimate = FALSE,
     ultimate = NULL) {
 
     rows <- path_df[path_df$to == node_name | path_df$from == node_name, ]
 
-    node_in_to_data <- if (is_penultimate)
-                            { node_name %in% rows$to & ultimate %in% rows$from }
-                        else { node_name %in% rows$to }
-
-    if (is_penultimate) {
-        node_in_to_data <- node_in_to_data &
-    }
+    node_in_to_data <- if (is_penultimate) {
+                            node_name %in% rows$to && ultimate %in% rows$from
+                        }
+                        else {
+                                node_name %in% rows$to
+                        }
 
     from_column <- if (node_in_to_data) "to" else "from"
     from_node <- unique(rows[[from_column]])
@@ -168,8 +196,7 @@ extract_node_from_row <- function (
 
     # TODO: Refactor to be less convoluted.
     if (is_penultimate && !is.null(ultimate)) {
-        # the penultimate node has nodes within the from and to as it 
-        # 
+        # the penultimate node has nodes within the from and to as it
 
         if (ultimate %in% from_node) {
             from_node <- unlist(
@@ -179,6 +206,7 @@ extract_node_from_row <- function (
                     )
                )
         }
+
         if (ultimate %in% to_node) {
             to_node <- unlist(
                 lapply(
@@ -285,7 +313,7 @@ extract_highest_scoring_path <- function(
 #' @param write_to_file Also write the results to a file.  Default FALSE
 #' @return Returns a data frame.
 #' @examples
-#' 
+#'
 #' # An example of Running RWR_ShortestPaths
 #'
 #' extdata.dir <- system.file("example_data", package="RWRtoolkit")
@@ -295,7 +323,7 @@ extract_highest_scoring_path <- function(
 #' geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
 #' geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
 #' outdir <- paste(extdata.dir, '/out/rwr_shortestpath', sep='')
-#' 
+#'
 #' rwr_shortest_path_output <- RWR_ShortestPaths(data=multiplex_object_filepath,
 #'                                             source_geneset=geneset1_filepath,
 #'                                             target_geneset=geneset2_filepath,
@@ -305,48 +333,55 @@ extract_highest_scoring_path <- function(
 #'
 #'
 #' @export
-RWR_ShortestPaths <- function(
-        multiplex_filepath=NULL,
-        source_geneset=NULL,
-        target_geneset=NULL,
-        outdir='.',
-        out_path=NULL,
-        threads=parallel::detectCores-1,
-        cyto=FALSE,
-        verbose=FALSE,
-        write_to_file=FALSE
+RWR_ShortestPaths <- function(                  #nolint
+        multiplex_filepath = NULL,
+        source_geneset = NULL,
+        target_geneset = NULL,
+        outdir = ".",
+        out_path = NULL,
+        threads = parallel::detectCores - 1,
+        cyto = FALSE,
+        verbose = FALSE,
+        write_to_file = FALSE
     ) {
 
+    nw_mpo <- NULL
     # This is a saved version of the multiplex network and adj matrix.
     load(multiplex_filepath)
-
+    nw_mpo <- nw.mpo  #nolint - loaded from filepath
     if (verbose) {
-        message('Loaded data:')
+        message("Loaded data:")
         print(ls())
     }
 
-    # If geneset is NULL, get shortest paths from source_geneset to source_geneset.
+    # If geneset is NULL, get shortest paths 
+    # from source_geneset to source_geneset.
     if (is.null(target_geneset)) {
-        target_geneset = source_geneset
+        target_geneset <- source_geneset
     }
     # Gene set 1.
-    message('Getting source gene set ...')
-    source_geneset_plus_extras = load_geneset(source_geneset, nw.mpo, verbose)
-    source_genes = source_geneset_plus_extras[[1]]
+    message("Getting source gene set ...")
+    source_geneset_plus_extras <- load_geneset(source_geneset, nw_mpo, verbose)
+    source_genes <- source_geneset_plus_extras[[1]]
     message(head(source_genes))
 
     # Gene set 2.
-    message('Getting target gene set ...')
-    target_geneset_plus_extras = load_geneset(target_geneset, nw.mpo, verbose)
-    target_genes = target_geneset_plus_extras[[1]]
+    message("Getting target gene set ...")
+    target_geneset_plus_extras <- load_geneset(target_geneset, nw_mpo, verbose)
+    target_genes <- target_geneset_plus_extras[[1]]
     message(head(target_genes))
 
-    nw_merged = merge_networks(nw.mpo)
+    nw_merged <- merge_networks(nw_mpo)
 
-    res = get_shortest_paths(nw_merged, source_genes, target_genes, threads)
-    
+    res <- get_shortest_paths(nw_merged, source_genes, target_genes, threads)
+
     if (write_to_file) {
-        save_results(res, source_geneset=source_genes, target_geneset=target_genes, outdir=outdir, out_path=out_path)
+        save_results(
+            res,
+            source_geneset = source_genes,
+            target_geneset = target_genes,
+            outdir = outdir,
+            out_path = out_path)
     }
 
     if (cyto) {
