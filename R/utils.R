@@ -5,19 +5,21 @@
 # 
 # This file is part of RWRtoolkit.
 # 
-# RWRtoolkit is free software: you can redistribute it and/or modify it under the terms of the 
-# GNU General Public License as published by the Free Software Foundation, either version 3
-# of the License, or (at your option) any later version.
-# 
-# RWRtoolkit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+# RWRtoolkit is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# RWRtoolkit is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with RWRtoolkit. 
-# If not, see <https://www.gnu.org/licenses/>.
+#
+# You should have received a copy of the GNU General Public License along with
+# RWRtoolkit. If not, see <https://www.gnu.org/licenses/>.
 ########################################################################
 
-load_geneset = function(path, nw.mpo=NULL, verbose=FALSE) {
+load_geneset <- function(path, nw.mpo = NULL, verbose=FALSE) {
     if (is.null(path)) {
         return(NULL)
     } else if (!file.exists(path)) {
@@ -295,7 +297,7 @@ generate_randomset <- function(mpo, n=10, name="RAND", outdir=NULL){
     random_nodes
 }
 
-## Layout function for plots: 
+## Layout function for plots:
 
 vplayout <- function(x, y) {
     grid::viewport(layout.pos.row = x, layout.pos.col = y)
@@ -303,3 +305,29 @@ vplayout <- function(x, y) {
 
 
 # End.
+
+# Load the multiplex network and adjacency matrices 
+# (i.e. nw.mpo, nw.adj, nw.adjnorm)
+load_multiplex_data <- function(filepath_or_url) {
+    print(filepath_or_url)
+    if (is.null(filepath_or_url)) 
+        stop("ERROR: Mandatory arguement data is missing.")
+
+    is_url <- stringr::str_detect("http", filepath_or_url)
+
+    if (!is_url && !file.exists(filepath_or_url)) {
+         stop("ERROR: Rdata input file does not exist: ", filepath_or_url)
+    }
+
+    updated_file_path <- if (is_url) url(filepath_or_url) else filepath_or_url
+    # this contains the multiplex network layers and adj matrix
+    load(updated_file_path)
+
+    if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object") #nolint
+
+    return(list(
+        nw.mpo = nw.mpo,
+        nw.adj = nw.adj,
+        nw.adjnorm = nw.adjnorm
+    ))
+}
