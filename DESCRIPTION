@@ -47,9 +47,10 @@ Imports:
     remotes,
     iterators,
     dplyr,
-    RandomWalkRestartMH ,
+    RandomWalkRestartMH,
     IRkernel,
-    RCy3
+    RCy3,
+    stringr
 Suggests: 
     testthat,
     mockery,
