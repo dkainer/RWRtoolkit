@@ -306,14 +306,13 @@ vplayout <- function(x, y) {
 
 # End.
 
-# Load the multiplex network and adjacency matrices 
+# Load the multiplex network and adjacency matrices
 # (i.e. nw.mpo, nw.adj, nw.adjnorm)
 load_multiplex_data <- function(filepath_or_url) {
-    print(filepath_or_url)
-    if (is.null(filepath_or_url)) 
+    if (is.null(filepath_or_url))
         stop("ERROR: Mandatory arguement data is missing.")
 
-    is_url <- stringr::str_detect("http", filepath_or_url)
+    is_url <- stringr::str_detect(filepath_or_url, pattern = "http")
 
     if (!is_url && !file.exists(filepath_or_url)) {
          stop("ERROR: Rdata input file does not exist: ", filepath_or_url)
