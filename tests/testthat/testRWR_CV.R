@@ -44,7 +44,7 @@ generate_expected_rwr_cv_layer <- function(NodeNames, Score, InValset, num_in_ne
     data.frame(NodeNames, Score, rank, InValset, num_in_network, num_seeds, num_leftout, networks, fold, modname, geneset, seed, leftout, method)
 }
 
-describe('updateFoldsByMethod_cv', {
+describe('update_folds_by_method', {
     # Basic 2 genes
     setid<- c('setA', 'setA')
     gene<- c('1','2')
@@ -55,7 +55,7 @@ describe('updateFoldsByMethod_cv', {
         method <-  'unsupported_method'
         numFolds <- 5
 
-        expect_error(RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)) 
+        expect_error(RWRtoolkit::update_folds_by_method(geneset, method, numFolds)) 
     })    
 
     it ('sets folds to the number of rows within the geneset for LOO', {
@@ -65,7 +65,7 @@ describe('updateFoldsByMethod_cv', {
         expected_chunks <- NULL
         expected_method <- 'loo'
 
-        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
+        output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -84,7 +84,7 @@ describe('updateFoldsByMethod_cv', {
         expected_folds <- 3
         expected_method <- 'loo'
 
-        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
+        output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -99,7 +99,7 @@ describe('updateFoldsByMethod_cv', {
         expected_chunks <- NULL
         expected_method <- 'singletons'
 
-        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, NA)
+        output <- RWRtoolkit::update_folds_by_method(geneset, method, NA)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -117,7 +117,7 @@ describe('updateFoldsByMethod_cv', {
         expected_chunks <- NULL
         expected_method <- 'loo'
 
-        output <- expect_warning(updateFoldsByMethod_cv(geneset, method, numFolds))
+        output <- expect_warning(update_folds_by_method(geneset, method, numFolds))
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -138,8 +138,8 @@ describe('updateFoldsByMethod_cv', {
         expected_method <- 'kfold'
 
         mock_sample <- mock(sequence(3), gene)
-        stub(RWRtoolkit::updateFoldsByMethod_cv, 'sample', mock_sample)
-        output <- RWRtoolkit::updateFoldsByMethod_cv(geneset, method, numFolds)
+        stub(RWRtoolkit::update_folds_by_method, 'sample', mock_sample)
+        output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
 
         expect_equal(output[[1]], expected_folds)
         expect_equal(output[[2]], geneset)
@@ -443,7 +443,7 @@ describe("RWR", {
         second_mockLayer <- generate_expected_rwr_cv_layer(second_fold_nodes, second_fold_scores, second_inValSet, num_in_network, rep(2, repititions), leftout, second_fold_seeds, networks, c('setA','setA', 'setA'), rep(method,repititions), num_seeds, num_leftout, name)
         third_mockLayer <- generate_expected_rwr_cv_layer(third_fold_nodes, third_fold_scores, third_inValSet, num_in_network, rep(3, repititions), leftout, third_fold_seeds, networks, c('setA','setA', 'setA'), rep(method,repititions), num_seeds, num_leftout, name)
 
-        mock_updateFoldsByMethod_cv <- mock(list(expected_folds, geneset_3genes, expected_chunks, method))
+        mock_update_folds_by_method <- mock(list(expected_folds, geneset_3genes, expected_chunks, method))
         mock_extract_leftout_and_seed_genes_cv <- mock(first_mockExtractReturn, 
                                                     second_mockExtractReturn, 
                                                     third_mockExtractReturn)
@@ -455,7 +455,7 @@ describe("RWR", {
                                     third_mockLayer)
                                     
         # Stub functions with mocks
-        stub(RWRtoolkit::RWR, 'updateFoldsByMethod_cv', mock_updateFoldsByMethod_cv)
+        stub(RWRtoolkit::RWR, 'update_folds_by_method', mock_update_folds_by_method)
         stub(RWRtoolkit::RWR, 'extract_leftout_and_seed_genes_cv', mock_extract_leftout_and_seed_genes_cv)
         stub(RWRtoolkit::RWR, 'RandomWalkRestartMH::Random.Walk.Restart.Multiplex', mock_RWRMH)
         stub(RWRtoolkit::RWR, 'create_rankings_cv', mock_create_rankings_cv)
@@ -464,8 +464,8 @@ describe("RWR", {
         response <- RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
 
         expect_equal(response, expected_response)
-        expect_args(mock_updateFoldsByMethod_cv, 1, geneset_3genes, method, expected_folds)
-        expect_called(mock_updateFoldsByMethod_cv, 1)
+        expect_args(mock_update_folds_by_method, 1, geneset_3genes, method, expected_folds)
+        expect_called(mock_update_folds_by_method, 1)
         expect_args(mock_extract_leftout_and_seed_genes_cv, 1, geneset_3genes, method, 1, expected_chunks)
         expect_args(mock_extract_leftout_and_seed_genes_cv, 2, geneset_3genes, method, 2, expected_chunks)
         expect_args(mock_extract_leftout_and_seed_genes_cv, 3, geneset_3genes, method, 3, expected_chunks)

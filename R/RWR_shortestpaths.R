@@ -34,14 +34,11 @@ merge_networks <- function(nw_mpo) {
     # Merge the subnetworks into one big network.
     message("Merging network layers down...")
     nl          <- nw_mpo$Number_of_Layers
-    print("merged down")
     nw_dflist   <- lapply(nw_mpo[1:nl], igraph::as_data_frame)
     nw_df       <- do.call(rbind, nw_dflist)
-    print("bound")
     nw_df       <- nw_df %>% 
                     dplyr::group_by(type) %>%
                     dplyr::mutate(weightnorm = weight / sum(weight))
-    print("grouped")
     nw_merged   <- igraph::graph_from_data_frame(nw_df, directed = FALSE)
     message("Done.")
     return(nw_merged)
@@ -159,21 +156,22 @@ open_cytoscape <- function(res, source_geneset, target_geneset) {
 }
 
 
-extract_node_from_row <- function (
-    path_df,
-    node_name,
-    known_path = NULL,
-    is_penultimate = FALSE,
-    ultimate = NULL) {
 
-    rows <- path_df[path_df$to == node_name | path_df$from == node_name, ]
+extract_node_from_row <- function(path_df,
+                                  node_name,
+                                  known_path = NULL,
+                                  is_penultimate = FALSE,
+                                  ultimate = NULL) {
+    print("Known path")
+    print(known_path)
+    rows <- path_df[(path_df$to == node_name & !path_df$from %in% known_path) |
+        (path_df$from == node_name & !path_df$to %in% known_path), ]
 
     node_in_to_data <- if (is_penultimate) {
-                            node_name %in% rows$to && ultimate %in% rows$from
-                        }
-                        else {
-                                node_name %in% rows$to
-                        }
+        node_name %in% rows$to && ultimate %in% rows$from
+    } else {
+        node_name %in% rows$to
+    }
 
     from_column <- if (node_in_to_data) "to" else "from"
     from_node <- unique(rows[[from_column]])
@@ -182,10 +180,11 @@ extract_node_from_row <- function (
     to_node <- unique(rows[[to_column]])
 
     to_node <- unlist(
-                    lapply(to_node,
-                           function(x) if (x %in% known_path) NULL else x
-                    )
-                )
+        lapply(
+            to_node,
+            function(x) if (x %in% known_path) NULL else x
+        )
+    )
 
     from_node <- unlist(
         lapply(
@@ -203,8 +202,8 @@ extract_node_from_row <- function (
                 lapply(
                     from_node,
                     function(x) if (x == ultimate) x else NULL
-                    )
-               )
+                )
+            )
         }
 
         if (ultimate %in% to_node) {
@@ -212,11 +211,12 @@ extract_node_from_row <- function (
                 lapply(
                     to_node,
                     function(x) if (x == ultimate) x else NULL
-                    )
                 )
+            )
         }
     }
 
+    print("end of func")
     list(
         from_column = from_column,
         from = from_node,
@@ -225,12 +225,66 @@ extract_node_from_row <- function (
     )
 }
 
+
+
+########################################################################
+# Main Function
+########################################################################
+
+#'  Extract Highest Scoring Path
+#'
+#' `extract_highest_scoring_path`  parses through the dataframe output of
+#' RWR_ShortestPaths and extracts the highest valued edge per layer of a
+#' user defined path. The method with which these edges are extracted can
+#'  be either by the normalized weight (default) or by the non-normalized
+#' weight.
+#'
+#' @param shortest_paths_df A dataframe denoting the shortest paths of
+#'                          between a series of predefined genes. The output
+#'                          of RWR_ShortestPaths
+#' @param desired_path      A string denoting the desired path that the user
+#'                          wishes to extract (must match pathname of an
+#'                          existing path within the shorest_paths_df).
+#' @param weight_type       A string determining the weight used to determine
+#'                          the highest weighted path. Options:
+#'                          "weightnorm" (Default)  uses normalized edges by
+#'                                      edgeweight_i / N_vertices_in_layer
+#'
+#'                          "weight" uses edge weight alone.
+#' @return Returns a data frame following the path with the highest edge weights
+#' @examples
+#'
+#' # An example of Running `extract_highest_scoring_path`
+#'
+#' extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+#' multiplex_object_filepath <- paste(extdata.dir,
+#'     "/string_interactions.Rdata",
+#'     sep = ""
+#' )
+#' geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
+#' geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
+#' outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
+#'
+#' rwr_shortest_path_output <- RWR_ShortestPaths(
+#'     data = multiplex_object_filepath,
+#'     source_geneset = geneset1_filepath,
+#'     target_geneset = geneset2_filepath,
+#'     write_to_file = TRUE,
+#'     outdir = outdir
+#' )
+#'
+#' optimal_path <- extract_highest_scoring_path(
+#'                          rwr_shortest_path_output,
+#'                          desired_path = "TPI1_PMM2")
+#'
+#'
+#' @export
 extract_highest_scoring_path <- function(
     shortest_paths_df,
     desired_path,
     weight_type="normalized") {
 
-    weight_column <- if (weight_type == "normalized") "weightnorm" else "weight"
+    weight_column <- if (weight_type == "weightnorm") "weightnorm" else "weight"
     path_rows_df <- shortest_paths_df[
                         shortest_paths_df$pathname == desired_path,
                     ]
@@ -264,24 +318,17 @@ extract_highest_scoring_path <- function(
 
         top_row <- desired_rows[which.max(desired_rows[[weight_column]]), ]
 
-        print(node_information)
         top_row$from <- node_information$from
         top_row$to <- node_information$to
 
-        print(top_row)
         known_path <- append(known_path, node)
         path_rows <- rbind(path_rows, top_row)
     }
     path_rows
 }
 
-
-########################################################################
-# Main Function
-########################################################################
-
 #' RWR Shortest Paths
-#' 
+#'
 #' `RWR_ShortestPaths` Find shortest paths between genes in the given gene
 #' sets. These will be output as a table of edges. There are two ways to use
 #' this:
@@ -339,7 +386,7 @@ RWR_ShortestPaths <- function(                  #nolint
         target_geneset = NULL,
         outdir = ".",
         out_path = NULL,
-        threads = parallel::detectCores - 1,
+        threads = 1,
         cyto = FALSE,
         verbose = FALSE,
         write_to_file = FALSE

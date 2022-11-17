@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-
+# UNDER CONSTRUCTION
 
 Given some set of seeds: 
 
@@ -25,7 +25,7 @@ From Sullivan et al. `<<CITE KYLE @ GRIN PAPER>>`'s work with the GRIN, we wish 
 ```{r setup}
 library(RWRtoolkit)
 
-humanMultiplexURL <- 'https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true'
+humanMultiplexURL <- "https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true"
 humanMultiplexPath <- url(humanMultiplexURL)
 
 load(humanMultiplexPath)
@@ -34,18 +34,24 @@ load(humanMultiplexPath)
 
 Generating the gene sets from scratch: 
 ```{r}
-GABAergicSeedGenes <- c( 'ENSG00000171132', 'ENSG00000109189', 'ENSG00000120907', 'ENSG00000169750', 'ENSG00000171862', 'ENSG00000188822',
-'ENSG00000011677','ENSG00000022355','ENSG00000163812','ENSG00000188603','ENSG00000102287','ENSG00000133703','ENSG00000109158','ENSG00000169760',
-'ENSG00000118432','ENSG00000135312','ENSG00000168748','ENSG00000164129','ENSG00000169992','ENSG00000115896','ENSG00000163285','ENSG00000146242',
-'ENSG00000007516','ENSG00000113327','ENSG00000174576','ENSG00000106462','ENSG00000136854','ENSG00000109572','ENSG00000182256','ENSG00000170759',
-'ENSG00000186297','ENSG00000149295','ENSG00000173805','ENSG00000145864','ENSG00000151834','ENSG00000214285','ENSG00000160446','ENSG00000010322',
-'ENSG00000145863','ENSG00000152910','ENSG00000128271','ENSG00000139182','ENSG00000154822','ENSG00000122733','ENSG00000006128','ENSG00000185666',
-'ENSG00000180914','ENSG00000163485','ENSG00000157103' )
-seedGeneSets <- GAGAergicrep('GAGAergic_GO', length(GABAergicSeedGenes))
+GABAergicSeedGenes <- c( "ENSG00000171132", "ENSG00000109189", 
+"ENSG00000120907", "ENSG00000169750", "ENSG00000171862", "ENSG00000188822",
+"ENSG00000011677", "ENSG00000022355", "ENSG00000163812", "ENSG00000188603",
+"ENSG00000102287", "ENSG00000133703", "ENSG00000109158", "ENSG00000169760",
+"ENSG00000118432", "ENSG00000135312", "ENSG00000168748", "ENSG00000164129",
+"ENSG00000169992", "ENSG00000115896", "ENSG00000163285", "ENSG00000146242",
+"ENSG00000007516", "ENSG00000113327", "ENSG00000174576", "ENSG00000106462",
+"ENSG00000136854", "ENSG00000109572", "ENSG00000182256", "ENSG00000170759",
+"ENSG00000186297", "ENSG00000149295", "ENSG00000173805", "ENSG00000145864",
+"ENSG00000151834", "ENSG00000214285", "ENSG00000160446", "ENSG00000010322",
+"ENSG00000145863", "ENSG00000152910", "ENSG00000128271", "ENSG00000139182",
+"ENSG00000154822", "ENSG00000122733", "ENSG00000006128", "ENSG00000185666",
+"ENSG00000180914", "ENSG00000163485", "ENSG00000157103" )
+seedGeneSets <- rep('GAGAergic_GO', length(GABAergicSeedGenes))
 
 seedGeneDF <- data.frame('set'=rep('GAGAergic_GO', length(GABAergicSeedGenes)), 'seed'=GABAergicSeedGenes)
 
-filenameGoldset <- './goldset_gaba.tsv')
+filenameGoldset <- './goldset_gaba.tsv'
 write.table(seedGeneDF, filenameGoldset, sep='\t', row.names = FALSE, quote= FALSE)
 ```
 
@@ -69,7 +75,7 @@ write.table(seedGeneDF, filenameRandomSample, row.names=FALSE, quote=FALSE)
 # Run RWR CV 
 ```{r}
 goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
-    dataPath = humanMultiplexPath,
+    dataPath = humanMultiplexURL,
     genesetPath = filenameGoldset,
     method = 'loo', 
     restart = 0.7, 
@@ -79,18 +85,28 @@ goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
 
 goldsetCV_looOutput$medianranks
 ```
+In the above output, we have multiple options:
+- `fullranks`:  These data include the ranks for each particular fold within the k folds for each node within the network. 
+- `medianranks`: These data are the median rank data for each particular node over all k folds of the cross validation. 
+- `metrics`: These data include the information from `medianranks` on top of: 
+  - InValset:  # TODO - WHAT IS VALSET? 
+  - TP: True Positive
+  - FP: False Positive
+  - TN: True Negative
+  - FN: False Negative
+  - cum_TP: Cumulative True Positive
+  - cum_FP: Cumulative False Positive
+  - cum_TN: Cumulative True Negative
+  - cum_FN: Cumulative False Negative
+  - FPR: 
+  - PREC: Precision
+  - REC: Recall
+  - dcg
+  - idcg
+  - ndcg
+- `summary`: The Summary of the k fold output contains: 
+  - fold
+  - value
+  - measure
+  - geneset
 
-
-
-```{r}
-goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
-    dataPath = humanMultiplexPath,
-    genesetPath = filenameRandomSample,
-    method = 'loo', 
-    restart = 0.7, 
-    tau=c(1,1,1),
-    verbose=TRUE
-)
-
-goldsetCV_looOutput$medianranks
-```

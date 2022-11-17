@@ -1,21 +1,25 @@
 ########################################################################
-# Perform K-fold Cross Validation on a gene set using RWR to find the RWR rank of the left-out genes
+# Perform K-fold Cross Validation on a gene set using RWR to find the RWR rank
+# of the left-out genes: 
 # - Input: Pre-computed multiplex network and a geneset
-# - Output: Table with the ranking of each gene in the gene set when left out, along with AUPRC and AUROC curves
+# - Output: Table with the ranking of each gene in the gene set when left out, 
+#           along with AUPRC and AUROC curves
 # Copyright (C) 2022  David Kainer
-# 
+#
 # This file is part of RWRtoolkit.
-# 
-# RWRtoolkit is free software: you can redistribute it and/or modify it under the terms of the 
-# GNU General Public License as published by the Free Software Foundation, either version 3
-# of the License, or (at your option) any later version.
-# 
-# RWRtoolkit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+#
+# RWRtoolkit is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# RWRtoolkit is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with RWRtoolkit. 
-# If not, see <https://www.gnu.org/licenses/>.
+#
+# You should have received a copy of the GNU General Public License along with
+# RWRtoolkit. If not, see <https://www.gnu.org/licenses/>.
 ########################################################################
 
 #' @importFrom dplyr %>%
@@ -25,32 +29,45 @@
 # Internal Functions
 ########################################################################
 
-updateFoldsByMethod_cv <- function(geneset, method, numFolds, verbose=FALSE) {
+update_folds_by_method <- function(geneset, method, num_folds, verbose=FALSE) {
     chunks <- NULL
-    if (method %in% c('loo','singletons')) {
+    if (method %in% c("loo", "singletons")) {
             folds   <- nrow(geneset)
-            cat('\nCross-validation method is ', method, ', i.e, folds=', folds, '\n', sep='', file=stderr())
-    } else if(method=='kfold') {
-        if ( (nrow(geneset) / numFolds) < 1 ) {
+            cat("\nCross-validation method is ",
+                method,
+                ", i.e, folds=",
+                folds,
+                "\n",
+                sep = "",
+                file = stderr())
+    } else if (method == "kfold") {
+        if ((nrow(geneset) / num_folds) < 1) {
             folds   <- nrow(geneset)
-            method  <- 'loo'
-            warningMessage <- paste('\nWARNING: Cross-validation method was set to k-fold, but `k` is too large for this geneset: ', numFolds, '\n', '\nCross-validation method is now set to LOO, i.e, folds=', folds, '\n', sep='')
-            warning(warningMessage)
+            method  <- "loo"
+            base_warning <- "\nWARNING: Cross-validation method was set to k-fold, but `k` is too large for this geneset: " #nolint
+            warning_message <- paste(base_warning,
+                    num_folds,
+                    "\n",
+                    "\nCross-validation method is now set to LOO, i.e, folds=",
+                    folds,
+                    "\n",
+                    sep = "")
+            warning(warning_message)
         } else {
-            folds   <- numFolds
+            folds   <- num_folds
             # Randomly shuffle the geneset so that k-folds below is unbiased.
             set.seed(42)
             samples <- sample(nrow(geneset))
             geneset <- geneset[samples, ]
-            message('Gene set was randomly shuffled')
+            message("Gene set was randomly shuffled")
 
             if (verbose) {
-                message('Gene set:')
+                message("Gene set:")
                 print(geneset)
             }
             
             chunks  <- chunk( sample(geneset$gene), folds)  # we shuffle the geneset to break up and pre-ordering
-            cat('\nCross-validation method is k-fold; folds=', folds, '\n', sep='', file=stderr())
+            cat("\nCross-validation method is k-fold; folds=", folds, "\n", sep="", file=stderr())
         }
     } else {
         stop("ERROR: CV method not recognised. must be one of loo, singletons or kfold. Stopping")
@@ -111,13 +128,13 @@ create_rankings_cv <- function(rwr, networks, r, name, geneset, method,
 
 
 # For 'loo' and 'kfold', each gene is leftout once, so gets ranked once.
-RWR <- function(geneset, adjnorm, mpo, method, numFolds, restart = 0.7,
+RWR <- function(geneset, adjnorm, mpo, method, num_folds, restart = 0.7,
                 tau = c(1,1), name='default', threads=1, verbose=FALSE) {
 
     # This is the name of the combined networks.
     networks <- paste(names(mpo)[1:mpo$Number_of_Layers], collapse = "_")
 
-    updated_data_list <- updateFoldsByMethod_cv(geneset, method, numFolds)
+    updated_data_list <- update_folds_by_method(geneset, method, num_folds)
     folds <- updated_data_list[[1]]
     geneset <- updated_data_list[[2]]
     chunks <- updated_data_list[[3]]
@@ -741,9 +758,9 @@ RWR_CV <- function(
     ) {
 
     ############# Initialize  ##################################################
-    load(dataPath) # this contains the multiplex network layers and adj matrix
-    if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object")
-
+    data_list <- load_multiplex_data(dataPath)
+    nw.mpo <- data_list$nw.mpo
+    nw.adjnorm <- data_list$nw.adjnorm
 
     if ( (!is.null(outdirPath) | !is.null(outFullRanks) | !is.null(outMedianRanks)) & write_to_file == FALSE  ) {
         warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE."))

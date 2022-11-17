@@ -22,6 +22,7 @@ Though both knockout experiments result in a greater accumulation of oleic acid,
 ```{r setup}
 library(RWRtoolkit)
 library(gprofiler2)
+library(dplyr)
 ```
 
 ## Load Networks
@@ -42,8 +43,9 @@ Network variables will be:
 - `nw.adjnorm`  The normalized supra-adjacency matrix
 
 ```{r}
-regulationNetworkPath <- url('https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true')
-load(regulationNetworkPath)
+regulationNetworkPath <- 'https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true'
+regulationNetworkPathURL <- url(regulationNetworkPath)
+load(regulationNetworkPathURL)
 ```
 
 Next, we can generate our gene lists to act as seeds for our separate LOE runs, with our genes converted to their corresponding TAIR IDs:  

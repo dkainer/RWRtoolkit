@@ -2,7 +2,7 @@
 title: "RWR CV"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{rwr-cv-example}
+  %\VignetteIndexEntry{RWR CV}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

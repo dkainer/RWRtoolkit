@@ -53,7 +53,7 @@ layer_names <- sub(pattern = "(.*)\\\\..*$", replacement = "\\\\1", basename(lay
 groups <- rep(1, length(layer_names))
 flistdatatable <- data.table::data.table(layer_with_paths, layer_names, groups)
 
-outfile <- paste(outdir, '/multiplex.Rdata')
+outfile <- paste(outdir, '/multiplex.Rdata', sep='')
 write.table(flistdatatable, row.names=FALSE, col.names=FALSE, sep='\t', 
                    file='example.flist', quote=FALSE)
 

@@ -2,7 +2,7 @@
 title: "RWR Netscore"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{rwr-netscore-example}
+  %\VignetteIndexEntry{RWR Netscore}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,8 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 # Netscore: 
-If you have network layer acting as a gold set you can use it to determine how truthfule the another network is. 
-- You can also test how similar two differnt networks are 
+With Netscore, you can test how similar two differnt networks are. For example, if you have network layer acting as a gold set standard, you can use that network to test against another non-gold set network to determine how closely related they are. 
 
 
 ## 1. Introduction
@@ -40,9 +39,9 @@ set.seed(42)
 nVertices <- 15
 
 # overwrite letters to contain letter combinations for more options
-LETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
+EXTRALETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
 goldLayer <- igraph::erdos.renyi.game(nVertices, 1/5)
-goldLayer <- set_vertex_attr(goldLayer, "name", 1:nVertices, LETTERS[1:nVertices])
+goldLayer <- set_vertex_attr(goldLayer, "name", 1:nVertices, EXTRALETTERS[1:nVertices])
 
 #generate permutation: 
 sampledVertices <- sample(vcount(goldLayer))
@@ -53,8 +52,10 @@ permutedGoldLayer <- set_vertex_attr(permutedGoldLayer, "name", 1:nVertices, unl
 ```
 
 ```{r Fig1, echo=FALSE}
-igraph::plot.igraph(goldLayer)
-igraph::plot.igraph(permutedGoldLayer)
+par(mfrow=c(1,2), mar=c(1,1,1,1))
+plot(goldLayer, main="Gold Layer")
+plot(permutedGoldLayer, main="Permuted Gold Layer")
+par(mfrow=c(1,1))
 ```
 Once the "truth set" gold network has been generated, we can save this as an edge list:
 ```{r}
@@ -91,26 +92,29 @@ Let's now see what happens when we remove vertices from our network:
 testNet <- goldLayer
 netscores <- NULL
 
-for (i in 0:nVertices) {
-  if (i != 0){
-    vertexForDeletion <- LETTERS[i]
-    vertexForAddition <- LETTERS[i+nVertices]
-    print(paste('Removing node', vertexForDeletion))
-    testNet <- delete.vertices(testNet, vertexForDeletion)
-    testNet <- add.vertices(testNet, 1, attr= list(name=vertexForAddition))
-    random_target <- sample(V(testNet)$name, 1)
-    print(paste('Adding node', vertexForAddition, 'with target', random_target ))
-    testNet <- add.edges(testNet, c(vertexForAddition, random_target))
+suppressMessages(
+  for (i in 0:nVertices) {
+    if (i != 0){
+      vertexForDeletion <- EXTRALETTERS[i]
+      vertexForAddition <- EXTRALETTERS[i+nVertices]
+      print(paste('Removing node', vertexForDeletion), collapse=',')
+      
+      testNet <- delete.vertices(testNet, vertexForDeletion)
+      testNet <- add.vertices(testNet, 1, attr= list(name=vertexForAddition))
+      random_target <- sample(V(testNet)$name, 1)
+      
+      print(paste('Adding node', vertexForAddition, 'with target', random_target ), collapse=',')
+      testNet <- add.edges(testNet, c(vertexForAddition, random_target))
+    }
+    filename <- paste('testNet_',i,'.tsv',sep='')
+    writeEdgelistToFile(filename, testNet)
+    
+    igraph::plot.igraph(testNet)
+    netscore <- RWR_netscore(gold='./gold.tsv', filename) 
+    netscore$step <- i
+    netscores <- rbind(netscores, netscore) 
   }
-  filename <- paste('testNet_',i,'.tsv',sep='')
-  writeEdgelistToFile(filename, testNet)
-  
-  igraph::plot.igraph(testNet)
-  netscore <- RWR_netscore(gold='./gold.tsv', filename) 
-  netscore$step <- i
-  netscores <- rbind(netscores, netscore) 
-}
-  
+)
 netscores
 ```
 
@@ -145,28 +149,30 @@ layer_with_paths <- paste(layers.path, layers, sep='')
 layer_names <- sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(layers))
 ```
 
-Now, we have our multiplex data, we can test each of the layers against each other to see how well they're connected. We can easily visualize this with a network such that each vertex is a layer, and the edge thickness illustrates how well the edges score with respect to their intersect:
+Now, we have our multiplex data, we can test each of the layers against each other to see how well they're connected. We can easily visualize this with a network such that each vertex in this visualization network illustrates a layer, and the edge thickness illustrates how well the edges score with respect to their intersect:
 
 ```{r}
 # Loading the data
 networkEdgeList <- NULL
 
-for (i in 1:length(layers)){
-    sourcePath <- layer_with_paths[i]
-    sourceName <- layer_names[i]
-    
-    for (j in 1:length(layers)){
-      if (i == j) next
-      targetPath <- layer_with_paths[j]
-      targetName <- layer_names[j]
+suppressMessages(
+  for (i in 1:length(layers)){
+      sourcePath <- layer_with_paths[i]
+      sourceName <- layer_names[i]
       
-      netscore <- RWR_netscore(sourcePath, targetPath)
-      intersectPct <- netscore$intersect_perc
-      
-      edgeRow <- list(source=sourceName, target=targetName, weight=intersectPct)
-      networkEdgeList <- rbind(networkEdgeList, edgeRow)      
-    }
-}
+      for (j in 1:length(layers)){
+        if (i == j) next
+        targetPath <- layer_with_paths[j]
+        targetName <- layer_names[j]
+        
+        netscore <- RWR_netscore(sourcePath, targetPath)
+        intersectPct <- netscore$intersect_perc
+        
+        edgeRow <- list(source=sourceName, target=targetName, weight=intersectPct)
+        networkEdgeList <- rbind(networkEdgeList, edgeRow)      
+      }
+  }
+)
 rownames(networkEdgeList) <- NULL
 networkEdgeListDF <- as.data.frame(networkEdgeList)
 
@@ -177,21 +183,9 @@ colorLegend <- apply(scale(weights), 1, function(x) rgb(x[1]/255,x[2]/255,x[3]/2
 
 E(layerNetwork)$weight <- weights * 5
 E(layerNetwork)$color <- colorLegend
+edgeWidth <- lapply(E(layerNetwork)$weight, function (x) x * 0.5)
 
-plot.igraph(layerNetwork, edge.width=E(layerNetwork)$weight, layout=igraph::layout_in_circle(layerNetwork))
+plot.igraph(layerNetwork, edge.width=edgeWidth, layout=igraph::layout_with_graphopt(layerNetwork), edge.curved=seq(-0.5, 0.5, length = ecount(layerNetwork)), main="Interlayer Netscores")
 ```
 
-In the above network, we can see that all of our nodes do have some highly intersecting scores. There is nothing specifically wrong with having a low score between layers, however, it is desirable to be sure that your layers at least highly intersect with some other layers within your network (i.e. having a layer with low intersection to all other layers _could_ likely result in low scores for all nodes within that network during a random walk). 
-
-
-
-
-todo
-show INTERSECTION OF PERMUTED**
-
-
-
-In CV: look at full ranks will have the ranked genes with respect to the seed genes. You'll have length(V(g)) * length(seeds)
-
-ping kyle to go over loo junks
-
+In the above network, we can see that all of our nodes do have some highly intersecting scores. There is nothing specifically wrong with having a low score between layers, however, it is desirable to be sure that your layers at least highly intersect with some other layers within your network (i.e. having a layer with low intersection to all other layers will result in low scores for all nodes within that network during a random walk, assuming the seeds are not located within that layer). 

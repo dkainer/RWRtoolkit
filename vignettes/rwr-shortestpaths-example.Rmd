@@ -1,0 +1,255 @@
+---
+title: "Using RWR Shortest Paths to Explore Connectivity"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using RWR Shortest Paths to Explore Connectivity}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(RWRtoolkit)
+library(igraph)
+```
+
+# Shortest Paths: 
+With Shortest Paths the shortest paths function, we generate a list of the shortest paths between two vertices ordered by the number of nodes traversed. Not only may any two vertices be supplied as potential source and target nodes, but entire sets may be supplied as well. 
+
+## 1. Introduction
+In a given multiplex, there are a number of paths of equal lengths between any two nodes. The `RWR_ShortestPaths` function calculates the shortest paths between any two nodes, and includes associated node weights for each particular layer in which that path exists. 
+
+## 2. Setup
+### Layer Generation
+
+The `RWR_ShortestPaths` function requres an `mpo` R object, a vector of source nodes and a vector of target nodes. First we'll need to create an example multiplex. In this example, we'll create a 3 layer multiplex:  
+```
+ ABC Layer 1      # ABC Layer 2            # ABC Layer 3
+ A◄───B◄──────C   # G        H             #    H◄─┐ 
+      ▲       ▲   # │        │             #       │ 
+      │       │   # └──►D    └─►E       F  #  D◄───E◄┐        F  
+ D◄───E◄─┬──F─┤   #     │       │       │  #         │        │  
+      ▲  │  ▲ │   #     └───►B◄─┘──►C◄──┘  #         ├───►C◄──┘  
+      │  │  │ │   #          │      │      #         │ 
+  G───┘  H ─┴─┘              └──►A◄─┘      #         A 
+```
+```{r}
+# Layer 1
+source <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
+sink   <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
+weight <- rep(1, length(source))
+edgelist_layer1 <- data.frame(list(source=source, sink=sink, weight=weight))
+write.table(edgelist_layer1, './abc_layer1.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+
+# Layer 2
+source <- c("G", "H", "D", "E", "F", "B", "C", "E")
+sink   <- c("D", "E", "B", "B", "C", "A", "A", "C")
+weight <- rep(1, length(source))
+edgelist_layer2 <- data.frame(list(source=source, sink=sink, weight=weight))
+write.table(edgelist_layer2, './abc_layer2.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+
+# Layer 3
+source <- c("E", "E", "A", "A", "F")
+sink   <- c("H", "D", "E", "C", "C")
+weight <- rep(integer(1), length(source))
+edgelist_layer3 <- data.frame(list(source=source, sink=sink, weight=weight))
+write.table(edgelist_layer3, './abc_layer3.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+```
+
+```{r Fig1, echo=FALSE}
+layer1 <- igraph::graph_from_data_frame(edgelist_layer1)
+layer2 <- igraph::graph_from_data_frame(edgelist_layer2)
+layer3 <- igraph::graph_from_data_frame(edgelist_layer3)
+
+
+par(mfrow=c(1,3), mar=c(1,1,1,1))
+plot(layer1, layout=igraph::layout_with_kk, main="Layer 1")
+plot(layer2, layout=igraph::layout_with_kk,main="Layer 2")
+plot(layer3, layout=igraph::layout_with_kk,main="Layer 3")
+par(mfrow=c(1,1))
+```
+
+### FLIST Generation
+We now have all three of our layers, we need to create a quick flist and then to make our multiplex! 
+```{r}
+filepaths <- c('./abc_layer1.tsv', './abc_layer2.tsv', './abc_layer3.tsv')
+layernames <- c('layer1', 'layer2', 'layer3')
+groups  <- c(1, 1, 1)
+flist_df <- data.frame(list(filepaths=filepaths, layernames=layernames, groups=groups))
+
+
+flist_filename <- 'multiplex_flist.tsv'
+write.table(flist_df, file=flist_filename, quote=F, sep='\t', row.names=F, col.names=F)
+```
+
+
+### Multiplex Generation
+Now that we have our multiplex flist, we can make a multiplex with `RWR_make_multiplex`: 
+```{r}
+multiplex_filename <-  "abc_multiplex.Rdata"
+RWR_make_multiplex(flist_filename, output = multiplex_filename)
+
+#load saved data: 
+load(multiplex_filename)
+nw.mpo
+```
+
+### Node Set Generation
+Now that we have our multiplex, let's use `RWR_shortestpaths` to extract some information!  
+It should be noted that `RWR_ShortestPaths` can be run in two separate modes: 
+- With only `source_geneset` such that shortest paths will be generated between all named nodes within the list. 
+
+- With both `source_geneset` and `target_geneset` such that all shortest paths will be found between each node within the `source_geneset` to each target node in the `target_geneset`. 
+
+Additionally, it ought to be noted that all provided geneset files ought to be formatted in a way such that there exist two columns, the first being `setid` the second being the corresponding `gene`, such as: 
+```{r echo=F}
+extdata.dir <- system.file("example_data", package="RWRtoolkit")
+geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
+head(read.table(geneset1_filepath))
+```
+
+Let's extract our first path to be a path from nodes `G` to `C`. To do so, we'll need a target file and a source file, each consisting of a list of nodes with an associated set name). 
+
+```{r}
+source_nodes <- c("G")
+target_nodes <- c("C")
+
+node_sets <- c("set1")
+
+source_list <- list(set=node_sets, node=source_nodes)
+target_list <- list(set=node_sets, node=target_nodes)
+
+source_df <- data.frame(source_list)
+target_df <- data.frame(target_list)
+
+source_file <- "source_G.tsv"
+target_file <- "target_C.tsv"
+
+write.table(source_df, file=source_file, quote=F, sep='\t', row.names=F, col.names=F)
+write.table(target_df, file=target_file, quote=F, sep='\t', row.names=F, col.names=F)
+```
+
+
+### Running RWR_ShortestPaths
+Finally, now that we have a network, source nodes, and target nodes, we can call `RWR_shortestpaths`. 
+```{r}
+shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
+                    multiplex_filepath = multiplex_filename, 
+                    source_geneset = source_file, 
+                    target_geneset = target_file
+                    )
+
+shortest_paths_output
+```
+In the above dataframe, between each combination of the elements within `geneset1` and `geneset2`. Each row corresponds to a given link in a path from one gene to another with:
+- Corresponding edge weight from their original layers
+- A normlalized weight with respect to each layer (i.e. all edges within the layer have been normalized such that the sum of all edge weights within the layer sum to 1).
+- The layer from which the edge came. 
+- A distinct pathname with respect to the starting element and ending element
+- Path Length
+- A full path for all nodes.
+
+Note, given that RWR Toolkit does not currently employ methods for directed networks, the directionality of the `from` and `to` columns may not align with the directionality of the `pathelements` column. 
+
+In the above example output, we see that the two layers in which our shortest path from G to A exist are layers 1 and 2.  It is not always the case that only one path will exist in a dataset, however. This can be illustrated with by obtaining the shortest paths from `H` to `A`: 
+
+```{r}
+source_nodes <- c("H")
+target_nodes <- c("A")
+
+node_sets <- c("set1")
+
+source_list <- list(set=node_sets, node=source_nodes)
+target_list <- list(set=node_sets, node=target_nodes)
+
+source_df <- data.frame(source_list)
+target_df <- data.frame(target_list)
+
+source_file <- "source_H.tsv"
+target_file <- "target_A.tsv"
+
+write.table(source_df, file=source_file, quote=F, sep='\t', row.names=F, col.names=F)
+write.table(target_df, file=target_file, quote=F, sep='\t', row.names=F, col.names=F)
+
+shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
+                    multiplex_filepath = multiplex_filename, 
+                    source_geneset = source_file, 
+                    target_geneset = target_file
+                    )
+
+shortest_paths_output
+```
+
+In the above output, we have two options for the edge that exists between nodes `H` and `E`. We can use `RWRtoolkit::extract_highest_scoring_path` in order to obtain the highest scoring path of our path. This does so by extracting the edges with the highest weight either by `weight` or by `weightnorm` (defaulted). 
+
+```{r}
+desired_path <- "H_A"
+optimal_paths <- RWRtoolkit::extract_highest_scoring_path(shortest_paths_output, desired_path)
+
+optimal_paths
+```
+
+
+## Using Real Data
+In order to deomonstrate `RWR_ShortestPaths` on a more realistic data set, we will start with a predefined network from the package (any Rdata object created from the `RWR_make_multiplex` function will suffice). The `string_interactions.Rdata` network 
+
+### Load the Network
+```{r}
+extdata.dir <- system.file("example_data", package="RWRtoolkit")
+multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
+```
+
+The `string_interaction` multiplex contains 9 layers: 
+```{r echo=F}
+num_edges <- c(160, 154, 162, 136, 71, 5, 13, 87, 20)
+layer_names <- c("Automated Textmining",  "Coexpression",  "Combined Score",  "Database Annotated",  "Experimentally Determined Interaction",  "Gene Fusion",  "Homology",  "Neighborhood on Chromosome",  "Phylogenetic Cooccurrence")
+
+print(data.frame(list(Layer=layer_names, EdgeCount=num_edges)))
+ ```
+
+### Load the Two Gene Sets
+Next we must define the geneset paths from which to define our source and target nodes. Only the file paths are needed for the genesets: 
+
+```{r}
+geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
+geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
+outdir <- paste(extdata.dir, '/out/rwr_shortestpath', sep='')
+```
+
+**Geneset 1**
+```{r echo=F}
+read.table(geneset1_filepath, sep='\t')
+```
+**Geneset 2**
+```{r echo=F}
+read.table(geneset2_filepath, sep='\t')
+```
+
+## 3. Running RWR_ShortestPaths
+
+To run `RWR Shortest Paths` we paste in the filepaths to our flist, source, and target genesets: 
+```{r}
+shortest_path_df<- RWR_ShortestPaths(multiplex_filepath = multiplex_object_filepath,
+                                      source_geneset = geneset1_filepath,
+                                      target_geneset = geneset2_filepath)
+
+head(shortest_path_df)
+```
+
+Once you have obtained the shortest paths results, we can either view all edges within a shortest path, such as: 
+```{r}
+shortest_path_df[shortest_path_df$pathname == "PMM1_PGLS", ]
+```
+Or we extract the shortest path with the highest edge weights: 
+```{r}
+desired_path <- "PMM1_PGLS"
+optimal_paths <- RWRtoolkit::extract_highest_scoring_path(shortest_path_df, desired_path)
+
+optimal_paths 
+```

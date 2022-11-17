@@ -119,7 +119,7 @@ describe("test RWR_shortestpaths", {
             pathlength = expected_pathlength,
             pathelements = expected_pathelements
         ))
-        print("dataframe from list done ")
+
         expect_equal(actual, expected)
     })
 })
@@ -157,8 +157,7 @@ describe("tests extract_node_from_row", {
             to_column = "from", 
             to = "E"
         )
-        print("actual")
-        print(actual)
+
         expect_equal(actual, expected)
     })
 

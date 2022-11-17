@@ -39,7 +39,18 @@ significance. If you set this, you must also set \code{refgenes}.}
 \item{verbose}{Verbose mode. Default FALSE}
 }
 \value{
-Returns a table of metrics as a comparison between networks
+Returns a table of metrics as a comparison between networks with parameters:
+network:  Original Network input.
+gold:   Gold Network comparison.
+network_nodes : Number of connected nodes within network (i.e. singleton nodes will not be counted)
+gold_nodes:     Number of nodes within the gold network
+network_edges:  Total number of edges within the network.
+gold_edges:     Total number of edges within the gold network
+nodes_in_common:  Number of nodes existing within both input and gold networks.
+intersecting_edges: Number of edges existing within both input and gold networks.
+intersect_perc: Percentage of intersecting nodes
+intersect_score:  @dkainer
+score_per_network_edge: @dkainer
 }
 \description{
 \code{RWR_netscore} This tool performs a network intersect between your input
