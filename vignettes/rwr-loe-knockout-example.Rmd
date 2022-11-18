@@ -43,7 +43,7 @@ Network variables will be:
 - `nw.adjnorm`  The normalized supra-adjacency matrix
 
 ```{r}
-regulationNetworkPath <- 'https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true'
+regulationNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true"
 regulationNetworkPathURL <- url(regulationNetworkPath)
 load(regulationNetworkPathURL)
 ```
@@ -59,21 +59,21 @@ Next, we can generate our gene lists to act as seeds for our separate LOE runs, 
 | ROD1  | AT3G15820 |
 
 ```{r}
-write_genelist_to_file <- function(genelist, setlist, filename){
+write_genelist_to_file <- function(genelist, setlist, filename) {
   df <- data.frame(setlist, genelist)
-  write.table(df, filename, sep='\t', row.names = FALSE, quote= FALSE)
+  write.table(df, filename, sep = "\t", row.names = FALSE, quote = FALSE)
 }
 
 ## FAE1 FAD2
-fae1fad2List <-c('AT4G34520','AT3G12120') 
-setlist1 <- c('set1','set1')
-fea1fad2GenesetPath <- './genelist_fae1_fad2.tsv'
+fae1fad2List <- c("AT4G34520", "AT3G12120")
+setlist1 <- c("set1", "set1")
+fea1fad2GenesetPath <- "./genelist_fae1_fad2.tsv"
 write_genelist_to_file(fae1fad2List, setlist1, fea1fad2GenesetPath)
 
 ## FAE1 ROD1
-fae1rod1List <- c('AT4G34520', 'AT3G15820')
-setlist2 <- c('set2','set2')
-fae1rod1GenesetPath <- './genelist_fae1_rod1.tsv'
+fae1rod1List <- c("AT4G34520", "AT3G15820")
+setlist2 <- c("set2", "set2")
+fae1rod1GenesetPath <- "./genelist_fae1_rod1.tsv"
 write_genelist_to_file(fae1rod1List, setlist2, fae1rod1GenesetPath)
 ```
 
@@ -85,17 +85,19 @@ To implement differential ranking, we must run RWR_LOE twice:
 By doing so, we will obtain the genes most highly ranked for each. 
 
 ```{r}
-fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(data = regulationNetworkPath, 
-                                            seed_geneset = fea1fad2GenesetPath, 
-                                            outdir = './fae1fad2', 
-                                            ) 
+fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetworkPath,
+  seed_geneset = fea1fad2GenesetPath,
+  outdir = "./fae1fad2",
+)
 
-fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(data = regulationNetworkPath, 
-                                            seed_geneset = fae1rod1GenesetPath, 
-                                            outdir = './fae1rod1', 
-                                            ) 
+fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetworkPath,
+  seed_geneset = fae1rod1GenesetPath,
+  outdir = "./fae1rod1",
+)
 
-## Extract Ranked Genes from the Results: 
+## Extract Ranked Genes from the Results:
 fae1fad2RankedGenes <- fea1fad2_loeOutput$RWRM_Results
 fae1rod1RankedGenes <- fae1rod1_loeOutput$RWRM_Results
 ```
@@ -106,39 +108,41 @@ Now that we have our ranked genes for each experiment, we can begin to explore w
 
 In order to obtain genes of interest, we need to calculate the ranking differential for each gene: 
 ```{r}
-calculateDifferentialRankings <- function(rankedGenesA, rankedGenesB){
-  calculateDifferentialRank <- function(nodeName, rankA){ 
-    rankB <- rankedGenesB[ rankedGenesB$NodeNames == nodeName, ]$rank
-    
-    if (nodeName == 'AT3G12120' ){ # fad2
-      rankB = 0
+calculateDifferentialRankings <- function(rankedGenesA, rankedGenesB) {
+  calculateDifferentialRank <- function(nodeName, rankA) {
+    rankB <- rankedGenesB[rankedGenesB$NodeNames == nodeName, ]$rank
+
+    if (nodeName == "AT3G12120") { # fad2
+      rankB <- 0
     }
 
-    if (nodeName == 'AT3G15820'){ # rod1
-      rankB = 0
+    if (nodeName == "AT3G15820") { # rod1
+      rankB <- 0
     }
 
-    return (abs(rankA - rankB))
+    return(abs(rankA - rankB))
   }
 
-  output <- rankedGenesA %>% rowwise() %>% mutate( differentialRankings = calculateDifferentialRank(NodeNames, rank ))
+  output <- rankedGenesA %>%
+    rowwise() %>%
+    mutate(differentialRankings = calculateDifferentialRank(NodeNames, rank))
 
-  return(output[,c('NodeNames', 'differentialRankings')])
+  return(output[, c("NodeNames", "differentialRankings")])
 }
 
 
-getDifferentialRankingsToThreshold <- function(rankedGenesA, rankedGenesB, rankThreshold){
+getDifferentialRankingsToThreshold <- function(rankedGenesA, rankedGenesB, rankThreshold) {
   thresholdedRanksA <- rankedGenesA[rankedGenesA$rank <= rankThreshold, ]
   thresholdedRanksB <- rankedGenesB[rankedGenesB$rank <= rankThreshold, ]
 
   rankDifferencesA <- calculateDifferentialRankings(thresholdedRanksA, rankedGenesB)
   rankDifferencesB <- calculateDifferentialRankings(thresholdedRanksB, rankedGenesA)
 
-  return( list(differenceA=rankDifferencesA, differenceB=rankDifferencesB) )
+  return(list(differenceA = rankDifferencesA, differenceB = rankDifferencesB))
 }
 
 
-outpair <- getDifferentialRankingsToThreshold(fae1fad2RankedGenes, fae1rod1RankedGenes,  rankThreshold=200)
+outpair <- getDifferentialRankingsToThreshold(fae1fad2RankedGenes, fae1rod1RankedGenes, rankThreshold = 200)
 ```
 
 In the above we take the top 100 genes of each LOE run. Once the top 100 genes are sliced out of each dataframe, we then compare those top 100 genes to the other dataframe to calculate the absolute value of the differences in rank. Once those differences are calculated, a list of each is returned.  The hypothesis here is that genes that exhibit a high level of differential ranking can be construed to be more functionally related to the seed genes from run A than run B. 
@@ -159,8 +163,8 @@ fae1fad2GeneDifferences_highestRanks <- fae1fad2GeneDifferences[fae1fad2GeneDiff
 fae1rod1GeneDifferences_highestRanks <- fae1rod1GeneDifferences[fae1rod1GeneDifferences$differentialRankings >= rankThreshold, ]
 
 
-fae1fad2GORanks <- gost(query=fae1fad2GeneDifferences_highestRanks$NodeNames, organism='athaliana') 
-fae1rod1GORanks <- gost(query=fae1rod1GeneDifferences_highestRanks$NodeNames, organism='athaliana') 
+fae1fad2GORanks <- gost(query = fae1fad2GeneDifferences_highestRanks$NodeNames, organism = "athaliana")
+fae1rod1GORanks <- gost(query = fae1rod1GeneDifferences_highestRanks$NodeNames, organism = "athaliana")
 ```
 
 #### GO Enrichments FAE1 & FAD2
@@ -184,15 +188,19 @@ Note the following commands **assume a cytoscape is open.**
 
 ```{r eval=FALSE}
 cyto_num <- 200
-fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(data = regulationNetworkPath, 
-                                            seed_geneset = fea1fad2GenesetPath, 
-                                            outdir = './fae1fad2', 
-                                            cyto = cyto_num) 
+fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetworkPath,
+  seed_geneset = fea1fad2GenesetPath,
+  outdir = "./fae1fad2",
+  cyto = cyto_num
+)
 
-fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(data = regulationNetrworkPath, 
-                                            seed_geneset = fae1rod1GenesetPath, 
-                                            outdir = './fae1rod1', 
-                                            cyto = cyto_num) 
+fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetrworkPath,
+  seed_geneset = fae1rod1GenesetPath,
+  outdir = "./fae1rod1",
+  cyto = cyto_num
+)
 ```
 
 
@@ -206,22 +214,22 @@ Conversely, we can do the same experiment via code by taking the differences and
 ### Setup
 ```{r}
 # Read output files from corresponding directories
-fae1fad2RankDF <- read.table('./fae1fad2/RWR-LOE_set1_default.ranks.tsv', header = TRUE)
-fae1rod1RankDF <- read.table('./fae1rod1/RWR-LOE_set2_default.ranks.tsv', header = TRUE)
+fae1fad2RankDF <- read.table("./fae1fad2/RWR-LOE_set1_default.ranks.tsv", header = TRUE)
+fae1rod1RankDF <- read.table("./fae1rod1/RWR-LOE_set2_default.ranks.tsv", header = TRUE)
 
-# Extract top 200 Genes: 
-fae1fad2RanksTop200 = fae1fad2RankDF[fae1fad2RankDF['rank'] <= 200, ]
-fae1rod1RanksTop200 = fae1rod1RankDF[fae1rod1RankDF['rank'] <= 200, ]
+# Extract top 200 Genes:
+fae1fad2RanksTop200 <- fae1fad2RankDF[fae1fad2RankDF["rank"] <= 200, ]
+fae1rod1RanksTop200 <- fae1rod1RankDF[fae1rod1RankDF["rank"] <= 200, ]
 
 # Get Nodes and Append Seeds
-fae1fad2GenesTop200 = fae1fad2RanksTop200['NodeNames']
-fae1rod1GenesTop200 = fae1rod1RanksTop200['NodeNames']
+fae1fad2GenesTop200 <- fae1fad2RanksTop200["NodeNames"]
+fae1rod1GenesTop200 <- fae1rod1RanksTop200["NodeNames"]
 
-# Append the seed nodes as they are not ranked within the output sets. 
-fae1fad2Data <- append(fae1fad2GenesTop200@.Data[[1]], c('AT4G34520', 'AT3G12120'))
-fae1rod1Data <- append(fae1rod1GenesTop200@.Data[[1]], c('AT4G34520', 'AT3G15820'))
+# Append the seed nodes as they are not ranked within the output sets.
+fae1fad2Data <- append(fae1fad2GenesTop200@.Data[[1]], c("AT4G34520", "AT3G12120"))
+fae1rod1Data <- append(fae1rod1GenesTop200@.Data[[1]], c("AT4G34520", "AT3G15820"))
 
-# Get Set Differences and Intersection: 
+# Get Set Differences and Intersection:
 fad2Diff <- setdiff(fae1fad2Data, fae1rod1Data)
 rod1Diff <- setdiff(fae1rod1Data, fae1fad2Data)
 fae1Intersection <- intersect(fae1fad2Data, fae1rod1Data)
@@ -231,9 +239,9 @@ fae1Intersection <- intersect(fae1fad2Data, fae1rod1Data)
 We now have three differing sets. One for genes only from the fae1fad2 network, one for genes only from the fae1rod1 network, and one for genes shared by both networks. Given our three entirely unique sets, we can now query a database to extract GO Enrichments using `gprofiler2`: 
 
 ```{r}
-gostres_fad2 <- gost(query=fad2Diff, organism='athaliana')
-gostres_rod1 <- gost(query=rod1Diff, organism='athaliana')
-gostres_intersection <- gost(query=fae1Intersection, organism='athaliana')
+gostres_fad2 <- gost(query = fad2Diff, organism = "athaliana")
+gostres_rod1 <- gost(query = rod1Diff, organism = "athaliana")
+gostres_intersection <- gost(query = fae1Intersection, organism = "athaliana")
 ```
 
 ### Results Analysis
@@ -242,7 +250,7 @@ gostres_intersection <- gost(query=fae1Intersection, organism='athaliana')
 Similar to the above, we receive FAD2 specific GO Enrichments: 
 
 ```{r}
-head(gostres_fad2$result[gostres_fad2$result['significant']==TRUE, ][ , c('p_value',  'term_name')])
+head(gostres_fad2$result[gostres_fad2$result["significant"] == TRUE, ][, c("p_value", "term_name")])
 ```
 
 #### ROD1 Difference Genes
@@ -255,5 +263,5 @@ gostres_rod1$result
 And we can see that our intersection (i.e. FAE1 and other shared genes within the top ranked networks) have many seed and fatty acid development GO Enrichments: 
 
 ```{r}
-head(gostres_intersection$result[gostres_intersection$result['significant']==TRUE, ][, c('p_value', 'term_name')]) 
+head(gostres_intersection$result[gostres_intersection$result["significant"] == TRUE, ][, c("p_value", "term_name")])
 ```

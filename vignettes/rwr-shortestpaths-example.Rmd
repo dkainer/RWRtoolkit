@@ -42,24 +42,24 @@ The `RWR_ShortestPaths` function requres an `mpo` R object, a vector of source n
 ```{r}
 # Layer 1
 source <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
-sink   <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
+sink <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
 weight <- rep(1, length(source))
-edgelist_layer1 <- data.frame(list(source=source, sink=sink, weight=weight))
-write.table(edgelist_layer1, './abc_layer1.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist_layer1 <- data.frame(list(source = source, sink = sink, weight = weight))
+write.table(edgelist_layer1, "./abc_layer1.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 
 # Layer 2
 source <- c("G", "H", "D", "E", "F", "B", "C", "E")
-sink   <- c("D", "E", "B", "B", "C", "A", "A", "C")
+sink <- c("D", "E", "B", "B", "C", "A", "A", "C")
 weight <- rep(1, length(source))
-edgelist_layer2 <- data.frame(list(source=source, sink=sink, weight=weight))
-write.table(edgelist_layer2, './abc_layer2.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist_layer2 <- data.frame(list(source = source, sink = sink, weight = weight))
+write.table(edgelist_layer2, "./abc_layer2.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 
 # Layer 3
 source <- c("E", "E", "A", "A", "F")
-sink   <- c("H", "D", "E", "C", "C")
+sink <- c("H", "D", "E", "C", "C")
 weight <- rep(integer(1), length(source))
-edgelist_layer3 <- data.frame(list(source=source, sink=sink, weight=weight))
-write.table(edgelist_layer3, './abc_layer3.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist_layer3 <- data.frame(list(source = source, sink = sink, weight = weight))
+write.table(edgelist_layer3, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
 ```{r Fig1, echo=FALSE}
@@ -68,11 +68,11 @@ layer2 <- igraph::graph_from_data_frame(edgelist_layer2)
 layer3 <- igraph::graph_from_data_frame(edgelist_layer3)
 
 
-par(mfrow=c(1,3), mar=c(1,1,1,1))
-plot(layer1, layout=igraph::layout_with_kk, main="Layer 1")
-plot(layer2, layout=igraph::layout_with_kk,main="Layer 2")
-plot(layer3, layout=igraph::layout_with_kk,main="Layer 3")
-par(mfrow=c(1,1))
+par(mfrow = c(1, 3), mar = c(1, 1, 1, 1))
+plot(layer1, layout = igraph::layout_with_kk, main = "Layer 1")
+plot(layer2, layout = igraph::layout_with_kk, main = "Layer 2")
+plot(layer3, layout = igraph::layout_with_kk, main = "Layer 3")
+par(mfrow = c(1, 1))
 ```
 
 ### FLIST Generation
@@ -83,24 +83,24 @@ We now have all three of our layers, we need to create a quick flist and then to
 | path_to_file3 | layer3_name | layer_group |
 
 ```{r}
-filepaths <- c('./abc_layer1.tsv', './abc_layer2.tsv', './abc_layer3.tsv')
-layernames <- c('layer1', 'layer2', 'layer3')
-groups  <- c(1, 1, 1)
-flist_df <- data.frame(list(filepaths=filepaths, layernames=layernames, groups=groups))
+filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
+layernames <- c("layer1", "layer2", "layer3")
+groups <- c(1, 1, 1)
+flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames, groups = groups))
 
 
-flist_filename <- 'multiplex_flist.tsv'
-write.table(flist_df, file=flist_filename, quote=F, sep='\t', row.names=F, col.names=F)
+flist_filename <- "multiplex_flist.tsv"
+write.table(flist_df, file = flist_filename, quote = F, sep = "\t", row.names = F, col.names = F)
 ```
 
 
 ### Multiplex Generation
 Now that we have our multiplex flist, we can make a multiplex with `RWR_make_multiplex`: 
 ```{r}
-multiplex_filename <-  "abc_multiplex.Rdata"
+multiplex_filename <- "abc_multiplex.Rdata"
 RWR_make_multiplex(flist_filename, output = multiplex_filename)
 
-#load saved data: 
+# load saved data:
 load(multiplex_filename)
 nw.mpo
 ```
@@ -114,8 +114,8 @@ It should be noted that `RWR_ShortestPaths` can be run in two separate modes:
 
 Additionally, it ought to be noted that all provided geneset files ought to be formatted in a way such that there exist two columns, the first being `setid` the second being the corresponding `gene`, such as: 
 ```{r echo=F}
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
-geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 head(read.table(geneset1_filepath))
 ```
 
@@ -127,8 +127,8 @@ target_nodes <- c("C")
 
 node_sets <- c("set1")
 
-source_list <- list(set=node_sets, node=source_nodes)
-target_list <- list(set=node_sets, node=target_nodes)
+source_list <- list(set = node_sets, node = source_nodes)
+target_list <- list(set = node_sets, node = target_nodes)
 
 source_df <- data.frame(source_list)
 target_df <- data.frame(target_list)
@@ -136,8 +136,8 @@ target_df <- data.frame(target_list)
 source_file <- "source_G.tsv"
 target_file <- "target_C.tsv"
 
-write.table(source_df, file=source_file, quote=F, sep='\t', row.names=F, col.names=F)
-write.table(target_df, file=target_file, quote=F, sep='\t', row.names=F, col.names=F)
+write.table(source_df, file = source_file, quote = F, sep = "\t", row.names = F, col.names = F)
+write.table(target_df, file = target_file, quote = F, sep = "\t", row.names = F, col.names = F)
 ```
 
 
@@ -145,10 +145,10 @@ write.table(target_df, file=target_file, quote=F, sep='\t', row.names=F, col.nam
 Finally, now that we have a network, source nodes, and target nodes, we can call `RWR_shortestpaths`. 
 ```{r}
 shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
-                    multiplex_filepath = multiplex_filename, 
-                    source_geneset = source_file, 
-                    target_geneset = target_file
-                    )
+  multiplex_filepath = multiplex_filename,
+  source_geneset = source_file,
+  target_geneset = target_file
+)
 
 shortest_paths_output
 ```
@@ -170,8 +170,8 @@ target_nodes <- c("A")
 
 node_sets <- c("set1")
 
-source_list <- list(set=node_sets, node=source_nodes)
-target_list <- list(set=node_sets, node=target_nodes)
+source_list <- list(set = node_sets, node = source_nodes)
+target_list <- list(set = node_sets, node = target_nodes)
 
 source_df <- data.frame(source_list)
 target_df <- data.frame(target_list)
@@ -179,14 +179,14 @@ target_df <- data.frame(target_list)
 source_file <- "source_H.tsv"
 target_file <- "target_A.tsv"
 
-write.table(source_df, file=source_file, quote=F, sep='\t', row.names=F, col.names=F)
-write.table(target_df, file=target_file, quote=F, sep='\t', row.names=F, col.names=F)
+write.table(source_df, file = source_file, quote = F, sep = "\t", row.names = F, col.names = F)
+write.table(target_df, file = target_file, quote = F, sep = "\t", row.names = F, col.names = F)
 
 shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
-                    multiplex_filepath = multiplex_filename, 
-                    source_geneset = source_file, 
-                    target_geneset = target_file
-                    )
+  multiplex_filepath = multiplex_filename,
+  source_geneset = source_file,
+  target_geneset = target_file
+)
 
 shortest_paths_output
 ```
@@ -206,43 +206,45 @@ In order to deomonstrate `RWR_ShortestPaths` on a more realistic data set, we wi
 
 ### Load the Network
 ```{r}
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
-multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+multiplex_object_filepath <- paste(extdata.dir, "/string_interactions.Rdata", sep = "")
 ```
 
 The `string_interaction` multiplex contains 9 layers: 
 ```{r echo=F}
 num_edges <- c(160, 154, 162, 136, 71, 5, 13, 87, 20)
-layer_names <- c("Automated Textmining",  "Coexpression",  "Combined Score",  "Database Annotated",  "Experimentally Determined Interaction",  "Gene Fusion",  "Homology",  "Neighborhood on Chromosome",  "Phylogenetic Cooccurrence")
+layer_names <- c("Automated Textmining", "Coexpression", "Combined Score", "Database Annotated", "Experimentally Determined Interaction", "Gene Fusion", "Homology", "Neighborhood on Chromosome", "Phylogenetic Cooccurrence")
 
-print(data.frame(list(Layer=layer_names, EdgeCount=num_edges)))
+print(data.frame(list(Layer = layer_names, EdgeCount = num_edges)))
  ```
 
 ### Load the Two Gene Sets
 Next we must define the geneset paths from which to define our source and target nodes. Only the file paths are needed for the genesets: 
 
 ```{r}
-geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
-geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
-outdir <- paste(extdata.dir, '/out/rwr_shortestpath', sep='')
+geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
+geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
+outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
 ```
 
 **Geneset 1**
 ```{r echo=F}
-read.table(geneset1_filepath, sep='\t')
+read.table(geneset1_filepath, sep = "\t")
 ```
 **Geneset 2**
 ```{r echo=F}
-read.table(geneset2_filepath, sep='\t')
+read.table(geneset2_filepath, sep = "\t")
 ```
 
 ## 3. Running RWR_ShortestPaths
 
 To run `RWR Shortest Paths` we paste in the filepaths to our flist, source, and target genesets: 
 ```{r}
-shortest_path_df<- RWR_ShortestPaths(multiplex_filepath = multiplex_object_filepath,
-                                      source_geneset = geneset1_filepath,
-                                      target_geneset = geneset2_filepath)
+shortest_path_df <- RWR_ShortestPaths(
+  multiplex_filepath = multiplex_object_filepath,
+  source_geneset = geneset1_filepath,
+  target_geneset = geneset2_filepath
+)
 
 head(shortest_path_df)
 ```
@@ -256,5 +258,5 @@ Or we extract the shortest path with the highest edge weights:
 desired_path <- "PMM1_PGLS"
 optimal_paths <- RWRtoolkit::extract_highest_scoring_path(shortest_path_df, desired_path)
 
-optimal_paths 
+optimal_paths
 ```

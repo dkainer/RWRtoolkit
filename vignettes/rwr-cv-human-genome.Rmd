@@ -34,25 +34,27 @@ load(humanMultiplexPath)
 
 Generating the gene sets from scratch: 
 ```{r}
-GABAergicSeedGenes <- c( "ENSG00000171132", "ENSG00000109189", 
-"ENSG00000120907", "ENSG00000169750", "ENSG00000171862", "ENSG00000188822",
-"ENSG00000011677", "ENSG00000022355", "ENSG00000163812", "ENSG00000188603",
-"ENSG00000102287", "ENSG00000133703", "ENSG00000109158", "ENSG00000169760",
-"ENSG00000118432", "ENSG00000135312", "ENSG00000168748", "ENSG00000164129",
-"ENSG00000169992", "ENSG00000115896", "ENSG00000163285", "ENSG00000146242",
-"ENSG00000007516", "ENSG00000113327", "ENSG00000174576", "ENSG00000106462",
-"ENSG00000136854", "ENSG00000109572", "ENSG00000182256", "ENSG00000170759",
-"ENSG00000186297", "ENSG00000149295", "ENSG00000173805", "ENSG00000145864",
-"ENSG00000151834", "ENSG00000214285", "ENSG00000160446", "ENSG00000010322",
-"ENSG00000145863", "ENSG00000152910", "ENSG00000128271", "ENSG00000139182",
-"ENSG00000154822", "ENSG00000122733", "ENSG00000006128", "ENSG00000185666",
-"ENSG00000180914", "ENSG00000163485", "ENSG00000157103" )
-seedGeneSets <- rep('GAGAergic_GO', length(GABAergicSeedGenes))
+GABAergicSeedGenes <- c(
+  "ENSG00000171132", "ENSG00000109189",
+  "ENSG00000120907", "ENSG00000169750", "ENSG00000171862", "ENSG00000188822",
+  "ENSG00000011677", "ENSG00000022355", "ENSG00000163812", "ENSG00000188603",
+  "ENSG00000102287", "ENSG00000133703", "ENSG00000109158", "ENSG00000169760",
+  "ENSG00000118432", "ENSG00000135312", "ENSG00000168748", "ENSG00000164129",
+  "ENSG00000169992", "ENSG00000115896", "ENSG00000163285", "ENSG00000146242",
+  "ENSG00000007516", "ENSG00000113327", "ENSG00000174576", "ENSG00000106462",
+  "ENSG00000136854", "ENSG00000109572", "ENSG00000182256", "ENSG00000170759",
+  "ENSG00000186297", "ENSG00000149295", "ENSG00000173805", "ENSG00000145864",
+  "ENSG00000151834", "ENSG00000214285", "ENSG00000160446", "ENSG00000010322",
+  "ENSG00000145863", "ENSG00000152910", "ENSG00000128271", "ENSG00000139182",
+  "ENSG00000154822", "ENSG00000122733", "ENSG00000006128", "ENSG00000185666",
+  "ENSG00000180914", "ENSG00000163485", "ENSG00000157103"
+)
+seedGeneSets <- rep("GAGAergic_GO", length(GABAergicSeedGenes))
 
-seedGeneDF <- data.frame('set'=rep('GAGAergic_GO', length(GABAergicSeedGenes)), 'seed'=GABAergicSeedGenes)
+seedGeneDF <- data.frame("set" = rep("GAGAergic_GO", length(GABAergicSeedGenes)), "seed" = GABAergicSeedGenes)
 
-filenameGoldset <- './goldset_gaba.tsv'
-write.table(seedGeneDF, filenameGoldset, sep='\t', row.names = FALSE, quote= FALSE)
+filenameGoldset <- "./goldset_gaba.tsv"
+write.table(seedGeneDF, filenameGoldset, sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
 ## Sanity Check: 
@@ -60,27 +62,27 @@ Let's instead run RWR CV with a set of seed genes of the same size as above, but
 
 ```{r}
 set.seed(42)
-newlySampleGenesPct <- 2/3
+newlySampleGenesPct <- 2 / 3
 newlySampleGeneCount <- floor(length(GABAergicSeedGenes) * newlySampleGenesPct)
 
-randomSample <- sample(nw.mpo$Pool_of_Nodes, replace=FALSE, size=newlySampleGeneCount)
+randomSample <- sample(nw.mpo$Pool_of_Nodes, replace = FALSE, size = newlySampleGeneCount)
 
-## Replace: 
+## Replace:
 seedGeneDF$seed[1:length(randomSample)] <- randomSample
 
-filenameRandomSample <- './partiallyRandomSampleSeeds.tsv'
-write.table(seedGeneDF, filenameRandomSample, row.names=FALSE, quote=FALSE)
+filenameRandomSample <- "./partiallyRandomSampleSeeds.tsv"
+write.table(seedGeneDF, filenameRandomSample, row.names = FALSE, quote = FALSE)
 ```
 
 # Run RWR CV 
 ```{r}
 goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
-    dataPath = humanMultiplexURL,
-    genesetPath = filenameGoldset,
-    method = 'loo', 
-    restart = 0.7, 
-    tau=c(1,1,1),
-    verbose=TRUE
+  dataPath = humanMultiplexURL,
+  genesetPath = filenameGoldset,
+  method = "loo",
+  restart = 0.7,
+  tau = c(1, 1, 1),
+  verbose = TRUE
 )
 
 goldsetCV_looOutput$medianranks

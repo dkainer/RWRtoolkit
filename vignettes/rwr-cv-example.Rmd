@@ -28,9 +28,9 @@ library(igraph)
 ### a. Network Layer Generation
 ```{r}
 set.seed(42)
-layer1 <- igraph::erdos.renyi.game(5, 1/4)
-layer2 <- igraph::erdos.renyi.game(20, 1/8)
-layer3 <- igraph::erdos.renyi.game(10, 1/3)
+layer1 <- igraph::erdos.renyi.game(5, 1 / 4)
+layer2 <- igraph::erdos.renyi.game(20, 1 / 8)
+layer3 <- igraph::erdos.renyi.game(10, 1 / 3)
 ```
 ```{r Fig1, echo=FALSE}
 igraph::plot.igraph(layer1)
@@ -42,24 +42,24 @@ Once the networks have been generated, we can save these as an edge list
 
 ```{r}
 
-## Function to convert edgelists from graphs and save to file. 
-writeEdgelistToFile <- function(filename, layer){
-    # Create Edgelist and rename columns 
-    edgelist <- data.frame(as_edgelist(layer))
-    colnames(edgelist) <- c('node1', 'node2')
+## Function to convert edgelists from graphs and save to file.
+writeEdgelistToFile <- function(filename, layer) {
+  # Create Edgelist and rename columns
+  edgelist <- data.frame(as_edgelist(layer))
+  colnames(edgelist) <- c("node1", "node2")
 
-    # Generate Weight list of all 1s (i.e. to make network unweighted)
-    weights <- rep(1, nrow(edgelist)) 
-    edgelist$weights <- weights    
+  # Generate Weight list of all 1s (i.e. to make network unweighted)
+  weights <- rep(1, nrow(edgelist))
+  edgelist$weights <- weights
 
-    # save to file
-    write.table(edgelist, filename, sep='\t', row.names = FALSE, quote= FALSE)
+  # save to file
+  write.table(edgelist, filename, sep = "\t", row.names = FALSE, quote = FALSE)
 }
 
 ## Writing Layers to File
-writeEdgelistToFile('layer1.tsv', layer1)
-writeEdgelistToFile('layer2.tsv', layer2)
-writeEdgelistToFile('layer3.tsv', layer3)
+writeEdgelistToFile("layer1.tsv", layer1)
+writeEdgelistToFile("layer2.tsv", layer2)
+writeEdgelistToFile("layer3.tsv", layer3)
 ```
 ### b. `flist` and Multiplex Generation
 
@@ -67,21 +67,21 @@ To create the multiplex, first we need an flist (i.e. a file containing the file
 
 ```{r}
 # Creating the FLIST
-fileList <- c('layer1.tsv', 'layer2.tsv', 'layer3.tsv')
-shortNameList <- c('L1', 'L2', 'L3')
+fileList <- c("layer1.tsv", "layer2.tsv", "layer3.tsv")
+shortNameList <- c("L1", "L2", "L3")
 
-flistFilePath <- './flistDF.tsv'
-groupList <- c(1, 1, 1)   
+flistFilePath <- "./flistDF.tsv"
+groupList <- c(1, 1, 1)
 flistDF <- data.frame(fileList, shortNameList, groupList)
-write.table(flistDF, flistFilePath, sep='\t', col.names = FALSE, row.names = FALSE, quote = FALSE)
+write.table(flistDF, flistFilePath, sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE)
 
 
-multiplexNetworkPath <- './toy_network.Rdata'
+multiplexNetworkPath <- "./toy_network.Rdata"
 RWRtoolkit::RWR_make_multiplex(
-   flist = flistFilePath,
-   output = multiplexNetworkPath,
-   verbose = TRUE
- )
+  flist = flistFilePath,
+  output = multiplexNetworkPath,
+  verbose = TRUE
+)
 ```
 
 The RWRtoolkit::RWR_make_multiplex will then generate an output multiplex, saved to `.toy_network.Rdata`.  The file will contain the network variables: 
@@ -106,11 +106,11 @@ We can then use our genes 1, 2, 3, 4 as seeds within our network to see how
 
 ```{r}
 goldsetGenes <- c(1, 3, 2, 4)
-goldsetSetIDs <- c('goldSet', 'goldSet', 'goldSet', 'goldSet')
+goldsetSetIDs <- c("goldSet", "goldSet", "goldSet", "goldSet")
 goldsetDF <- data.frame(goldsetSetIDs, goldsetGenes)
 
-goldsetPath <- './goldsetCV.tsv'
-write.table(goldsetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep='\t', quote=FALSE)
+goldsetPath <- "./goldsetCV.tsv"
+write.table(goldsetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep = "\t", quote = FALSE)
 ```
 
 ## Running RWR_CV 
@@ -121,12 +121,12 @@ With our multiplex and gold set genes in place, we can run `RWR_CV`. First, let'
 
 ```{r}
 goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
-    dataPath = multiplexNetworkPath,
-    genesetPath = goldsetPath,
-    method = 'loo', 
-    restart = 0.7, 
-    tau=c(1,1,1),
-    verbose=TRUE
+  dataPath = multiplexNetworkPath,
+  genesetPath = goldsetPath,
+  method = "loo",
+  restart = 0.7,
+  tau = c(1, 1, 1),
+  verbose = TRUE
 )
 
 goldsetCV_looOutput$medianranks
@@ -142,22 +142,22 @@ Given a particular goldset of genes which are known to be highly correlated you 
 First we must create the goldset and save it to a file: 
 ```{r}
 genesetGenes <- c(8, 18, 19)
-genesetSetIDs <- c('testGoldSet', 'testGoldSet', 'testGoldSet')
+genesetSetIDs <- c("testGoldSet", "testGoldSet", "testGoldSet")
 genesetDF <- data.frame(genesetSetIDs, genesetGenes)
-goldsetPath <- './testing_genesetCV.tsv'
-write.table(genesetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep='\t', quote=FALSE)
+goldsetPath <- "./testing_genesetCV.tsv"
+write.table(genesetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep = "\t", quote = FALSE)
 ```
 
 We can then test our network by running RWR_CV on this network and evaluating the median ranks: 
 ```{r}
 goldsetCV_singletonsOutput <- RWRtoolkit::RWR_CV(
-    dataPath = multiplexNetworkPath,
-    genesetPath = goldsetPath,
-    method = 'singletons', 
-    restart = 0.7, 
-    verbose=TRUE, 
-    plot=TRUE, 
-    outdirPath='./plots'
+  dataPath = multiplexNetworkPath,
+  genesetPath = goldsetPath,
+  method = "singletons",
+  restart = 0.7,
+  verbose = TRUE,
+  plot = TRUE,
+  outdirPath = "./plots"
 )
 
 goldsetCV_singletonsOutput$medianranks

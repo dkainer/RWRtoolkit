@@ -38,20 +38,20 @@ D◄───E◄─┬──F─┤
 ```
 ```{r}
 source <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
-sink   <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
+sink <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
 weight <- rep(1, length(source))
-edgelist <- matrix(c(source, sink, weight), ncol=3, nrow = length(source))
-colnames(edgelist) <- c('node1', 'node2', 'weight')
-write.table(edgelist, './abc_layer1.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
+colnames(edgelist) <- c("node1", "node2", "weight")
+write.table(edgelist, "./abc_layer1.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 ```{r echo=F}
 
-graphtable <- read.table('./abc_layer1.tsv', sep='\t', header=T)
+graphtable <- read.table("./abc_layer1.tsv", sep = "\t", header = T)
 layer1 <- igraph::graph_from_data_frame(graphtable, directed = F)
 layer1_adj <- igraph::get.adjacency(layer1)
 sorted_layer_names <- sort(row.names(layer1_adj))
 sorted_adj <- layer1_adj[sorted_layer_names, sorted_layer_names]
-stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv=NA, Rowv=NA, scale='none', main="Layer 1 Adjacency")
+stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv = NA, Rowv = NA, scale = "none", main = "Layer 1 Adjacency")
 ```
 
 
@@ -67,22 +67,21 @@ G        H
 ```
 ```{r}
 source <- c("G", "H", "D", "E", "F", "B", "C", "E")
-sink   <- c("D", "E", "B", "B", "C", "A", "A", "C")
+sink <- c("D", "E", "B", "B", "C", "A", "A", "C")
 weight <- rep(1, length(source))
-edgelist <- matrix(c(source, sink, weight), ncol=3, nrow = length(source))
-colnames(edgelist) <- c('node1', 'node2', 'weight')
-write.table(edgelist, './abc_layer2.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
+colnames(edgelist) <- c("node1", "node2", "weight")
+write.table(edgelist, "./abc_layer2.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 ```{r echo=F}
 
 
-graphtable <- read.table('./abc_layer2.tsv', sep='\t', header=T)
+graphtable <- read.table("./abc_layer2.tsv", sep = "\t", header = T)
 layer2 <- igraph::graph_from_data_frame(graphtable, directed = F)
 layer2_adj <- igraph::get.adjacency(layer2)
 sorted_layer_names <- sort(row.names(layer2_adj))
 sorted_adj <- layer2_adj[sorted_layer_names, sorted_layer_names]
-stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv=NA, Rowv=NA, scale='none', main="Layer 2 Adjacency")
-
+stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv = NA, Rowv = NA, scale = "none", main = "Layer 2 Adjacency")
 ```
 
 
@@ -100,23 +99,21 @@ stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv=NA, 
 
 ```{r}
 source <- c("E", "E", "A", "A", "F")
-sink   <- c("H", "D", "E", "C", "C")
+sink <- c("H", "D", "E", "C", "C")
 weight <- rep(1, length(source))
-edgelist <- matrix(c(source, sink, weight), ncol=3, nrow = length(source))
-colnames(edgelist) <- c('node1', 'node2', 'weight')
-write.table(edgelist, './abc_layer3.tsv', sep='\t', row.names=FALSE, quote=FALSE)
+edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
+colnames(edgelist) <- c("node1", "node2", "weight")
+write.table(edgelist, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 ```{r echo=F}
 
 
-graphtable <- read.table('./abc_layer3.tsv', sep='\t', header=T)
-layer3 <- igraph::graph_from_data_frame(graphtable, directed= F)
+graphtable <- read.table("./abc_layer3.tsv", sep = "\t", header = T)
+layer3 <- igraph::graph_from_data_frame(graphtable, directed = F)
 layer3_adj <- igraph::get.adjacency(layer3)
 sorted_layer_names <- sort(row.names(layer3_adj))
 sorted_adj <- layer3_adj[sorted_layer_names, sorted_layer_names]
-stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv=NA, Rowv=NA, scale='none', main="Layer 3 Adjacency")
-
-
+stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv = NA, Rowv = NA, scale = "none", main = "Layer 3 Adjacency")
 ```
 
 
@@ -127,23 +124,23 @@ We now have all three of our layers, we need to create a file that describes:
 - What types of layers these are  (this defines whether or not the network is heterogeneous).
 
 ```{r}
-filepaths <- c('./abc_layer1.tsv', './abc_layer2.tsv', './abc_layer3.tsv')
-layernames <- c('layer1', 'layer2', 'layer3')
-groups  <- c(1, 1, 1)
-flist_df <- data.frame(list(filepaths=filepaths, layernames=layernames, groups=groups))
+filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
+layernames <- c("layer1", "layer2", "layer3")
+groups <- c(1, 1, 1)
+flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames, groups = groups))
 
-flist_filename <- 'multiplex_flist.tsv'
-write.table(flist_df, file=flist_filename, quote=F, sep='\t', row.names=F, col.names=F)
+flist_filename <- "multiplex_flist.tsv"
+write.table(flist_df, file = flist_filename, quote = F, sep = "\t", row.names = F, col.names = F)
 ```
 
 
 ## Constructing a Multiplex Network:
 Now that we have our multiplex flist generated above, we can make a multiplex with `RWR_make_multiplex`. Depending on how large your layers are, this can be a rate limiting step. 
 ```{r}
-multiplex_filename <-  "abc_multiplex.Rdata"
+multiplex_filename <- "abc_multiplex.Rdata"
 RWR_make_multiplex(flist_filename, output = multiplex_filename)
 
-#load saved data: 
+# load saved data:
 load(multiplex_filename)
 ```
 
@@ -157,14 +154,14 @@ Currently `RWR_make_multiplex` saves the networks to file for easier access in t
 * `nw.adj`: A supra-adjacency matrix in which all layers occur along the diagonal and inter-layer edges occur on the off diagonal. In the below image, we can see that the topologies of each particular layer are maintained within the supra-adjacency matrix along the diagonal: 
 
 ```{r echo=F}
-# Reversed matrix as stats heatmap plots rows in reverse order. 
-stats::heatmap(as.matrix(nw.adj)[nrow(as.matrix(nw.adj)):1, ], Colv=NA, Rowv=NA, scale='none')
+# Reversed matrix as stats heatmap plots rows in reverse order.
+stats::heatmap(as.matrix(nw.adj)[nrow(as.matrix(nw.adj)):1, ], Colv = NA, Rowv = NA, scale = "none")
 ```
 
 * `nw.adjnorm`: Similar to the above, the `nw.adjnorm` takes the above `nw.adj` matrix and normalizes colum-nwise such that each column sums to 1 and each edge has a $\frac{1}{D( A_{i,j} )}$ probability of being walked by the random walker. 
 
 ```{r echo=F}
-stats::heatmap(as.matrix(nw.adjnorm)[nrow(as.matrix(nw.adjnorm)):1, ], Colv=NA, Rowv=NA, scale='none')
+stats::heatmap(as.matrix(nw.adjnorm)[nrow(as.matrix(nw.adjnorm)):1, ], Colv = NA, Rowv = NA, scale = "none")
 ```
 
 No we have made our multiplex and are ready to run any of the tools within the RWRtoolkit!
