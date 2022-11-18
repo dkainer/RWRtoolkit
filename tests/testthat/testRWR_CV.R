@@ -149,7 +149,7 @@ describe('update_folds_by_method', {
 })
 
 
-describe('extract_leftout_and_seed_genes_cv', {
+describe('extract_lo_and_seed_genes_cv', {
     # Unexpected method is checked earlier in pipeline, redundant to check here. 
 
 
@@ -160,7 +160,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_seed_genes <- c('1a')
         expected_leftout <-   c('2b', '3')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_3genes, method, fold)
+        res <- extract_lo_and_seed_genes_cv(geneset_3genes, method, fold)
 
 
         expect_equal(res[[1]], expected_leftout)
@@ -174,7 +174,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_seed_genes <- c('3')
         expected_leftout <-   c('1a', '2b')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_3genes, method, fold)
+        res <- extract_lo_and_seed_genes_cv(geneset_3genes, method, fold)
 
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -188,7 +188,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_seed_genes <- c('1a')
         expected_leftout <-   c('2b', '3', '4')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_4genes, method, fold)
+        res <- extract_lo_and_seed_genes_cv(geneset_4genes, method, fold)
   
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -201,7 +201,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_leftout <-  c('1a')
         expected_seed_genes<-  c('2b', '3', '4')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_4genes,  method, fold)
+        res <- extract_lo_and_seed_genes_cv(geneset_4genes,  method, fold)
 
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -214,7 +214,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_leftout <-  c('3')
         expected_seed_genes<-  c('1a', '2b', '4')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_4genes,  method, fold)
+        res <- extract_lo_and_seed_genes_cv(geneset_4genes,  method, fold)
 
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -227,7 +227,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_leftout <-  c('1a', '2b')
         expected_seed_genes<-  c('3', '4', '5')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_5genes,  method, fold, chunks)
+        res <- extract_lo_and_seed_genes_cv(geneset_5genes,  method, fold, chunks)
 
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -239,7 +239,7 @@ describe('extract_leftout_and_seed_genes_cv', {
         expected_leftout <-  c('5')
         expected_seed_genes<-  c('1a','2b','3', '4')
 
-        res <- extract_leftout_and_seed_genes_cv(geneset_5genes,  method, fold, chunks)
+        res <- extract_lo_and_seed_genes_cv(geneset_5genes,  method, fold, chunks)
 
         expect_equal(res[[1]], expected_leftout)
         expect_equal(res[[2]], expected_seed_genes)
@@ -456,7 +456,7 @@ describe("RWR", {
                                     
         # Stub functions with mocks
         stub(RWRtoolkit::RWR, 'update_folds_by_method', mock_update_folds_by_method)
-        stub(RWRtoolkit::RWR, 'extract_leftout_and_seed_genes_cv', mock_extract_leftout_and_seed_genes_cv)
+        stub(RWRtoolkit::RWR, 'extract_lo_and_seed_genes_cv', mock_extract_leftout_and_seed_genes_cv)
         stub(RWRtoolkit::RWR, 'RandomWalkRestartMH::Random.Walk.Restart.Multiplex', mock_RWRMH)
         stub(RWRtoolkit::RWR, 'create_rankings_cv', mock_create_rankings_cv)
         expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)

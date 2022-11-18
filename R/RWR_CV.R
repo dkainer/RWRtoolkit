@@ -2,7 +2,7 @@
 # Perform K-fold Cross Validation on a gene set using RWR to find the RWR rank
 # of the left-out genes: 
 # - Input: Pre-computed multiplex network and a geneset
-# - Output: Table with the ranking of each gene in the gene set when left out, 
+# - Output: Table with the ranking of each gene in the gene set when left out,
 #           along with AUPRC and AUROC curves
 # Copyright (C) 2022  David Kainer
 #
@@ -65,53 +65,86 @@ update_folds_by_method <- function(geneset, method, num_folds, verbose=FALSE) {
                 message("Gene set:")
                 print(geneset)
             }
-            
-            chunks  <- chunk( sample(geneset$gene), folds)  # we shuffle the geneset to break up and pre-ordering
-            cat("\nCross-validation method is k-fold; folds=", folds, "\n", sep="", file=stderr())
+
+            # we shuffle the geneset to break up and pre-ordering
+            chunks  <- chunk( sample(geneset$gene), folds)
+            cat("\nCross-validation method is k-fold; folds=",
+               folds,
+               "\n",
+               sep = "",
+               file = stderr())
         }
     } else {
-        stop("ERROR: CV method not recognised. must be one of loo, singletons or kfold. Stopping")
+        stop("ERROR: CV method not recognised. must be one of loo, singletons or kfold. Stopping") #nolint message
     }
-    return (list(folds, geneset, chunks, method))
+    return(list(folds, geneset, chunks, method))
 }
 
-extract_leftout_and_seed_genes_cv <- function(geneset, method, r, chunks=NULL) {
-        if (method=='singletons') {
-            seed.genes  <- geneset %>% dplyr::slice(r) %>% dplyr::pull(gene)   # Get one seed gene.
-            leftout     <- geneset %>% dplyr::filter(gene != seed.genes) %>% dplyr::pull(gene)
-        } else if (method == 'loo') {
-            leftout     <- geneset %>% dplyr::slice(r) %>% dplyr::pull(gene)   # leave out one gene.
-            seed.genes  <- geneset %>% dplyr::filter(!gene %in% leftout ) %>% dplyr::pull(gene)
+extract_lo_and_seed_genes_cv <- function(geneset, method, r, chunks=NULL) {
+        if (method == "singletons") {
+            seed_genes  <- geneset %>%
+                                dplyr::slice(r) %>%
+                                dplyr::pull(gene)   # Get one seed gene.
+            leftout     <- geneset %>%
+                                dplyr::filter(gene != seed_genes) %>%
+                                dplyr::pull(gene)
+        } else if (method == "loo") {
+            leftout     <- geneset %>%
+                                dplyr::slice(r) %>%
+                                dplyr::pull(gene)   # leave out one gene.
+            seed_genes  <- geneset %>%
+                                dplyr::filter(!gene %in% leftout) %>%
+                                dplyr::pull(gene)
         } else {
             leftout     <- chunks[[r]]  #get the r'th fold for CV
-            seed.genes  <- geneset %>% dplyr::filter(!gene %in% leftout ) %>% dplyr::pull(gene)
+            seed_genes  <- geneset %>%
+                                dplyr::filter(!gene %in% leftout) %>%
+                                dplyr::pull(gene)
         }
 
-        list(leftout, seed.genes)
+        list(leftout, seed_genes)
 }
 
-create_rankings_cv <- function(rwr, networks, r, name, geneset, method,
-                            seed.genes, leftout, Number_of_Nodes_Multiplex) {
+create_rankings_cv <- function(rwr,
+                               networks,
+                               r,
+                               name,
+                               geneset,
+                               method,
+                               seed_genes,
+                               leftout,
+                               num_nodes_in_multiplex) {
     ## turn Scores into Rankings
     # for any gene that scored 0, give it worst possible rank
-    rwr$RWRM_Results <- rwr$RWRM_Results %>%
-        dplyr::mutate(rank = dplyr::row_number(-Score), # highest score gets lowest rank
-                InValset = as.numeric(rwr$RWRM_Results$NodeNames %in% leftout))  %>% 
-                    dplyr::mutate(rank = dplyr::if_else(Score==0, 
-                            true = as.integer(Number_of_Nodes_Multiplex), 
-                            false = rank))
+    # highest score gets lowest rank
+    rwr$RWRM_Results <- rwr$RWRM_Results %>%                                #nolint output name from rwrmh
+        dplyr::mutate(
+            rank = dplyr::row_number(-Score),
+            InValset = as.numeric(rwr$RWRM_Results$NodeNames %in% leftout)) %>%
+                            dplyr::mutate(rank = dplyr::if_else(Score == 0,
+                                    true = as.integer(num_nodes_in_multiplex),
+                                    false = rank))
 
-    num_in_network = nrow(geneset)
-    num_seeds      = length(seed.genes)
-    num_leftout    = length(leftout)
-    networks       = networks
-    fold           = r
-    modname        = name
-    geneset        = geneset$setid[1]
-    seed           = if (method == 'singletons') seed.genes else if (method == 'loo') 'AllBut1' else 'many'
-    leftout        = if (method == 'singletons') 'AllBut1' else if (method == 'loo') leftout else 'many'
+    num_in_network <- nrow(geneset)
+    num_seeds      <- length(seed_genes)
+    num_leftout    <- length(leftout)
+    networks       <- networks
+    fold           <- r
+    modname        <- name
+    geneset        <- geneset$setid[1]
+    seed           <- if (method == "singletons")
+                         seed_genes
+                      else if (method == "loo")
+                        "AllBut1"
+                      else "many"
+    leftout        <- if (method == "singletons")
+                         "AllBut1"
+                      else if (method == "loo")
+                        leftout
+                      else
+                        "many"
 
-    rwr$RWRM_Results <- rwr$RWRM_Results %>%
+    rwr$RWRM_Results <- rwr$RWRM_Results %>%                    #nolint rwrmh output
         dplyr::mutate(num_in_network = num_in_network,
                     num_seeds      = num_seeds,
                     num_leftout    = num_leftout,
@@ -128,8 +161,16 @@ create_rankings_cv <- function(rwr, networks, r, name, geneset, method,
 
 
 # For 'loo' and 'kfold', each gene is leftout once, so gets ranked once.
-RWR <- function(geneset, adjnorm, mpo, method, num_folds, restart = 0.7,
-                tau = c(1,1), name='default', threads=1, verbose=FALSE) {
+RWR <- function(geneset,
+                adjnorm,
+                mpo,
+                method,
+                num_folds,
+                restart = 0.7,
+                tau = c(1, 1),
+                name="default",
+                threads=1,
+                verbose=FALSE) {
 
     # This is the name of the combined networks.
     networks <- paste(names(mpo)[1:mpo$Number_of_Layers], collapse = "_")
@@ -140,16 +181,34 @@ RWR <- function(geneset, adjnorm, mpo, method, num_folds, restart = 0.7,
     chunks <- updated_data_list[[3]]
     method <- updated_data_list[[4]]
 
-    doParallel::registerDoParallel(cores=threads)
+    doParallel::registerDoParallel(cores = threads)
     res <- foreach::foreach(r = 1:folds) %dopar% {
 
-        leftout_seed.gene_list <- extract_leftout_and_seed_genes_cv(geneset, method, r, chunks)
-        leftout <- leftout_seed.gene_list[[1]]
-        seed.genes <- leftout_seed.gene_list[[2]]
+        lo_seed_genelist <- extract_lo_and_seed_genes_cv(
+                                        geneset,
+                                        method,
+                                        r,
+                                        chunks
+                                    )
+        leftout <- lo_seed_genelist[[1]]
+        seed_genes <- lo_seed_genelist[[2]]
 
         ### run RWR on a fold
-        rwr <- RandomWalkRestartMH::Random.Walk.Restart.Multiplex(x = adjnorm, MultiplexObject = mpo, Seeds = seed.genes, r=restart, tau = tau )
-        ranking_results <- create_rankings_cv(rwr, networks, r, name, geneset, method, seed.genes, leftout, mpo$Number_of_Nodes_Multiplex)
+        rwr <- RandomWalkRestartMH::Random.Walk.Restart.Multiplex(
+                                            x = adjnorm,
+                                            MultiplexObject = mpo,
+                                            Seeds = seed_genes,
+                                            r = restart,
+                                            tau = tau)
+        ranking_results <- create_rankings_cv(rwr,
+                                              networks,
+                                              r,
+                                              name,
+                                              geneset,
+                                              method,
+                                              seed_genes,
+                                              leftout,
+                                              mpo$Number_of_Nodes_Multiplex)
         ranking_results
     }
     doParallel::stopImplicitCluster()
@@ -159,9 +218,13 @@ RWR <- function(geneset, adjnorm, mpo, method, num_folds, restart = 0.7,
 
 
 calc_metrics_cv <- function(res_combined, res_avg) {
-    ### Singletons: each relevant gene (R) is ranked R-1 times. There are R folds, with R-1 left out per fold
-    ### LOO:        each relevant gene (R) is ranked once. There are R folds, with 1 left out per fold
-    ### KFOLD:      each relevant gene (R) is ranked once. There are K folds, with expectation of R/K left out per fold (but not necessarily!!)
+    ### Singletons: each relevant gene (R) is ranked R-1 times.
+    ###             - There are R folds, with R-1 left out per fold
+    ### LOO:        each relevant gene (R) is ranked once.
+    ###             - There are R folds, with 1 left out per fold
+    ### KFOLD:      each relevant gene (R) is ranked once.
+    ###             - There are K folds, with expectation of R/K
+    ### .             left out per fold (but not necessarily!!)
 
     ### For KFOLD and Singletons::
     ### R-Precision is most appropriate metric for ranked retrieval where the
@@ -169,7 +232,8 @@ calc_metrics_cv <- function(res_combined, res_avg) {
     ### where r = number of hits, and R = number of leftout geneset genes.
     ### It is the same as Precision@R.
     ###
-    ### For LOO this doesn't really work because R = 1, so we are looking at Precision @ 1 (lol).
+    ### For LOO this doesn't really work because R = 1, so we are looking
+    ###  at Precision @ 1 (lol).
 
     # PR example: 5 genes left out need to be detected from 10 rankings
     # ranking:  1    2    3    4   5   6   7    8    9     10
@@ -181,157 +245,270 @@ calc_metrics_cv <- function(res_combined, res_avg) {
     # n() no longer works if dplyr not attached #4062
     # https://github.com/tidyverse/dplyr/issues/4062
     # https://github.com/tidyverse/dplyr/blob/master/NEWS.md#breaking-changes
-    if(res_combined$method[1] %in% c("kfold","singletons")) {  # cannot use opt$method here since that can be overridden in RWR
+    if (res_combined$method[1] %in% c("kfold", "singletons")) {
 
         ### calculate ROC/PRC/NDCG per-fold
         res_combined <- res_combined %>%
             dplyr::mutate(fold = as.factor(fold)) %>%
             dplyr::group_by(fold) %>%
-            dplyr::group_modify(~ calc_ROCPRC(df=.x, scorescol = "rank", labelscol = "InValset"))
+            dplyr::group_modify(~ calc_ROCPRC(df = .x,
+                                              scorescol = "rank",
+                                              labelscol = "InValset"))
 
         # 1. precision @ numleftout (aka R-PREC)
         output <- res_combined %>%
             dplyr::group_by(fold) %>%
-            dplyr::filter(rank==num_leftout) %>%
-            dplyr::summarise(value = PREC, measure="P@NumLeftOut")
+            dplyr::filter(rank == num_leftout) %>%
+            dplyr::summarise(value = PREC, measure = "P@NumLeftOut")
 
         # 2. Avg PRC (uses Average Precision, not interpolated precision)
         output <- rbind(output, res_combined %>%
                             dplyr::group_by(fold) %>%
-                            dplyr::filter(TP==1) %>%
-                            dplyr::summarise(value = sum(PREC)/sum(InValset), measure="AvgPrec") )
+                            dplyr::filter(TP == 1) %>%
+                            dplyr::summarise(
+                                value = sum(PREC) / sum(InValset),
+                                measure = "AvgPrec")
+                            )
         # 3. AUPRC
-        output <- rbind(output,res_combined %>%
+        output <- rbind(output, res_combined %>%
                             dplyr::group_by(fold) %>%
-                            dplyr::summarise(value = area_under_curve(REC, PREC, method="trapezoid", ties="max"), measure="AUPRC"))
+                            dplyr::summarise(value = area_under_curve(
+                                                        REC,
+                                                        PREC,
+                                                        method = "trapezoid",
+                                                        ties = "max"),
+                                            measure = "AUPRC"))
         # 4. AUROC
-        output <- rbind(output,res_combined %>%
+        output <- rbind(output, res_combined %>%
             dplyr::group_by(fold) %>%
-            dplyr::summarise(value = sum(REC)/dplyr::n(), measure="AUROC"))
+            dplyr::summarise(value = sum(REC) / dplyr::n(), measure = "AUROC"))
 
         # 5. NDCG
         output <- rbind(output, res_combined %>%
                             dplyr::group_by(fold) %>%
                             dplyr::filter(rank == num_leftout) %>%
-                            dplyr::summarise(value = ndcg, measure="NDCGatNumLeftout"))
+                            dplyr::summarise(
+                                        value = ndcg,
+                                        measure = "NDCGatNumLeftout"))
+
         output <- rbind(output, res_combined %>%
                             dplyr::group_by(fold) %>%
-                            dplyr::summarise(value = area_under_curve(REC, ndcg, method="trapezoid", ties="max"), measure="AUNDCG"))
+                            dplyr::summarise(value = area_under_curve(
+                                                        REC,
+                                                        ndcg,
+                                                        method = "trapezoid",
+                                                        ties = "max"),
+                                            measure = "AUNDCG"))
 
         ### get metrics based on reranking of median ranks
-        res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
-        # 6. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
+        res_avg <- calc_ROCPRC(res_avg,
+                               scorescol = "rerank",
+                               labelscol = "InValset")
+
+        # 6. AvgPrec of median ranks
+        #   (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
-                            dplyr::filter(TP==1) %>%
-                            dplyr::summarise(fold="medrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
+                            dplyr::filter(TP == 1) %>%
+                            dplyr::summarise(
+                                    fold = "medrank",
+                                    value = sum(PREC) / sum(InValset),
+                                    measure = "AvgPrec"))
+
         # 7. AUPRC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max") , measure="AUPRC") )
+                            dplyr::summarise(
+                                        fold = "medrank",
+                                        value = area_under_curve(REC,
+                                                    PREC,
+                                                    method = "trapezoid",
+                                                    ties = "max"),
+                                        measure = "AUPRC"))
         # 8. AUROC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
+                            dplyr::summarise(
+                                fold = "medrank",
+                                value = sum(REC) / dplyr::n(),
+                                measure = "AUROC"))
+
         # 9. AUNDCG of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, ndcg, method="trapezoid", ties="max"), measure="AUNDCG") )
+                            dplyr::summarise(
+                                fold = "medrank",
+                                value = area_under_curve(
+                                            REC,
+                                            ndcg,
+                                            method = "trapezoid",
+                                            ties = "max"),
+                                measure = "AUNDCG"))
     }
 
 
-    if(res_combined$method[1] == "loo") {
+    if (res_combined$method[1] == "loo") {
         ### DON'T get metrics per fold since only 1 gene is left out per fold!!
 
         # 1. rank of each leftout gene
         output <- res_combined %>%
             dplyr::group_by(fold) %>%
-            dplyr::filter(InValset==1) %>%
-            dplyr::summarise(value = rank, measure="leftout.rank")
+            dplyr::filter(InValset == 1) %>%
+            dplyr::summarise(value = rank, measure = "leftout.rank")
 
         # 2. cumulative sum of leftout gene ranks
         output <- rbind(output, res_combined %>%
-                            dplyr::filter(InValset==1 & rank <= sum(InValset)) %>%
-                            dplyr::summarise(fold="all", value=dplyr::n(), measure="RankedBelowNumgeneset"))
+                        dplyr::filter(InValset == 1 & rank <= sum(InValset)) %>%
+                        dplyr::summarise(
+                                fold = "all",
+                                value = dplyr::n(),
+                                measure = "RankedBelowNumgeneset")
+                        )
 
         ### get metrics based on median ranks
-        res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
-        # 3. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
+        res_avg <- calc_ROCPRC(res_avg,
+                               scorescol = "rerank",
+                               labelscol = "InValset")
+
+        # 3. AvgPrec of median ranks
+        #    (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
-                            dplyr::filter(TP==1) %>%
-                            dplyr::summarise(fold="median", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
+                            dplyr::filter(TP == 1) %>%
+                            dplyr::summarise(
+                                    fold = "median",
+                                    value = sum(PREC) / sum(InValset),
+                                    measure = "AvgPrec"))
+
         # 4. AUPRC of median ranks (uses trapezoid method)
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max"), measure="AUPRC"))
+                            dplyr::summarise(fold = "medrank",
+                                            value = area_under_curve(
+                                                        REC,
+                                                        PREC,
+                                                        method = "trapezoid",
+                                                        ties = "max"),
+                                            measure = "AUPRC"))
         # 5. AUROC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
+                            dplyr::summarise(
+                                fold = "medrank",
+                                value = sum(REC) / dplyr::n(),
+                                measure = "AUROC"))
         # 6. AUNDCG of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, ndcg, method="trapezoid", ties="max"), measure="AUNDCG") )
+                            dplyr::summarise(
+                                        fold = "medrank",
+                                        value = area_under_curve(
+                                                    REC,
+                                                    ndcg,
+                                                    method = "trapezoid",
+                                                    ties = "max"),
+                                        measure = "AUNDCG"))
     }
 
     output$geneset <- res_combined$geneset[1]
-    
-    return(list(summary = output, res_combined = res_combined, res_avg = res_avg))
+
+    return(list(
+            summary = output,
+            res_combined = res_combined,
+            res_avg = res_avg))
 
 }
 
-calculate_max_precision <- function(pr, metrics){
-    maxprec <- foreach::foreach(f=pr$fold@.Data, r = pr$recall, .combine = c) %do%
-    {
-        prec <- metrics$res_combined  %>% dplyr::filter(fold==f, REC >= r) %>% dplyr::pull(PREC)
-        if(length(prec)>0)
-            max(prec)
-        else
-            return(0)
-    }
+calculate_max_precision <- function(pr, metrics) {
+    maxprec <- foreach::foreach(
+                f = pr$fold@.Data,
+                r = pr$recall,
+                .combine = c) %do% {
+                    prec <- metrics$res_combined %>%
+                            dplyr::filter(fold == f, REC >= r) %>%
+                            dplyr::pull(PREC)
+
+                    if (length(prec) > 0)
+                        max(prec)
+                    else
+                        return(0)
+            }
     maxprec
 }
 
-        # save_plots_cv(metrics, geneset, folds, dataPath, modname, outdirPath)
-save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath)
-{
+save_plots_cv <- function(
+                    metrics,
+                    geneset,
+                    folds,
+                    data_path,
+                    modname,
+                    outdirPath) {
     message("Generating plots...\n")
     ggplot2::theme_set(ggplot2::theme_light())
-    
-    thestats <- metrics$summary %>% 
-        dplyr::filter(fold!="median") %>% 
-        dplyr::group_by(measure) %>% 
-        dplyr::summarise(mean = round(mean(value),3)) %>% 
+
+    thestats <- metrics$summary %>%
+        dplyr::filter(fold != "median") %>%
+        dplyr::group_by(measure) %>%
+        dplyr::summarise(mean = round(mean(value), 3)) %>%
         tibble::column_to_rownames("measure")
-    
+
     ################################
     # KFOLD (few folds)
     ################################
-    if(metrics$res_combined$method[1] == "kfold" & folds <= 10)
-    {
+    if (metrics$res_combined$method[1] == "kfold" & folds <= 10) {
         ### ROC
-        p1 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined, 
-                      ggplot2::aes(x=FPR, y=REC, group=fold, col="folds"), alpha=0.5) + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(FPR) %>% dplyr::summarise(mean = mean(REC)), 
-                      ggplot2::aes(x=FPR, y=mean, col="mean of folds")) +
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=FPR, y=REC, col="median ranks")) + 
-            ggplot2::geom_abline(ggplot2::aes(intercept=0, slope=1), linetype="dashed", col="darkgrey") +
-            #annotate("text", label=paste0("mean AUROC = ",thestats["AUROC",]), x = 0.75, y = 0.01, size = 4, colour = "darkorange3") + 
+        p1 <- ggplot2::ggplot() +
+            ggplot2::geom_line(data = metrics$res_combined,
+                    ggplot2::aes(
+                                x = FPR,
+                                y = REC,
+                                group = fold,
+                                col = "folds"),
+                    alpha = 0.5) +
+            ggplot2::geom_line(
+                      data = metrics$res_combined %>%
+                                    dplyr::group_by(FPR) %>%
+                                    dplyr::summarise(mean = mean(REC)),
+                      ggplot2::aes(
+                                x = FPR,
+                                y = mean,
+                                col = "mean of folds")) +
+            ggplot2::geom_line(data = metrics$res_avg,
+                      ggplot2::aes(x = FPR, y = REC, col = "median ranks")) +
+            ggplot2::geom_abline(
+                ggplot2::aes(intercept = 0, slope = 1),
+                linetype = "dashed", col = "darkgrey") +
             ggplot2::xlab("FPR") +
-            ggplot2::ylab("TPR (Recall)") + 
+            ggplot2::ylab("TPR (Recall)") +
             ggplot2::scale_color_manual(name = "ROC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::labs(subtitle=paste0(metrics$res_combined$geneset[1])) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal")
-        
+                               breaks = c("folds",
+                                          "mean of folds",
+                                          "median ranks"),
+                               values = c("folds" = "grey",
+                                          "mean of folds" = "darkorange",
+                                          "median ranks" = "darkred")) +
+
+            ggplot2::labs(subtitle = paste0(metrics$res_combined$geneset[1])) +
+            ggplot2::theme(legend.position = "top", legend.box = "horizontal")
+
         ### PRC
-        p2 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined, 
-                      ggplot2::aes(x=REC, y=PREC, group=fold, col="folds"), alpha=0.5) + 
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=REC, y=PREC, col="median ranks")) +
-            ggplot2::geom_hline(yintercept=sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") +
-            #annotate("text", label=paste0("mean AUPRC = ",thestats["AUPRC",]), x = 0.75, y = 0.95, size = 4, colour = "darkorange3") + 
-            ggplot2::scale_color_manual(name = "PRC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal") +
+        p2 <- ggplot2::ggplot() +
+            ggplot2::geom_line(
+                    data = metrics$res_combined,
+                    ggplot2::aes(
+                                x = REC,
+                                y = PREC,
+                                group = fold,
+                                col = "folds"),
+                    alpha = 0.5) +
+            ggplot2::geom_line(data = metrics$res_avg, 
+                      ggplot2::aes(x = REC, y = PREC, col = "median ranks")) +
+            ggplot2::geom_hline(
+                yintercept = sum(metrics$res_avg$InValset) /
+                                nrow(metrics$res_avg),
+                linetype = "dotted") +
+            ggplot2::scale_color_manual(
+                            name = "PRC",
+                            breaks = c("folds",
+                                       "mean of folds",
+                                       "median ranks"),
+                            values = c("folds"="grey",
+                                       "mean of folds" = "darkorange",
+                                       "median ranks" = "darkred")) +
+            ggplot2::theme(legend.position = "top",
+                           legend.box = "horizontal") +
             ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
         
         ### Interpolated PRC
@@ -407,7 +584,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
             ggplot2::ylab("Geneset genes in bin")# ranking distribution of hits in bins of 100 for median of folds
 
         
-        fname = paste("RWR-CV", metrics$res_combined$geneset[1], basename(dataPath), modname, sep="_")
+        fname = paste("RWR-CV", metrics$res_combined$geneset[1], basename(data_path), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
         out_path = file.path(outdirPath, fname)
         
@@ -509,7 +686,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
             ggplot2::xlab("CV median rank (binwidth=100)") + 
             ggplot2::ylab("Geneset genes in bin")
         
-        fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(dataPath), modname, sep="_")
+        fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(data_path), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
         out_path = file.path(outdirPath, fname)
         
@@ -594,7 +771,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
             ggplot2::xlab("CV median rank (binwidth=100)") + 
             ggplot2::ylab("Geneset genes in bin")
         
-        fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(dataPath), modname, sep="_")
+        fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(data_path), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
         out_path = file.path(outdirPath, fname)
         
@@ -698,7 +875,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'
 #' `RWR_CV` RWR Cross Validation performs K-fold cross validation on a single gene set, finding the RWR rank of the left-out genes.  Can choose: (1) leave-one-out (`loo`) to leave only one gene from the gene set out and find its rank, (2) cross-validation (`kfold`) to run k-fold cross-validation for a specified value of *k*, or (3) singletons (`singletons`) to use a single gene as a seed and find the rank of all remaining genes.
 #'
-#' @param dataPath The path to the .Rdata file for your combo of underlying functional networks. This file is produced by RWR_make_multiplex. Default NULL
+#' @param data_path The path to the .Rdata file for your combo of underlying functional networks. This file is produced by RWR_make_multiplex. Default NULL
 #' @param genesetPath The path to the gene set file. It must have the following first two columns with no headers tab-delimited: {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL
 #' @param method Cross-validation method. Choice of: 'kfold', 'loo', or 'singletons' Default 'kfold'
 #' @param folds Number (k) of folds to use in k-fold CV. Default 5
@@ -723,7 +900,8 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #' geneset_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
 #' outdir <- paste(extdata.dir, '/out/rwr_cv', sep='') 
 #'
-#' cv_examples <- RWR_CV(dataPath=multiplex_object_filepath,
+#' 
+#' cv_examples <- RWR_CV(data_path=multiplex_object_filepath,
 #'                    tau="1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
 #'                    genesetPath=geneset_filepath,
 #'                    outdirPath=outdir,
@@ -732,15 +910,16 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'
 #' # An example of Running RWR CV with non-default method and writing to file
 #' # Loads a 10 layer multiplex and does not write to file: 
-#' cv_examples <- RWR_CV(dataPath=multiplex_object_filepath,
+#' cv_examples <- RWR_CV(data_path=multiplex_object_filepath,
 #'                   tau="1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
 #'                   genesetPath=geneset_filepath,
 #'                   outdirPath=outdir,    
 #'                   method='singletons',     
 #'                   write_to_file=TRUE) 
+#' 
 #' @export
 RWR_CV <- function(
-    dataPath=NULL,
+    data_path=NULL,
     genesetPath=NULL,
     method='kfold',
     folds=5,
@@ -758,7 +937,7 @@ RWR_CV <- function(
     ) {
 
     ############# Initialize  ##################################################
-    data_list <- load_multiplex_data(dataPath)
+    data_list <- load_multiplex_data(data_path)
     nw.mpo <- data_list$nw.mpo
     nw.adjnorm <- data_list$nw.adjnorm
 
@@ -795,7 +974,7 @@ RWR_CV <- function(
     if (!is.null(outFullRanks)) {
         out_path = outFullRanks
     } else {
-        out_path = get_file_path("RWR-CV_",res_combined$geneset[1],basename(dataPath),modname,
+        out_path = get_file_path("RWR-CV_",res_combined$geneset[1],basename(data_path),modname,
                                  outdir=outdirPath, ext=".fullranks.tsv")
     }
     
@@ -812,7 +991,7 @@ RWR_CV <- function(
     if (!is.null(outMedianRanks)) {
         out_path = outMedianRanks
     } else {
-        out_path = get_file_path("RWR-CV_",res_avg$geneset[1],basename(dataPath),modname,
+        out_path = get_file_path("RWR-CV_",res_avg$geneset[1],basename(data_path),modname,
                                  outdir=outdirPath, ext=".medianranks.tsv")
     }
 
@@ -824,18 +1003,18 @@ RWR_CV <- function(
 
     ############# Save metrics  ################################################
 
-    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath),modname,
+    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data_path),modname,
                              outdir=outdirPath, ext=".metrics.tsv")
     if(write_to_file){write_table(metrics$res_avg, out_path)}
 
-    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(dataPath), modname,
+    out_path = get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data_path), modname,
                              outdir=outdirPath, ext=".summary.tsv")
     if(write_to_file){write_table(metrics$summary, out_path)}
 
     ############# Save plots  ##################################################
     if (plot) {
         message('Saving plots ...')
-        save_plots_cv(metrics, geneset, folds, dataPath, modname, outdirPath)
+        save_plots_cv(metrics, geneset, folds, data_path, modname, outdirPath)
     }
 
     return(list("fullranks"=res_combined,"medianranks"=res_avg,"metrics"=metrics$res_avg,"summary"=metrics$summary))
