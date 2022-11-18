@@ -2,9 +2,9 @@
 # Common functions for RWRtoolkit.
 ########################################################################
 # Copyright (C) 2022  David Kainer
-# 
+#
 # This file is part of RWRtoolkit.
-# 
+#
 # RWRtoolkit is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, either version 3 of the License, or (at your option) any later
@@ -25,7 +25,7 @@ load_geneset <- function(path, nw.mpo = NULL, verbose=FALSE) {
     } else if (!file.exists(path)) {
         stop("ERROR: geneset file does not exist: ", path)
     } else {
-        geneset <- read.table(path, header = F, colClasses=c('character'))
+        geneset <- read.table(path, header = F, colClasses = c('character'))
         if (ncol(geneset) < 2) {
             stop("Your geneset file is incorrectly formatted. Please see documentation.")
         }
