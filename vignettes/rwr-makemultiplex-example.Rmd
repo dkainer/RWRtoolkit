@@ -166,3 +166,5 @@ stats::heatmap(as.matrix(nw.adj)[nrow(as.matrix(nw.adj)):1, ], Colv=NA, Rowv=NA,
 ```{r echo=F}
 stats::heatmap(as.matrix(nw.adjnorm)[nrow(as.matrix(nw.adjnorm)):1, ], Colv=NA, Rowv=NA, scale='none')
 ```
+
+No we have made our multiplex and are ready to run any of the tools within the RWRtoolkit!

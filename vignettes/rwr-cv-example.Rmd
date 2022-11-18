@@ -37,7 +37,9 @@ igraph::plot.igraph(layer1)
 igraph::plot.igraph(layer2)
 igraph::plot.igraph(layer3)
 ```
+
 Once the networks have been generated, we can save these as an edge list
+
 ```{r}
 
 ## Function to convert edgelists from graphs and save to file. 
@@ -81,6 +83,7 @@ RWRtoolkit::RWR_make_multiplex(
    verbose = TRUE
  )
 ```
+
 The RWRtoolkit::RWR_make_multiplex will then generate an output multiplex, saved to `.toy_network.Rdata`.  The file will contain the network variables: 
 
 - `nw.mpo`:     The multiplex object

@@ -76,7 +76,12 @@ par(mfrow=c(1,1))
 ```
 
 ### FLIST Generation
-We now have all three of our layers, we need to create a quick flist and then to make our multiplex! 
+We now have all three of our layers, we need to create a quick flist and then to make our multiplex! The flist must be a file of the type: 
+
+| path_to_file1 | layer1_name | layer_group |
+| path_to_file2 | layer2_name | layer_group |
+| path_to_file3 | layer3_name | layer_group |
+
 ```{r}
 filepaths <- c('./abc_layer1.tsv', './abc_layer2.tsv', './abc_layer3.tsv')
 layernames <- c('layer1', 'layer2', 'layer3')
