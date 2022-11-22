@@ -121,7 +121,7 @@ With our multiplex and gold set genes in place, we can run `RWR_CV`. First, let'
 
 ```{r}
 goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
-  dataPath = multiplexNetworkPath,
+  data = multiplexNetworkPath,
   genesetPath = goldsetPath,
   method = "loo",
   restart = 0.7,
@@ -151,7 +151,7 @@ write.table(genesetDF, goldsetPath, row.names = FALSE, col.names = FALSE, sep = 
 We can then test our network by running RWR_CV on this network and evaluating the median ranks: 
 ```{r}
 goldsetCV_singletonsOutput <- RWRtoolkit::RWR_CV(
-  dataPath = multiplexNetworkPath,
+  data = multiplexNetworkPath,
   genesetPath = goldsetPath,
   method = "singletons",
   restart = 0.7,

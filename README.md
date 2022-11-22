@@ -233,7 +233,7 @@ Examples
     outdir.path <- '~/RWRtoolkitOutput/'
 
     RWRtoolkit::RWR_CV(
-      dataPath = string.interactions.fp ,
+      data = string.interactions.fp ,
       genesetPath = geneset.path,
       outdirPath = outdir.path)
     ```
