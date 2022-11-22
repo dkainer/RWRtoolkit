@@ -145,7 +145,7 @@ write.table(target_df, file = target_file, quote = F, sep = "\t", row.names = F,
 Finally, now that we have a network, source nodes, and target nodes, we can call `RWR_shortestpaths`. 
 ```{r}
 shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
-  multiplex_filepath = multiplex_filename,
+  data = multiplex_filename,
   source_geneset = source_file,
   target_geneset = target_file
 )
@@ -183,7 +183,7 @@ write.table(source_df, file = source_file, quote = F, sep = "\t", row.names = F,
 write.table(target_df, file = target_file, quote = F, sep = "\t", row.names = F, col.names = F)
 
 shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
-  multiplex_filepath = multiplex_filename,
+  data = multiplex_filename,
   source_geneset = source_file,
   target_geneset = target_file
 )
@@ -241,7 +241,7 @@ read.table(geneset2_filepath, sep = "\t")
 To run `RWR Shortest Paths` we paste in the filepaths to our flist, source, and target genesets: 
 ```{r}
 shortest_path_df <- RWR_ShortestPaths(
-  multiplex_filepath = multiplex_object_filepath,
+  data = multiplex_object_filepath,
   source_geneset = geneset1_filepath,
   target_geneset = geneset2_filepath
 )

@@ -339,7 +339,7 @@ extract_highest_scoring_path <- function(shortest_paths_df,
 #' 2) provide two genesets (g and p) and you will get the shortest paths
 #' between genes in g and genes in p.
 #'
-#' @param multiplex_filepath Path to the .Rdata file for your combo of
+#' @param data Path to the .Rdata file for your combo of
 #' underlying functional networks. This file is produced by
 #' RWR_make_MHobject.R
 #' @param source_geneset Path to the gene set file. If given with
@@ -384,7 +384,7 @@ extract_highest_scoring_path <- function(shortest_paths_df,
 #'
 #' @export
 RWR_ShortestPaths <- function( # nolint
-                              multiplex_filepath = NULL,
+                              data = NULL,
                               source_geneset = NULL,
                               target_geneset = NULL,
                               outdir = ".",
@@ -395,7 +395,7 @@ RWR_ShortestPaths <- function( # nolint
                               write_to_file = FALSE) {
   nw_mpo <- NULL
   # This is a saved version of the multiplex network and adj matrix.
-  load(multiplex_filepath)
+  load(data)
   nw_mpo <- nw.mpo # nolint - loaded from filepath
   if (verbose) {
     message("Loaded data:")

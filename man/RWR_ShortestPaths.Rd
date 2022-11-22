@@ -5,7 +5,7 @@
 \title{RWR Shortest Paths}
 \usage{
 RWR_ShortestPaths(
-  multiplex_filepath = NULL,
+  data = NULL,
   source_geneset = NULL,
   target_geneset = NULL,
   outdir = ".",
@@ -17,7 +17,7 @@ RWR_ShortestPaths(
 )
 }
 \arguments{
-\item{multiplex_filepath}{Path to the .Rdata file for your combo of
+\item{data}{Path to the .Rdata file for your combo of
 underlying functional networks. This file is produced by
 RWR_make_MHobject.R}
 

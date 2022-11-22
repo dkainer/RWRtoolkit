@@ -18,7 +18,7 @@ parse_arguments <- function() {
             networks. This file is produced by RWR_make_MHobject.R"
     ),
     make_option(
-      c("-g", "--source-geneset"),
+      c("-g", "--source_geneset"),
       action = "store",
       default = NULL,
       type = "character",
@@ -28,7 +28,7 @@ parse_arguments <- function() {
             It must have the following cols without heading: <setid> <gene>"
     ),
     make_option(
-      c("-p", "--target-geneset"),
+      c("-p", "--target_geneset"),
       action = "store",
       default = NULL,
       type = "character",
@@ -54,7 +54,7 @@ parse_arguments <- function() {
     make_option(
       c("-t", "--threads"),
       action = "store",
-      default = parallel::detectCores() - 1,
+      default = 1,
       type = "numeric",
       help = "Number of threads to use. default [default %default]"
     ),
@@ -124,8 +124,11 @@ parse_arguments <- function() {
 
 main <- function() {
   ## Processing arguments
+print("parse options")
   opt <- parse_arguments()
 
+    print("OPTINOS")
+    print(opt)
   ## Call to ShortestPaths
   RWRtoolkit::RWR_ShortestPaths(
     data = opt$data,

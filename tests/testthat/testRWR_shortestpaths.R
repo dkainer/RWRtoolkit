@@ -67,7 +67,7 @@ describe("basic test", {
   it("runs normally and saves to file", {
     expect_message(
       RWRtoolkit::RWR_ShortestPaths(
-        multiplex_filepath = data,
+        data = data,
         source_geneset = geneset1,
         target_geneset = geneset2,
         outdir = outdir,
@@ -95,7 +95,7 @@ describe("test RWR_shortestpaths", {
     sink_set_filepath <- "../testGenesets/test_abc_genesetA.tsv"
 
     actual <- RWRtoolkit::RWR_ShortestPaths(
-      multiplex_filepath = abc_multiplex_filepath,
+      data = abc_multiplex_filepath,
       source_geneset = source_set_filepath,
       target_geneset = sink_set_filepath
     )

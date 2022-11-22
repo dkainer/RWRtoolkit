@@ -69,6 +69,7 @@ describe("RWR inst/scripts", {
       folds <- 3
       tau <- "1,1,1,1,1,1,1,1,1"
 
+      # Run script
       script <- paste(
         "Rscript",
         run_cv_filepath,
@@ -81,32 +82,46 @@ describe("RWR inst/scripts", {
         "--folds",
         folds,
         "--outdir",
-        output_directory,
+        output_directory_script,
         "--tau",
         tau
       )
       system(script)
+
+      # Run regular
       RWRtoolkit::RWR_CV(
         data = network_filepath,
-        geneset = geneset_filepath,
-        
+        geneset_path = geneset_filepath,
+        method = method,
+        folds = folds,
+        outdir_path = output_directory_rfunc,
+        tau = tau,
+        write_to_file = T
       )
 
-      output_files_script <- list.files(output_directory)
-      actual_file_count_script <- length(output_files)
+      output_files_script <- list.files(output_directory_script)
+      actual_file_count_script <- length(output_files_script)
       actual_metrics_nrow_script <- nrow(
         read.table(
-          paste(output_directory, output_file_base, "metrics", ".tsv", sep = "")
+          paste(output_directory_script,
+                output_file_base,
+                "metrics",
+                ".tsv",
+                sep = "")
         )
       )
       actual_summary_nrow_script <- nrow(
         read.table(
-          paste(output_directory, output_file_base, "summary", ".tsv", sep = "")
+          paste(output_directory_script,
+                output_file_base,
+                "summary",
+                ".tsv",
+                sep = "")
         )
       )
       actual_fullranks_nrow_script <- nrow(
         read.table(
-          paste(output_directory,
+          paste(output_directory_script,
             output_file_base,
             "fullranks",
             ".tsv",
@@ -116,7 +131,7 @@ describe("RWR inst/scripts", {
       )
       actual_medianranks_nrow_script <- nrow(
         read.table(
-          paste(output_directory,
+          paste(output_directory_script,
             output_file_base,
             "medianranks",
             ".tsv",
@@ -125,57 +140,193 @@ describe("RWR inst/scripts", {
         )
       )
 
+      output_files_rfunc <- list.files(output_directory_rfunc)
+      actual_file_count_rfunc <- length(output_files_rfunc)
+      actual_metrics_nrow_rfunc <- nrow(
+        read.table(
+          paste(output_directory_rfunc,
+                output_file_base,
+                "metrics",
+                ".tsv",
+                sep = "")
+        )
+      )
+      actual_summary_nrow_rfunc <- nrow(
+        read.table(
+          paste(output_directory_rfunc,
+                output_file_base,
+                "summary",
+                ".tsv",
+                sep = "")
+        )
+      )
+      actual_fullranks_nrow_rfunc <- nrow(
+        read.table(
+          paste(output_directory_rfunc,
+            output_file_base,
+            "fullranks",
+            ".tsv",
+            sep = ""
+          )
+        )
+      )
+      actual_medianranks_nrow_rfunc <- nrow(
+        read.table(
+          paste(output_directory_rfunc,
+            output_file_base,
+            "medianranks",
+            ".tsv",
+            sep = ""
+          )
+        )
+      )
 
-
-      expect_equal(actual_file_count, expected_file_count)
-      expect_equal(actual_metrics_nrow, expected_metrics_nrow)
-      expect_equal(actual_summary_nrow, expected_summary_nrow)
-      expect_equal(actual_fullranks_nrow, expected_fullranks_nrow)
-      expect_equal(actual_medianranks_nrow, expected_medianranks_nrow)
+    expect_equal(output_files_script, output_files_rfunc)
+    expect_equal(actual_file_count_script, actual_file_count_rfunc)
+    expect_equal(actual_metrics_nrow_script, actual_metrics_nrow_rfunc)
+    expect_equal(actual_summary_nrow_script, actual_summary_nrow_rfunc)
+    expect_equal(actual_fullranks_nrow_script, actual_fullranks_nrow_rfunc)
+    expect_equal(actual_medianranks_nrow_script, actual_medianranks_nrow_rfunc)
     })
 
      teardown({
-       system("rm -rf ./runCVOutput")
+       system("rm -rf ./runCVOutput_*")
      })
   })
+
   describe("run_loe", {
     it("Runs rwr loe from the command line", {
 
-      run_cv_filepath <- "../../inst/scripts/run_loe.R"
+      run_loe_filepath <- "../../inst/scripts/run_loe.R"
       network_filepath <- "../testSTRINGDB/string_interactions.Rdata"
       geneset_filepath <- "../testSTRINGDB/geneset1.tsv"
-      output_directory <- "./rwr_loe_output/"
+      output_directory_script <- "./rwr_loe_output_script/"
+      output_directory_func <- "./rwr_loe_output_func/"
       output_file_base <- "RWR-LOE_setA1_default"
 
       tau <- "1,1,1,1,1,1,1,1,1"
 
       script <- paste(
         "Rscript",
-        run_cv_filepath,
+        run_loe_filepath,
         "--data",
         network_filepath,
-        "--geneset",
+        "--seed_geneset",
         geneset_filepath,
         "--outdir",
-        output_directory,
+        output_directory_script,
         "--tau",
         tau
       )
-
       system(script)
 
-      output_files <- list.files(output_directory)
+      RWRtoolkit::RWR_LOE(
+        data = network_filepath,
+        seed_geneset = geneset_filepath,
+        outdir = output_directory_func,
+        tau = tau
+      )
 
-      expect_equal(length(output_files), 1)
-      expect_true(stringr::str_detect(string = output_files[1],
-                  pattern = output_file_base))
+      output_files_script <- list.files(output_directory_script)
+      output_files_func <- list.files(output_directory_func)
+
+
+
+      actual_loe_ranks_script <- nrow(
+        read.table(
+          paste(output_directory_script,
+            output_files_script[1],
+            sep = ""
+          )
+        )
+      )
+
+
+      actual_loe_ranks_func <- nrow(
+        read.table(
+          paste(output_directory_func,
+            output_files_func[1],
+            sep = ""
+          )
+        )
+      )
+
+      expect_equal(length(output_files_script), length(output_files_func))
+      expect_equal(actual_loe_ranks_script, actual_loe_ranks_func)
+
     })
 
      teardown({
-       system("rm -rf ./rwr_loe_output")
+       system("rm -rf ./rwr_loe_output_*")
      })
   })
+
+  describe("run_shortestpaths", {
+        it("Runs rwr shortest paths from the command line", {
+          run_shortestpaths_filepath <- "../../inst/scripts/run_shortestpaths.R"
+          network_filepath <- "../testSTRINGDB/string_interactions.Rdata"
+          source_geneset <- "../testSTRINGDB/geneset1.tsv"
+          target_geneset <- "../testSTRINGDB/geneset2.tsv"
+          output_directory_script <- "./rwr_shortestpaths_output_script/"
+          output_directory_func <- "./rwr_shortestpaths_output_func/"
+          output_file_base <- "RWR-shortestpaths_setA1_default"
+
+          tau <- "1,1,1,1,1,1,1,1,1"
+
+          script <- paste(
+            "Rscript",
+            run_shortestpaths_filepath,
+            "--data",
+            network_filepath,
+            "--source_geneset",
+            source_geneset,
+            "--target_geneset",
+            target_geneset,
+            "--outdir",
+            output_directory_script
+          )
+          system(script)
+
+
+          RWRtoolkit::RWR_ShortestPaths(
+            data = network_filepath, 
+            source_geneset =  source_geneset, 
+            target_geneset = target_geneset, 
+            outdir = output_directory_func, 
+            write_to_file =  T
+          )
+
+          output_files_script <- list.files(output_directory_script)
+          output_files_func <- list.files(output_directory_func)
+
+          actual_shortpaths_ranks_script <- nrow(
+            read.table(
+              paste(output_directory_script,
+                output_files_func[1],
+                sep = ""
+              )
+            )
+          )
+
+
+          actual_shortpaths_ranks_func <- nrow(
+            read.table(
+              paste(output_directory_func,
+                output_files_func[1],
+                sep = ""
+              )
+            )
+          )
+
+          expect_equal(length(output_files_script), length(output_files_func))
+          expect_equal(actual_shortpaths_ranks_script,
+                      actual_shortpaths_ranks_func)
+        })
+
+        teardown({
+          system("rm -rf ./rwr_shortestpaths_output_*")
+        })
+  })
   # describe("run_netscore")
-  # describe("run_shortestpaths")
 
 })
