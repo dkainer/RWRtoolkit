@@ -87,4 +87,11 @@ if (opt$verbose) {
 }
 
 
-RWRtoolkit::RWR_make_multiplex(flist = opt$flist, delta = opt$delta, lambda = opt$lambda, output = opt$out, test = opt$test, verbose = opt$verbose)
+RWRtoolkit::RWR_make_multiplex(
+    flist = opt$flist,
+    delta = opt$delta,
+    lambda = opt$lambda,
+    output = opt$out,
+    test = opt$test,
+    verbose = opt$verbose
+  )

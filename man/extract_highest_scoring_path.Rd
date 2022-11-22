@@ -26,7 +26,7 @@ edgeweight_i / N_vertices_in_layer\preformatted{                     "weight" us
 }}
 }
 \value{
-Returns a data frame following the path with the highest edge weights.
+Returns a data frame following the path with the highest edge weights
 }
 \description{
 \code{extract_highest_scoring_path}  parses through the dataframe output of
@@ -41,24 +41,24 @@ weight.
 
 extdata.dir <- system.file("example_data", package = "RWRtoolkit")
 multiplex_object_filepath <- paste(extdata.dir,
-    "/string_interactions.Rdata",
-    sep = ""
+  "/string_interactions.Rdata",
+  sep = ""
 )
 geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
 outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
 
 rwr_shortest_path_output <- RWR_ShortestPaths(
-    data = multiplex_object_filepath,
-    source_geneset = geneset1_filepath,
-    target_geneset = geneset2_filepath,
-    write_to_file = TRUE,
-    outdir = outdir
+  data = multiplex_object_filepath,
+  source_geneset = geneset1_filepath,
+  target_geneset = geneset2_filepath,
+  write_to_file = TRUE,
+  outdir = outdir
 )
 
 optimal_path <- extract_highest_scoring_path(
-                         rwr_shortest_path_output,
-                         desired_path = "TPI1_PMM2")
-
+  rwr_shortest_path_output,
+  desired_path = "TPI1_PMM2"
+)
 
 }

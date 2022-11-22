@@ -14,7 +14,7 @@ parse_arguments <- function() {
       default = NULL,
       type = "character",
       help = "The path to the .Rdata file for your combo of underlying
-                    functional networks. This file is produced by RWR_make_multiplex."
+              functional networks. This file is produced by RWR_make_multiplex."
     ),
     make_option(c("-g", "--geneset"),
       action = "store",
@@ -50,14 +50,14 @@ parse_arguments <- function() {
       action = "store",
       default = "1.0",
       help = "comma-separated list of values between that MUST add
-                    up to the number of network layers in the .Rdata file.
-                    One value per network layer that determines the probability
-                    that the random walker will restart in that layer. e.g.
-                    if there are three layers (A,B,C) in your multiplex network,
-                    then --tau '0.2,1.3,1.5' will mean that layer A is less likely
-                    to be walked on after a restart than layers B or C.
-                    [default %default]"
-    ),
+              up to the number of network layers in the .Rdata file.
+              One value per network layer that determines the probability
+              that the random walker will restart in that layer. e.g.
+              if there are three layers (A,B,C) in your multiplex network,
+              then --tau '0.2,1.3,1.5' will mean that layer A is less likely
+              to be walked on after a restart than layers B or C.
+              [default %default]"
+),
     make_option(c("-n", "--numranked"),
       action = "store",
       default = 1.0,
@@ -71,8 +71,8 @@ parse_arguments <- function() {
       default = NULL,
       type = "character",
       help = "Path to the output directory. Both 'fullranks' and
-                    'medianranks' will be saved here with auto-generated filenames.
-                    (--out-fullranks and --out-medianranks override this.)"
+              'medianranks' will be saved here with auto-generated filenames.
+              (--out-fullranks and --out-medianranks override this.)"
     ),
     make_option(c("-m", "--modname"),
       action = "store",
@@ -182,18 +182,18 @@ main <- function(opt) {
   # options(dplyr.summarise.inform = FALSE)
 
   RWRtoolkit::RWR_CV(
-    dataPath = opt$data,
-    genesetPath = opt$geneset,
+    data = opt$data,
+    geneset_path = opt$geneset,
     method = opt$method,
     folds = opt$folds,
     restart = opt$restart,
     tau = opt$tau,
     numranked = opt$numranked,
-    outdirPath = opt$outdir,
+    outdir_path = opt$outdir,
     modname = opt$modname,
     plot = opt$plot,
-    outFullRanks = opt$out_fullranks,
-    outMedianRanks = opt$out_medianranks,
+    out_full_ranks = opt$out_fullranks,
+    out_median_ranks = opt$out_medianranks,
     threads = opt$threads,
     verbose = opt$verbose,
     write_to_file = TRUE

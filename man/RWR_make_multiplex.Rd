@@ -41,35 +41,41 @@ Mutliplex object is saved to a file (.rdata) to load into subsequent functions.
 \code{RWR_make_multiplex} creates a multiplex network.
 }
 \examples{
-# 
+#
 # An example of a default RWR Make Multiplex with an output "network.Rdata"
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
-outdir <- paste(extdata.dir, '/out/rwr_make_multiplex', sep='')
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+outdir <- paste(extdata.dir, "/out/rwr_make_multiplex", sep = "")
 
-layers.path <- paste(extdata.dir, '/layers/', sep='')
+layers.path <- paste(extdata.dir, "/layers/", sep = "")
 layers <- list.files(layers.path)
-layer_with_paths <- paste(layers.path, layers, sep='')
+layer_with_paths <- paste(layers.path, layers, sep = "")
 layer_names <- sub(pattern = "(.*)\\\\..*$", replacement = "\\\\1", basename(layers))
 groups <- rep(1, length(layer_names))
 flistdatatable <- data.table::data.table(layer_with_paths, layer_names, groups)
 
-outfile <- paste(outdir, '/multiplex.Rdata', sep='')
-write.table(flistdatatable, row.names=FALSE, col.names=FALSE, sep='\t', 
-                   file='example.flist', quote=FALSE)
+outfile <- paste(outdir, "/multiplex.Rdata", sep = "")
+write.table(flistdatatable,
+  row.names = FALSE, col.names = FALSE, sep = "\t",
+  file = "example.flist", quote = FALSE
+)
 
-RWR_make_multiplex(flist="example.flist",
-                   output=outfile)
+RWR_make_multiplex(
+  flist = "example.flist",
+  output = outfile
+)
 
 
 
-# An example of an RWR Make Multiplex with a non-default delta and 
-# lambda with a specified output filename. 
-outfile <- paste(outdir, '/multiplex_d25_l75.Rdata', sep='')
-RWR_make_multiplex(flist="example.flist", 
-                     delta=0.25, 
-                     lambda=0.75,
-                     output=outfile)
+# An example of an RWR Make Multiplex with a non-default delta and
+# lambda with a specified output filename.
+outfile <- paste(outdir, "/multiplex_d25_l75.Rdata", sep = "")
+RWR_make_multiplex(
+  flist = "example.flist",
+  delta = 0.25,
+  lambda = 0.75,
+  output = outfile
+)
 
-system('rm example.flist')
+system("rm example.flist")
 
 }

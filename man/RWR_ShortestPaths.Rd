@@ -65,20 +65,21 @@ between genes in g and genes in p.
 
 # An example of Running RWR_ShortestPaths
 
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
 multiplex_object_filepath <- paste(extdata.dir,
-                                   '/string_interactions.Rdata',
-                                   sep='')
-geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
-geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
-outdir <- paste(extdata.dir, '/out/rwr_shortestpath', sep='')
+  "/string_interactions.Rdata",
+  sep = ""
+)
+geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
+geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
+outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
 
-rwr_shortest_path_output <- RWR_ShortestPaths(data=multiplex_object_filepath,
-                                            source_geneset=geneset1_filepath,
-                                            target_geneset=geneset2_filepath,
-                                            write_to_file=TRUE,
-                                            outdir=outdir)
-
-
+rwr_shortest_path_output <- RWR_ShortestPaths(
+  data = multiplex_object_filepath,
+  source_geneset = geneset1_filepath,
+  target_geneset = geneset2_filepath,
+  write_to_file = TRUE,
+  outdir = outdir
+)
 
 }

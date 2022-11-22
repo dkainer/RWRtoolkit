@@ -5,82 +5,121 @@
 \title{RWR Cross Validation}
 \usage{
 RWR_CV(
-  dataPath = NULL,
-  genesetPath = NULL,
+  data = NULL,
+  geneset_path = NULL,
   method = "kfold",
   folds = 5,
   restart = 0.7,
   tau = 1,
   numranked = 1,
-  outdirPath = NULL,
+  outdir_path = NULL,
   modname = "default",
   plot = FALSE,
-  outFullRanks = NULL,
-  outMedianRanks = NULL,
+  out_full_ranks = NULL,
+  out_median_ranks = NULL,
   threads = parallel::detectCores - 1,
   verbose = FALSE,
   write_to_file = FALSE
 )
 }
 \arguments{
-\item{dataPath}{The path to the .Rdata file for your combo of underlying functional networks. This file is produced by RWR_make_multiplex. Default NULL}
+\item{data}{The path to the .Rdata file for your combo of underlying
+functional networks. This file is produced by
+RWR_make_multiplex. Default NULL}
 
-\item{genesetPath}{The path to the gene set file. It must have the following first two columns with no headers tab-delimited: {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL}
+\item{geneset_path}{The path to the gene set file. It must have the
+following first two columns with no headers
+tab-delimited:
+{<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL}
 
-\item{method}{Cross-validation method. Choice of: 'kfold', 'loo', or 'singletons' Default 'kfold'}
+\item{method}{Cross-validation method. Choice of: 'kfold', 'loo', or
+'singletons' Default 'kfold'}
 
 \item{folds}{Number (k) of folds to use in k-fold CV. Default 5}
 
-\item{restart}{Set the restart parameter [0,1). Higher value means the walker will jump back to seed node more often. Default 0.7}
+\item{restart}{Set the restart parameter [0,1). Higher value means the
+walker will jump back to seed node more often. Default 0.7}
 
-\item{tau}{Comma-separated list of values between that MUST add up to the number of network layers in the .Rdata file. One value per network layer that determines the probability that the random walker will restart in that layer. e.g. if there are three layers (A,B,C) in your multiplex network, then --tau '0.2,1.3,1.5' will mean that layer A is less likely to be walked on after a restart than layers B or C.  Default 1.0}
+\item{tau}{Comma-separated list of values between that MUST add up to the
+number of network layers in the .Rdata file. One value per
+network layer that determines the probability that the random
+walker will restart in that layer. e.g. if there are three layers
+(A,B,C) in your multiplex network, then --tau '0.2,1.3,1.5' will
+mean that layer A is less likely to be walked on after a restart
+than layers B or C.  Default 1.0}
 
-\item{numranked}{Proportion of ranked genes to return [0,1].  e.g. 0.1 will return the top 10\%. Default 1.0}
+\item{numranked}{Proportion of ranked genes to return [0,1].  e.g. 0.1 will
+return the top 10\%. Default 1.0}
 
-\item{outdirPath}{Path to the output directory. Both 'fullranks' and 'medianranks' will be saved with auto-generated filenames. Can be overridden by specifically setting 'outFullRanks' and 'outMedianRanks' parameters. No defined path will output within the same directory from which the original code was run.  Default NULL}
+\item{outdir_path}{Path to the output directory. Both 'fullranks' and
+'medianranks' will be saved with auto-generated filenames.
+Can be overridden by specifically setting 'out_full_ranks'
+and 'out_median_ranks' parameters. No defined path will
+output within the same directory from which the original
+code was run.
+Default NULL}
 
 \item{modname}{String to include in output file name.  Default "default"}
 
 \item{plot}{Output plots of ROC, PRC, and NDCG etc. to file. Default FALSE}
 
-\item{outFullRanks}{Specify the full path for the full results. Ignores outdirPath and modName, using this path instead. Default NULL}
+\item{out_full_ranks}{Specify the full path for the full results. Ignores
+outdir_path and modName, using this path instead.
+Default NULL}
 
-\item{outMedianRanks}{Specify the full path for the median results. Ignores outdirPath and modName, using this path instead. Default NULL}
+\item{out_median_ranks}{Specify the full path for the median results. Ignores
+outdir_path and modName, using this path instead.
+Default NULL}
 
-\item{threads}{Specify the number of threads to use. Default for your system is all cores - 1.}
+\item{threads}{Specify the number of threads to use. Default for your system
+is all cores - 1.}
 
 \item{verbose}{Verbose mode. Default FALSE}
 
-\item{write_to_file}{Also write the result to a file. Default FALSE, however, if output paths are included, the boolean is switched to true.}
+\item{write_to_file}{Also write the result to a file. Default FALSE, however,
+if output paths are included, the boolean is switched
+to true.}
 }
 \value{
-Returns a list of four data tables: fullranks, medianranks, metrics, and summary.
+Returns a list of four data tables: fullranks, medianranks, metrics,
+and summary.
 }
 \description{
-\code{RWR_CV} RWR Cross Validation performs K-fold cross validation on a single gene set, finding the RWR rank of the left-out genes.  Can choose: (1) leave-one-out (\code{loo}) to leave only one gene from the gene set out and find its rank, (2) cross-validation (\code{kfold}) to run k-fold cross-validation for a specified value of \emph{k}, or (3) singletons (\code{singletons}) to use a single gene as a seed and find the rank of all remaining genes.
+\code{RWR_CV} RWR Cross Validation performs K-fold cross validation on a single
+gene set, finding the RWR rank of the left-out genes.  Can choose: (1)
+leave-one-out (\code{loo}) to leave only one gene from the gene set out and find
+its rank, (2) cross-validation (\code{kfold}) to run k-fold cross-validation for
+a specified value of \emph{k}, or (3) singletons (\code{singletons}) to use a single
+gene as a seed and find the rank of all remaining genes.
 }
 \examples{
 
 # An example of Running RWR CV
-# Loads a 10 layer multiplex and does not write to file: 
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
-multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
-geneset_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
-outdir <- paste(extdata.dir, '/out/rwr_cv', sep='') 
+# Loads a 10 layer multiplex and does not write to file:
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+multiplex_object_filepath <- paste(extdata.dir, "/string_interactions.Rdata", sep = "")
+geneset_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
+outdir <- paste(extdata.dir, "/out/rwr_cv", sep = "")
 
-cv_examples <- RWR_CV(dataPath=multiplex_object_filepath,
-                   tau="1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
-                   genesetPath=geneset_filepath,
-                   outdirPath=outdir,
-                   method="kfold",
-                   folds=3) 
+
+cv_examples <- RWR_CV(
+  data = multiplex_object_filepath,
+  tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
+  geneset_path = geneset_filepath,
+  outdir_path = outdir,
+  method = "kfold",
+  folds = 3
+)
 
 # An example of Running RWR CV with non-default method and writing to file
-# Loads a 10 layer multiplex and does not write to file: 
-cv_examples <- RWR_CV(dataPath=multiplex_object_filepath,
-                  tau="1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
-                  genesetPath=geneset_filepath,
-                  outdirPath=outdir,    
-                  method='singletons',     
-                  write_to_file=TRUE) 
+# Loads a 10 layer multiplex and does not write to file:
+cv_examples <- RWR_CV(
+  data = multiplex_object_filepath,
+  tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
+  geneset_path = geneset_filepath,
+  outdir_path = outdir,
+  method = "singletons",
+  write_to_file = TRUE
+)
+
 }

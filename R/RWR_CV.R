@@ -467,9 +467,9 @@ calculate_max_precision <- function(pr, metrics) {
 save_plots_cv <- function(metrics,
                           geneset,
                           folds,
-                          data_path,
+                          data,
                           modname,
-                          outdirPath) {
+                          outdir_path) {
   message("Generating plots...\n")
   ggplot2::theme_set(ggplot2::theme_light())
 
@@ -667,9 +667,9 @@ save_plots_cv <- function(metrics,
       ggplot2::ylab("Geneset genes in bin") # ranking distribution of hits in bins of 100 for median of folds
 
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data_path), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
-    out_path <- file.path(outdirPath, fname)
+    out_path <- file.path(outdir_path, fname)
 
     png(out_path, width = 1200, height = 1000)
     grid::pushViewport(grid::viewport(layout = grid::grid.layout(3, 2)))
@@ -800,9 +800,9 @@ save_plots_cv <- function(metrics,
       ggplot2::xlab("CV median rank (binwidth=100)") +
       ggplot2::ylab("Geneset genes in bin")
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data_path), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
-    out_path <- file.path(outdirPath, fname)
+    out_path <- file.path(outdir_path, fname)
 
     png(out_path, width = 1200, height = 1000)
     # print( (p1+p2)/(p3+p4)/(p5) + plot_layout(heights=c(2,2,1)) )
@@ -898,9 +898,9 @@ save_plots_cv <- function(metrics,
       ggplot2::xlab("CV median rank (binwidth=100)") +
       ggplot2::ylab("Geneset genes in bin")
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data_path), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
-    out_path <- file.path(outdirPath, fname)
+    out_path <- file.path(outdir_path, fname)
 
     png(out_path, width = 1200, height = 1000)
     # print( (p1 + p2)/(p3 + p4) + plot_layout(heights=c(1,1)) )
@@ -1003,24 +1003,57 @@ calculate_average_rank_across_folds_cv <- function(res_combined) {
 
 #' RWR Cross Validation
 #'
-#' `RWR_CV` RWR Cross Validation performs K-fold cross validation on a single gene set, finding the RWR rank of the left-out genes.  Can choose: (1) leave-one-out (`loo`) to leave only one gene from the gene set out and find its rank, (2) cross-validation (`kfold`) to run k-fold cross-validation for a specified value of *k*, or (3) singletons (`singletons`) to use a single gene as a seed and find the rank of all remaining genes.
+#' `RWR_CV` RWR Cross Validation performs K-fold cross validation on a single
+#'  gene set, finding the RWR rank of the left-out genes.  Can choose: (1)
+#'  leave-one-out (`loo`) to leave only one gene from the gene set out and find
+#'  its rank, (2) cross-validation (`kfold`) to run k-fold cross-validation for
+#'  a specified value of *k*, or (3) singletons (`singletons`) to use a single
+#'  gene as a seed and find the rank of all remaining genes.
 #'
-#' @param data_path The path to the .Rdata file for your combo of underlying functional networks. This file is produced by RWR_make_multiplex. Default NULL
-#' @param genesetPath The path to the gene set file. It must have the following first two columns with no headers tab-delimited: {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL
-#' @param method Cross-validation method. Choice of: 'kfold', 'loo', or 'singletons' Default 'kfold'
+#' @param data The path to the .Rdata file for your combo of underlying
+#'                  functional networks. This file is produced by
+#'                  RWR_make_multiplex. Default NULL
+#' @param geneset_path The path to the gene set file. It must have the
+#'                    following first two columns with no headers
+#'                    tab-delimited: 
+#'                    {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL
+#' @param method Cross-validation method. Choice of: 'kfold', 'loo', or
+#'               'singletons' Default 'kfold'
 #' @param folds Number (k) of folds to use in k-fold CV. Default 5
-#' @param restart Set the restart parameter \[0,1). Higher value means the walker will jump back to seed node more often. Default 0.7
-#' @param tau Comma-separated list of values between that MUST add up to the number of network layers in the .Rdata file. One value per network layer that determines the probability that the random walker will restart in that layer. e.g. if there are three layers (A,B,C) in your multiplex network, then --tau '0.2,1.3,1.5' will mean that layer A is less likely to be walked on after a restart than layers B or C.  Default 1.0
-#' @param numranked Proportion of ranked genes to return \[0,1\].  e.g. 0.1 will return the top 10%. Default 1.0
-#' @param outdirPath Path to the output directory. Both 'fullranks' and 'medianranks' will be saved with auto-generated filenames. Can be overridden by specifically setting 'outFullRanks' and 'outMedianRanks' parameters. No defined path will output within the same directory from which the original code was run.  Default NULL
+#' @param restart Set the restart parameter \[0,1). Higher value means the
+#'                walker will jump back to seed node more often. Default 0.7
+#' @param tau Comma-separated list of values between that MUST add up to the
+#'            number of network layers in the .Rdata file. One value per 
+#'            network layer that determines the probability that the random
+#'            walker will restart in that layer. e.g. if there are three layers
+#'            (A,B,C) in your multiplex network, then --tau '0.2,1.3,1.5' will
+#'            mean that layer A is less likely to be walked on after a restart
+#'            than layers B or C.  Default 1.0
+#' @param numranked Proportion of ranked genes to return \[0,1\].  e.g. 0.1 will
+#'                  return the top 10%. Default 1.0
+#' @param outdir_path Path to the output directory. Both 'fullranks' and 
+#'                   'medianranks' will be saved with auto-generated filenames.
+#'                   Can be overridden by specifically setting 'out_full_ranks'
+#'                   and 'out_median_ranks' parameters. No defined path will 
+#'                   output within the same directory from which the original
+#'                   code was run.
+#'                   Default NULL
 #' @param modname String to include in output file name.  Default "default"
 #' @param plot Output plots of ROC, PRC, and NDCG etc. to file. Default FALSE
-#' @param outFullRanks Specify the full path for the full results. Ignores outdirPath and modName, using this path instead. Default NULL
-#' @param outMedianRanks Specify the full path for the median results. Ignores outdirPath and modName, using this path instead. Default NULL
-#' @param threads Specify the number of threads to use. Default for your system is all cores - 1.
+#' @param out_full_ranks Specify the full path for the full results. Ignores
+#'                     outdir_path and modName, using this path instead.
+#'                     Default NULL
+#' @param out_median_ranks Specify the full path for the median results. Ignores
+#'                       outdir_path and modName, using this path instead. 
+#'                       Default NULL 
+#' @param threads Specify the number of threads to use. Default for your system
+#'                is all cores - 1.
 #' @param verbose Verbose mode. Default FALSE
-#' @param write_to_file Also write the result to a file. Default FALSE, however, if output paths are included, the boolean is switched to true.
-#' @return Returns a list of four data tables: fullranks, medianranks, metrics, and summary.
+#' @param write_to_file Also write the result to a file. Default FALSE, however,
+#'                      if output paths are included, the boolean is switched
+#'                      to true.
+#' @return Returns a list of four data tables: fullranks, medianranks, metrics,
+#'         and summary.
 #' @examples
 #'
 #' # An example of Running RWR CV
@@ -1032,10 +1065,10 @@ calculate_average_rank_across_folds_cv <- function(res_combined) {
 #'
 #'
 #' cv_examples <- RWR_CV(
-#'   data_path = multiplex_object_filepath,
+#'   data = multiplex_object_filepath,
 #'   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
-#'   genesetPath = geneset_filepath,
-#'   outdirPath = outdir,
+#'   geneset_path = geneset_filepath,
+#'   outdir_path = outdir,
 #'   method = "kfold",
 #'   folds = 3
 #' )
@@ -1043,38 +1076,42 @@ calculate_average_rank_across_folds_cv <- function(res_combined) {
 #' # An example of Running RWR CV with non-default method and writing to file
 #' # Loads a 10 layer multiplex and does not write to file:
 #' cv_examples <- RWR_CV(
-#'   data_path = multiplex_object_filepath,
+#'   data = multiplex_object_filepath,
 #'   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
-#'   genesetPath = geneset_filepath,
-#'   outdirPath = outdir,
+#'   geneset_path = geneset_filepath,
+#'   outdir_path = outdir,
 #'   method = "singletons",
 #'   write_to_file = TRUE
 #' )
 #'
 #' @export
-RWR_CV <- function(data_path = NULL,
-                   genesetPath = NULL,
+RWR_CV <- function(data = NULL,
+                   geneset_path = NULL,
                    method = "kfold",
                    folds = 5,
                    restart = 0.7,
                    tau = 1.0,
                    numranked = 1.0,
-                   outdirPath = NULL,
+                   outdir_path = NULL,
                    modname = "default",
                    plot = FALSE,
-                   outFullRanks = NULL,
-                   outMedianRanks = NULL,
+                   out_full_ranks = NULL,
+                   out_median_ranks = NULL,
                    threads = parallel::detectCores - 1,
                    verbose = FALSE,
                    write_to_file = FALSE) {
   ############# Initialize  ##################################################
-  data_list <- load_multiplex_data(data_path)
+  data_list <- load_multiplex_data(data)
   nw.mpo <- data_list$nw.mpo
   nw.adjnorm <- data_list$nw.adjnorm
 
-  if ((!is.null(outdirPath) | !is.null(outFullRanks) | !is.null(outMedianRanks)) & write_to_file == FALSE) {
+  if ((!is.null(outdir_path) | !is.null(out_full_ranks) | !is.null(out_median_ranks)) & write_to_file == FALSE) {
     warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE."))
     write_to_file <- TRUE
+  }
+
+  if (is.null(outdir_path)){
+    outdir_path <- './'
   }
 
   # TODO: Figure out optTau. As a passed in value -  the default may be problematic in that it
@@ -1083,7 +1120,7 @@ RWR_CV <- function(data_path = NULL,
   tau <- get_or_set_tau(nw.mpo, tau)
 
   # Geneset is required.
-  geneset_list <- load_geneset(genesetPath, nw.mpo, verbose = verbose)
+  geneset_list <- load_geneset(geneset_path, nw.mpo, verbose = verbose)
   # geneset <- geneset_list['geneset']
   # extras <- geneset_list['extras']
   geneset <- geneset_list$geneset
@@ -1102,11 +1139,11 @@ RWR_CV <- function(data_path = NULL,
   # calculate ROC, PRC, P@k, AUROC, AUPRC, NDCG
   metrics <- calc_metrics_cv(res_combined, res_avg)
   ############# Save full results  ###########################################
-  if (!is.null(outFullRanks)) {
-    out_path <- outFullRanks
+  if (!is.null(out_full_ranks)) {
+    out_path <- out_full_ranks
   } else {
-    out_path <- get_file_path("RWR-CV_", res_combined$geneset[1], basename(data_path), modname,
-      outdir = outdirPath, ext = ".fullranks.tsv"
+    out_path <- get_file_path("RWR-CV_", res_combined$geneset[1], basename(data), modname,
+      outdir = outdir_path, ext = ".fullranks.tsv"
     )
   }
 
@@ -1120,11 +1157,11 @@ RWR_CV <- function(data_path = NULL,
 
   ############# Save averaged results  #######################################
   # Save the summary table of median rank across CV folds/runs
-  if (!is.null(outMedianRanks)) {
-    out_path <- outMedianRanks
+  if (!is.null(out_median_ranks)) {
+    out_path <- out_median_ranks
   } else {
-    out_path <- get_file_path("RWR-CV_", res_avg$geneset[1], basename(data_path), modname,
-      outdir = outdirPath, ext = ".medianranks.tsv"
+    out_path <- get_file_path("RWR-CV_", res_avg$geneset[1], basename(data), modname,
+      outdir = outdir_path, ext = ".medianranks.tsv"
     )
   }
 
@@ -1138,15 +1175,15 @@ RWR_CV <- function(data_path = NULL,
 
   ############# Save metrics  ################################################
 
-  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data_path), modname,
-    outdir = outdirPath, ext = ".metrics.tsv"
+  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data), modname,
+    outdir = outdir_path, ext = ".metrics.tsv"
   )
   if (write_to_file) {
     write_table(metrics$res_avg, out_path)
   }
 
-  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data_path), modname,
-    outdir = outdirPath, ext = ".summary.tsv"
+  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data), modname,
+    outdir = outdir_path, ext = ".summary.tsv"
   )
   if (write_to_file) {
     write_table(metrics$summary, out_path)
@@ -1155,7 +1192,7 @@ RWR_CV <- function(data_path = NULL,
   ############# Save plots  ##################################################
   if (plot) {
     message("Saving plots ...")
-    save_plots_cv(metrics, geneset, folds, data_path, modname, outdirPath)
+    save_plots_cv(metrics, geneset, folds, data, modname, outdir_path)
   }
 
   return(list("fullranks" = res_combined, "medianranks" = res_avg, "metrics" = metrics$res_avg, "summary" = metrics$summary))
