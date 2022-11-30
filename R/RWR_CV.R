@@ -1059,7 +1059,9 @@ calculate_average_rank_across_folds_cv <- function(res_combined) {
 #' # An example of Running RWR CV
 #' # Loads a 10 layer multiplex and does not write to file:
 #' extdata.dir <- system.file("example_data", package = "RWRtoolkit")
-#' multiplex_object_filepath <- paste(extdata.dir, "/string_interactions.Rdata", sep = "")
+#' multiplex_object_filepath <- paste(extdata.dir,
+#'                                   "/string_interactions.Rdata",
+#'                                   sep = "")
 #' geneset_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 #' outdir <- paste(extdata.dir, "/out/rwr_cv", sep = "")
 #'
@@ -1102,11 +1104,14 @@ RWR_CV <- function(data = NULL,
                    write_to_file = FALSE) {
   ############# Initialize  ##################################################
   data_list <- load_multiplex_data(data)
-  nw.mpo <- data_list$nw.mpo
-  nw.adjnorm <- data_list$nw.adjnorm
+  nw_mpo <- data_list$nw.mpo
+  nw_adjnorm <- data_list$nw.adjnorm
 
-  if ((!is.null(outdir_path) | !is.null(out_full_ranks) | !is.null(out_median_ranks)) & write_to_file == FALSE) {
-    warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE."))
+  if ((!is.null(outdir_path) |
+       !is.null(out_full_ranks) |
+       !is.null(out_median_ranks)
+       ) & write_to_file == FALSE) {
+    warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE.")) #nolint warning
     write_to_file <- TRUE
   }
 
@@ -1114,26 +1119,28 @@ RWR_CV <- function(data = NULL,
     outdir_path <- './'
   }
 
-  # TODO: Figure out optTau. As a passed in value -  the default may be problematic in that it
-  # sends a warning to the user if they have more than 2 layers.
-  # Tau must match the network layers.
-  tau <- get_or_set_tau(nw.mpo, tau)
+  tau <- get_or_set_tau(nw_mpo, tau)
 
   # Geneset is required.
-  geneset_list <- load_geneset(geneset_path, nw.mpo, verbose = verbose)
-  # geneset <- geneset_list['geneset']
-  # extras <- geneset_list['extras']
+  geneset_list <- load_geneset(geneset_path, nw_mpo, verbose = verbose)
   geneset <- geneset_list$geneset
   extras <- geneset_list$extras
 
-  # print(class(geneset))
-  # print(geneset)
 
   ############# run RWR  #####################################################
-  res <- RWR(geneset, nw.adjnorm, nw.mpo, method, folds, restart, tau, modname, threads, verbose)
+  res <- RWR(geneset,
+             nw_adjnorm,
+             nw_mpo,
+             method,
+             folds,
+             restart,
+             tau,
+             modname,
+             threads,
+             verbose)
 
   ############# post process results  ########################################
-  res_combined <- post_process_rwr_output_cv(res, extras, folds, nw.mpo)
+  res_combined <- post_process_rwr_output_cv(res, extras, folds, nw_mpo)
   # get the average ranks across all CV folds/runs
   res_avg <- calculate_average_rank_across_folds_cv(res_combined)
   # calculate ROC, PRC, P@k, AUROC, AUPRC, NDCG
@@ -1142,8 +1149,12 @@ RWR_CV <- function(data = NULL,
   if (!is.null(out_full_ranks)) {
     out_path <- out_full_ranks
   } else {
-    out_path <- get_file_path("RWR-CV_", res_combined$geneset[1], basename(data), modname,
-      outdir = outdir_path, ext = ".fullranks.tsv"
+    out_path <- get_file_path("RWR-CV_",
+      res_combined$geneset[1],
+      basename(data),
+      modname,
+      outdir = outdir_path,
+      ext = ".fullranks.tsv"
     )
   }
 
@@ -1160,8 +1171,12 @@ RWR_CV <- function(data = NULL,
   if (!is.null(out_median_ranks)) {
     out_path <- out_median_ranks
   } else {
-    out_path <- get_file_path("RWR-CV_", res_avg$geneset[1], basename(data), modname,
-      outdir = outdir_path, ext = ".medianranks.tsv"
+    out_path <- get_file_path("RWR-CV_",
+      res_avg$geneset[1],
+      basename(data),
+      modname,
+      outdir = outdir_path,
+      ext = ".medianranks.tsv"
     )
   }
 
@@ -1175,15 +1190,23 @@ RWR_CV <- function(data = NULL,
 
   ############# Save metrics  ################################################
 
-  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data), modname,
-    outdir = outdir_path, ext = ".metrics.tsv"
+  out_path <- get_file_path("RWR-CV_",
+    metrics$res_combined$geneset[1],
+    basename(data),
+    modname,
+    outdir = outdir_path,
+    ext = ".metrics.tsv"
   )
   if (write_to_file) {
     write_table(metrics$res_avg, out_path)
   }
 
-  out_path <- get_file_path("RWR-CV_", metrics$res_combined$geneset[1], basename(data), modname,
-    outdir = outdir_path, ext = ".summary.tsv"
+  out_path <- get_file_path("RWR-CV_",
+    metrics$res_combined$geneset[1],
+    basename(data),
+    modname,
+    outdir = outdir_path,
+    ext = ".summary.tsv"
   )
   if (write_to_file) {
     write_table(metrics$summary, out_path)
