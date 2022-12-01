@@ -97,7 +97,9 @@ gene as a seed and find the rank of all remaining genes.
 # An example of Running RWR CV
 # Loads a 10 layer multiplex and does not write to file:
 extdata.dir <- system.file("example_data", package = "RWRtoolkit")
-multiplex_object_filepath <- paste(extdata.dir, "/string_interactions.Rdata", sep = "")
+multiplex_object_filepath <- paste(extdata.dir,
+                                  "/string_interactions.Rdata",
+                                  sep = "")
 geneset_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 outdir <- paste(extdata.dir, "/out/rwr_cv", sep = "")
 
