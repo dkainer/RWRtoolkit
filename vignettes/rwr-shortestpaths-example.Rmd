@@ -62,7 +62,7 @@ edgelist_layer3 <- data.frame(list(source = source, sink = sink, weight = weight
 write.table(edgelist_layer3, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
-```{r Fig1, echo=FALSE}
+```{r Fig1, echo=FALSE fig.align = 'center'}
 layer1 <- igraph::graph_from_data_frame(edgelist_layer1)
 layer2 <- igraph::graph_from_data_frame(edgelist_layer2)
 layer3 <- igraph::graph_from_data_frame(edgelist_layer3)

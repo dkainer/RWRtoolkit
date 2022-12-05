@@ -51,7 +51,7 @@ permutedGoldLayer <- permute(goldLayer, sampledVertices)
 permutedGoldLayer <- set_vertex_attr(permutedGoldLayer, "name", 1:nVertices, unlist(sortedSampledNames))
 ```
 
-```{r Fig1, echo=FALSE}
+```{r Fig1, echo=F, out.width="100%", fig.align="center"}
 par(mfrow = c(1, 2), mar = c(1, 1, 1, 1))
 plot(goldLayer, main = "Gold Layer")
 plot(permutedGoldLayer, main = "Permuted Gold Layer")
@@ -120,7 +120,7 @@ netscores
 
 Analyzing the output of the `netscores`, we can see that as we remove nodes and their corresponding edges from the network, we can see that the netscore decreases over time. This is expected as we are individually removing gold network nodes and replacing them at each iteration, as illustrated below.  
 
-```{r}
+```{r fig.align = 'center'}
 p1 <- ggplot(data = netscores, aes(x = step)) +
   geom_line(aes(y = intersecting_edges), color = "darkred")
 
@@ -151,7 +151,7 @@ layer_names <- sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(layers)
 
 Now, we have our multiplex data, we can test each of the layers against each other to see how well they're connected. We can easily visualize this with a network such that each vertex in this visualization network illustrates a layer, and the edge thickness illustrates how well the edges score with respect to their intersect:
 
-```{r}
+```{r fig.align = 'center'}
 # Loading the data
 networkEdgeList <- NULL
 
