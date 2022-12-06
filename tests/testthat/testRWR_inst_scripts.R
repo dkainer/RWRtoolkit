@@ -64,7 +64,7 @@ describe("RWR inst/scripts", {
       geneset_filepath <- "../testSTRINGDB/genesetLong.tsv"
       output_directory_script <- "./runCVOutput_script/"
       output_directory_rfunc <- "./runCVOutput_rfunc/"
-      output_file_base <- "RWR-CV__setA1_string_interactions.Rdata_default."
+      output_file_base <- "RWR-CV__setA1_string_interactions_default."
       method <- "kfold"
       folds <- 3
       tau <- "1,1,1,1,1,1,1,1,1"
@@ -101,6 +101,7 @@ describe("RWR inst/scripts", {
 
       output_files_script <- list.files(output_directory_script)
       actual_file_count_script <- length(output_files_script)
+
       actual_metrics_nrow_script <- nrow(
         read.table(
           paste(output_directory_script,

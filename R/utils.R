@@ -248,6 +248,12 @@ write_table <- function(table, path, verbose = FALSE) {
   }
 }
 
+get_base_name <- function(file_path){
+  base_from_path <- basename(file_path)
+  base_name <- sub("\\.[Rr][Dd][Aa][Tt][Aa].*", "", base_from_path)
+  base_name
+}
+
 get_file_path <- function(..., outdir = NULL, ext = ".tsv") {
   filename <- paste(..., sep = "_")
   filename <- substr(filename, 1, 99)

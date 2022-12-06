@@ -224,6 +224,55 @@ describe("write_table", {
   })
 })
 
+describe("get_base_name", {
+  it("extracts a basename from a full file path", {
+    full_fp <- "/Users/mattlane/projects/RWRtoolkit/inst/example_data/net.Rdata"
+
+    actual_basename <- RWRtoolkit::get_base_name(full_fp)
+
+    expected_basename <- "net"
+    expect_equal(actual_basename, expected_basename)
+  })
+
+  it("extracts a basename from a full url with query params", {
+    full_url <- "http://www.github.com/username/net.Rdata?raw=True"
+
+    actual_basename <- RWRtoolkit::get_base_name(full_url)
+
+    expected_basename <- "net"
+    expect_equal(actual_basename, expected_basename)
+  })
+
+  it("extracts a basename from only a basename", {
+    base_with_ext <- "net.Rdata"
+
+    actual_basename <- RWRtoolkit::get_base_name(base_with_ext)
+
+    expected_basename <- "net"
+    expect_equal(actual_basename, expected_basename)
+  })
+
+  
+  it("extracts a basename from only a basename with no ext", {
+    base_with_ext <- "net"
+
+    actual_basename <- RWRtoolkit::get_base_name(base_with_ext)
+
+    expected_basename <- "net"
+    expect_equal(actual_basename, expected_basename)
+  })
+
+  it("extracts a basename but leaves non-rdata ext", {
+    base_with_nonrdata_ext <- "net.something.r"
+
+    actual_basename <- RWRtoolkit::get_base_name(base_with_nonrdata_ext)
+
+    expected_basename <- "net.something.r"
+    expect_equal(actual_basename, expected_basename)
+  })
+
+})
+
 describe("get_file_path", {
   it("appends default extension to a filename with no specified out directory", {
     baseFileName <- "someFile"
