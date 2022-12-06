@@ -1,5 +1,3 @@
-suppressPackageStartupMessages(library(igraph))
-
 ########################################################################
 # [DONE] Split this script into:
 #   1. R/RWR_netstats.R
@@ -24,7 +22,9 @@ suppressPackageStartupMessages(library(igraph))
 #
 # @export
 
-#' @title Get the number of edges in a network.
+#' Load Network
+#' 
+#' Loads an igraph network from a filepath to an edge list.
 #'
 #' @param path_to_edgelist A path to a network file in edgelist format. Must
 #' have three columns: 'from', 'to', and 'weight'.
@@ -36,8 +36,6 @@ suppressPackageStartupMessages(library(igraph))
 #' @param verbose Print progress to console.
 #'
 #' @return An igraph network object.
-#'
-#' @export
 load_network <- function(
     path_to_edgelist,
     type=NULL,
