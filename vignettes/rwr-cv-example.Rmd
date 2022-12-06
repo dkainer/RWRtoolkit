@@ -38,7 +38,7 @@ output <- capture.output({
   V(layer2)$label.cex <- 0.5
   V(layer3)$label.cex <- 0.5
   
-  png('layers.png', width=960, height=480, res=300)
+  png('layers.png', width=700, height=350, res=300)
   par(mfrow= c(1,3), mar=c(1,1,1,1))
   igraph::plot.igraph(layer1, main="Layer 1", vertex.size=25)
   igraph::plot.igraph(layer2, main="Layer 2", vertex.size=25)
