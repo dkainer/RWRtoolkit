@@ -1,5 +1,3 @@
-suppressPackageStartupMessages(library(igraph))
-
 ########################################################################
 # [DONE] Split this script into:
 #   1. R/RWR_netstats.R
