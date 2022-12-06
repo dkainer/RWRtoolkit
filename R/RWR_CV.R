@@ -667,7 +667,7 @@ save_plots_cv <- function(metrics,
       ggplot2::ylab("Geneset genes in bin") # ranking distribution of hits in bins of 100 for median of folds
 
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], get_base_name(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
     out_path <- file.path(outdir_path, fname)
 
@@ -800,7 +800,7 @@ save_plots_cv <- function(metrics,
       ggplot2::xlab("CV median rank (binwidth=100)") +
       ggplot2::ylab("Geneset genes in bin")
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], get_base_name(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
     out_path <- file.path(outdir_path, fname)
 
@@ -898,7 +898,7 @@ save_plots_cv <- function(metrics,
       ggplot2::xlab("CV median rank (binwidth=100)") +
       ggplot2::ylab("Geneset genes in bin")
 
-    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], basename(data), modname, sep = "_")
+    fname <- paste("RWR-CV", metrics$res_combined$geneset[1], get_base_name(data), modname, sep = "_")
     fname <- paste(substr(fname, 1, 99), "plots.png", sep = ".")
     out_path <- file.path(outdir_path, fname)
 
@@ -1151,7 +1151,7 @@ RWR_CV <- function(data = NULL,
   } else {
     out_path <- get_file_path("RWR-CV_",
       res_combined$geneset[1],
-      basename(data),
+      get_base_name(data),
       modname,
       outdir = outdir_path,
       ext = ".fullranks.tsv"
@@ -1173,7 +1173,7 @@ RWR_CV <- function(data = NULL,
   } else {
     out_path <- get_file_path("RWR-CV_",
       res_avg$geneset[1],
-      basename(data),
+      get_base_name(data),
       modname,
       outdir = outdir_path,
       ext = ".medianranks.tsv"
@@ -1192,7 +1192,7 @@ RWR_CV <- function(data = NULL,
 
   out_path <- get_file_path("RWR-CV_",
     metrics$res_combined$geneset[1],
-    basename(data),
+    get_base_name(data),
     modname,
     outdir = outdir_path,
     ext = ".metrics.tsv"
@@ -1203,7 +1203,7 @@ RWR_CV <- function(data = NULL,
 
   out_path <- get_file_path("RWR-CV_",
     metrics$res_combined$geneset[1],
-    basename(data),
+    get_base_name(data),
     modname,
     outdir = outdir_path,
     ext = ".summary.tsv"
