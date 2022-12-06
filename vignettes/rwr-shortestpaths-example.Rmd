@@ -62,22 +62,32 @@ edgelist_layer3 <- data.frame(list(source = source, sink = sink, weight = weight
 write.table(edgelist_layer3, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
-```{r Fig1, echo=FALSE fig.align = 'center'}
-layer1 <- igraph::graph_from_data_frame(edgelist_layer1)
-layer2 <- igraph::graph_from_data_frame(edgelist_layer2)
-layer3 <- igraph::graph_from_data_frame(edgelist_layer3)
+```{r Fig1, echo=FALSE, fig.align = 'center'}
+set.seed(42)
+layer1 <- igraph::graph_from_data_frame(edgelist_layer1, directed= F)
+layer2 <- igraph::graph_from_data_frame(edgelist_layer2, directed= F)
+layer3 <- igraph::graph_from_data_frame(edgelist_layer3, directed= F)
+output <- capture.output({
+  V(layer1)$label.cex <- 0.65
+  V(layer2)$label.cex <- 0.65
+  V(layer3)$label.cex <- 0.65
+  
+  png('layers.png', width=700, height=350, res=300)
+  par(mfrow= c(1,3), mar=c(1,1,1,1))
+  igraph::plot.igraph(layer1, main="Layer 1", vertex.size=35)
+  igraph::plot.igraph(layer2, main="Layer 2", vertex.size=35)
+  igraph::plot.igraph(layer3, main="Layer 3", vertex.size=35)
+  dev.off()
+})
+knitr::include_graphics('layers.png')
 
-
-par(mfrow = c(1, 3), mar = c(1, 1, 1, 1))
-plot(layer1, layout = igraph::layout_with_kk, main = "Layer 1")
-plot(layer2, layout = igraph::layout_with_kk, main = "Layer 2")
-plot(layer3, layout = igraph::layout_with_kk, main = "Layer 3")
-par(mfrow = c(1, 1))
 ```
 
 ### FLIST Generation
 We now have all three of our layers, we need to create a quick flist and then to make our multiplex! The flist must be a file of the type: 
 
+| **File Path** | **Short Name**  | **Group**  |
+|:----------------|:----------------|:----------------|
 | path_to_file1 | layer1_name | layer_group |
 | path_to_file2 | layer2_name | layer_group |
 | path_to_file3 | layer3_name | layer_group |
@@ -113,11 +123,15 @@ It should be noted that `RWR_ShortestPaths` can be run in two separate modes:
 - With both `source_geneset` and `target_geneset` such that all shortest paths will be found between each node within the `source_geneset` to each target node in the `target_geneset`. 
 
 Additionally, it ought to be noted that all provided geneset files ought to be formatted in a way such that there exist two columns, the first being `setid` the second being the corresponding `gene`, such as: 
-```{r echo=F}
-extdata.dir <- system.file("example_data", package = "RWRtoolkit")
-geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
-head(read.table(geneset1_filepath))
-```
+
+| **Set ID** | **Node Name**  |
+|:----------------|:----------------|
+| setA1 | G6PD |
+| setA1 | PMM1 |
+| setA1 | TPI1 |
+| setA1 | PFKM |
+| setA1 | HKDC1 |
+| setA1 | CDC5L |
 
 Let's extract our first path to be a path from nodes `G` to `C`. To do so, we'll need a target file and a source file, each consisting of a list of nodes with an associated set name). 
 
@@ -211,12 +225,19 @@ multiplex_object_filepath <- paste(extdata.dir, "/string_interactions.Rdata", se
 ```
 
 The `string_interaction` multiplex contains 9 layers: 
-```{r echo=F}
-num_edges <- c(160, 154, 162, 136, 71, 5, 13, 87, 20)
-layer_names <- c("Automated Textmining", "Coexpression", "Combined Score", "Database Annotated", "Experimentally Determined Interaction", "Gene Fusion", "Homology", "Neighborhood on Chromosome", "Phylogenetic Cooccurrence")
 
-print(data.frame(list(Layer = layer_names, EdgeCount = num_edges)))
- ```
+
+| **Layer Number** |  **Layer Name** |  **Edge Count** | 
+|:-------------|:------------|:----------|
+| 1  |                  Automated Textmining | 160 | 
+| 2  |                          Coexpression | 154 | 
+| 3  |                        Combined Score | 162 | 
+| 4  |                    Database Annotated | 136 | 
+| 5  | Experimentally Determined Interaction |  71 | 
+| 6  |                           Gene Fusion |   5 | 
+| 7  |                              Homology |  13 | 
+| 8  |            Neighborhood on Chromosome |  87 | 
+| 9  |             Phylogenetic Cooccurrence |  20 | 
 
 ### Load the Two Gene Sets
 Next we must define the geneset paths from which to define our source and target nodes. Only the file paths are needed for the genesets: 
@@ -228,13 +249,32 @@ outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
 ```
 
 **Geneset 1**
-```{r echo=F}
-read.table(geneset1_filepath, sep = "\t")
-```
+
+| **Set ID** | **Node Name** |
+|:------|:-------|
+|  setA1 |  G6PD |
+|  setA1 |  PMM1 |
+|  setA1 |  TPI1 |
+|  setA1 |  PFKM |
+|  setA1 | HKDC1 |
+|  setA1 | CDC5L |
+|  setA1 |  ENO1 |
+|  setA1 |  ENO3 |
+|  setA1 | GAPDH |
+|  setA1 |   GCK |
+|  setA1 | GFPT1 |
+|  setA1 |  PKLR |
+
 **Geneset 2**
-```{r echo=F}
-read.table(geneset2_filepath, sep = "\t")
-```
+
+| **Set ID** | **Node Name** |
+|:------|:-----|
+| setA2 | PGLS |
+| setA2 | PMM2 |
+| setA2 | PKLR |
+| setA2 |  HK3 |
+| setA2 |  HK2 |
+
 
 ## 3. Running RWR_ShortestPaths
 
