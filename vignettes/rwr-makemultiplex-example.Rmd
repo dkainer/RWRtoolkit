@@ -44,7 +44,14 @@ edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
 colnames(edgelist) <- c("node1", "node2", "weight")
 write.table(edgelist, "./abc_layer1.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
-```{r echo=F}
+| **Source** | **Target**  | **Weight** | 
+|:--------------|:---------------|:---------------|
+| B | A | 1 |
+| E | B | 1 |
+| G | E | 1 |
+| ...  | ... | ... |
+
+```{r echo=F, fig.align = 'center',  out.width="50%"}
 
 graphtable <- read.table("./abc_layer1.tsv", sep = "\t", header = T)
 layer1 <- igraph::graph_from_data_frame(graphtable, directed = F)
@@ -73,9 +80,15 @@ edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
 colnames(edgelist) <- c("node1", "node2", "weight")
 write.table(edgelist, "./abc_layer2.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
-```{r echo=F}
+| **Source** | **Target**  | **Weight** | 
+|:--------------|:---------------|:---------------|
+| G | D | 1 |
+| D | B | 1 |
+| E | B | 1 |
+| ...  | ... | ... |
 
 
+```{r echo=F, fig.align = 'center',  out.width="50%"}
 graphtable <- read.table("./abc_layer2.tsv", sep = "\t", header = T)
 layer2 <- igraph::graph_from_data_frame(graphtable, directed = F)
 layer2_adj <- igraph::get.adjacency(layer2)
@@ -105,9 +118,15 @@ edgelist <- matrix(c(source, sink, weight), ncol = 3, nrow = length(source))
 colnames(edgelist) <- c("node1", "node2", "weight")
 write.table(edgelist, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
-```{r echo=F}
+| **Source** | **Target**  | **Weight** | 
+|:--------------|:---------------|:---------------|
+| E | H | 1 |
+| E | D | 1 |
+| A | E | 1 |
+| ...  | ... | ... |
 
 
+```{r echo=F, fig.align = 'center',  out.width="50%"}
 graphtable <- read.table("./abc_layer3.tsv", sep = "\t", header = T)
 layer3 <- igraph::graph_from_data_frame(graphtable, directed = F)
 layer3_adj <- igraph::get.adjacency(layer3)
@@ -122,6 +141,13 @@ We now have all three of our layers, we need to create a file that describes:
 - Where our layers live
 - What our layers are called
 - What types of layers these are  (this defines whether or not the network is heterogeneous).
+
+
+| **File Path** | **Short Name**  | **Group**  |
+|:----------------|:----------------|:----------------|
+| path_to_file1 | layer1_name | layer_group |
+| path_to_file2 | layer2_name | layer_group |
+| path_to_file3 | layer3_name | layer_group |
 
 ```{r}
 filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
@@ -153,14 +179,14 @@ Currently `RWR_make_multiplex` saves the networks to file for easier access in t
      * Individual Layers:     Distinct igraph object layers. 
 * `nw.adj`: A supra-adjacency matrix in which all layers occur along the diagonal and inter-layer edges occur on the off diagonal. In the below image, we can see that the topologies of each particular layer are maintained within the supra-adjacency matrix along the diagonal: 
 
-```{r echo=F}
+```{r echo=F, fig.align = 'center', out.width="50%",}
 # Reversed matrix as stats heatmap plots rows in reverse order.
 stats::heatmap(as.matrix(nw.adj)[nrow(as.matrix(nw.adj)):1, ], Colv = NA, Rowv = NA, scale = "none")
 ```
 
 * `nw.adjnorm`: Similar to the above, the `nw.adjnorm` takes the above `nw.adj` matrix and normalizes colum-nwise such that each column sums to 1 and each edge has a $\frac{1}{D( A_{i,j} )}$ probability of being walked by the random walker. 
 
-```{r echo=F}
+```{r echo=F, fig.align = 'center' , out.width="50%"}
 stats::heatmap(as.matrix(nw.adjnorm)[nrow(as.matrix(nw.adjnorm)):1, ], Colv = NA, Rowv = NA, scale = "none")
 ```
 
