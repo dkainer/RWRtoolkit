@@ -17,6 +17,7 @@ rwr_netscore="$PATH_TO_RWRtoolkit/inst/scripts/run_netscore.R"
 rwr_shortestpaths="$PATH_TO_RWRtoolkit/inst/scripts/run_shortestpaths.R"
 
 out_dir="$PATH_TO_RWRtoolkit/tmp"
+echo "out_dir=$out_dir"
 
 echo "Checking help ..."
 Rscript $rwr_make_multiplex -h > /dev/null
@@ -66,5 +67,8 @@ Rscript $rwr_shortestpaths \
     --outdir $out_dir \
     &> /dev/null
 echo "Done."
+
+echo "Outputs:"
+ls -lh $out_dir
 
 exit 0

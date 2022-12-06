@@ -161,7 +161,9 @@ make_heterogeneous_multiplex <- function(nw.groups, delta, lambda, out, verbose)
 #'
 #' outfile <- paste(outdir, "/multiplex.Rdata", sep = "")
 #' write.table(flistdatatable,
-#'   row.names = FALSE, col.names = FALSE, sep = "\t",
+#'   row.names = FALSE,
+#'   col.names = FALSE,
+#'   sep = "\t",
 #'   file = "example.flist", quote = FALSE
 #' )
 #'
