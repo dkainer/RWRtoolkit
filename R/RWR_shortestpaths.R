@@ -165,8 +165,6 @@ extract_node_from_row <- function(path_df,
                                   known_path = NULL,
                                   is_penultimate = FALSE,
                                   ultimate = NULL) {
-  print("Known path")
-  print(known_path)
   rows <- path_df[(path_df$to == node_name & !path_df$from %in% known_path) |
     (path_df$from == node_name & !path_df$to %in% known_path), ]
 
@@ -219,7 +217,6 @@ extract_node_from_row <- function(path_df,
     }
   }
 
-  print("end of func")
   list(
     from_column = from_column,
     from = from_node,
