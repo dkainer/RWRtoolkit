@@ -50,7 +50,8 @@ Imports:
     RandomWalkRestartMH,
     IRkernel,
     RCy3,
-    stringr
+    stringr,
+    Matrix
 Suggests: 
     testthat,
     mockery,
