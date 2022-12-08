@@ -27,7 +27,7 @@ load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE) {
   } else {
     geneset <- read.table(path, header = F, colClasses = c("character"))
     if (ncol(geneset) < 2) {
-      stop("Your geneset file is incorrectly formatted. Please see documentation.")
+      stop("Your geneset file is incorrectly formatted. Please see documentation.") #nolint message
     }
 
     # Check if seed weights are included by user or not.
