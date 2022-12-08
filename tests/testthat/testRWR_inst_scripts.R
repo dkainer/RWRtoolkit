@@ -26,11 +26,6 @@ describe("RWR inst/scripts", {
       expected_adj <- nw.adj
       expected_adjnorm <- nw.adjnorm
 
-      print("actual_mpo")
-      print(actual_mpo)
-      print("expected_mpo")
-      print(expected_mpo)
-
       expect_equal(actual_mpo$Number_of_Layers, expected_mpo$Number_of_Layers)
       expect_equal(actual_mpo$Number_of_Nodes_Multiplex,
                   expected_mpo$Number_of_Nodes_Multiplex)
