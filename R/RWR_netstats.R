@@ -2,8 +2,10 @@
 # [DONE] Split this script into:
 #   1. R/RWR_netstats.R
 #   2. inst/scripts/run_netstats.R
-# [TODO] I stripped out a lot of the verbosity from the original script. Need to add that back in.
-# [TODO] What is the expected output? Print to stdout? Write tables of metrics to file(s)?
+# [TODO] I stripped out a lot of the verbosity from the original script.
+#        Need to add that back in.
+# [TODO] What is the expected output? Print to stdout? Write tables of 
+#        metrics to file(s)?
 # [DONE] Docstrings.
 ########################################################################
 
@@ -22,9 +24,9 @@
 #
 # @export
 
-#' Load Network
-#' 
-#' Loads an igraph network from a filepath to an edge list.
+#' @title Load Network
+#'
+#' @description Loads an igraph network from a filepath to an edge list.
 #'
 #' @param path_to_edgelist A path to a network file in edgelist format. Must
 #' have three columns: 'from', 'to', and 'weight'.
@@ -38,20 +40,24 @@
 #' @return An igraph network object.
 load_network <- function(
     path_to_edgelist,
-    type=NULL,
-    name=NULL,
-    col.names=c("from","to","weight"),
-    select=1:3,
-    header='auto',
-    directed=FALSE,
-    verbose=FALSE
+    type = NULL,
+    name = NULL,
+    col.names = c("from", "to", "weight"),
+    select = 1:3,
+    header = "auto",
+    directed = FALSE,
+    verbose = FALSE
 ) {
-    edgelist <- data.table::fread(path_to_edgelist, col.names=col.names, select=select, header=header)
+    edgelist <- data.table::fread(
+        path_to_edgelist,
+        col.names = col.names,
+        select = select,
+        header = header)
 
-    g <- igraph::graph_from_data_frame(edgelist, directed=directed)
+    g <- igraph::graph_from_data_frame(edgelist, directed = directed)
 
     if (!is.null(name)) {
-        igraph::graph_attr(g, 'name') <- name
+        igraph::graph_attr(g, "name") <- name
     }
 
     if (!is.null(type)) {
@@ -61,9 +67,10 @@ load_network <- function(
     return(g)
 }
 
-#' @title Load an flist file.
+#' @title Load flist
 #'
-#' @description An flist file is a tab-delimited file that describes a
+#' @description `load_flist` loads an flist file from a given path.
+#' An flist file is a tab-delimited file that describes a
 #' multiplex network. It should have the following three columns:
 #'
 #' <path to file> <short name of network> <group>
@@ -81,10 +88,10 @@ load_network <- function(
 #'
 #' @export
 load_flist <- function(path_to_flist, verbose=FALSE) {
-    flist = data.table::fread(
+    flist <- data.table::fread(
         path_to_flist,
-        header=F,
-        col.names=c("nwfile","nwname","nwgroup"),
+        header = F,
+        col.names = c("nwfile", "nwname", "nwgroup"),
         select = 1:3
     )
     if (verbose) {
@@ -114,23 +121,24 @@ make_dummy_multiplex <- function(
     # (see RWR_make_multiplex.R for that).
     require(foreach)
 
-    if ( is.data.frame(flist_or_path) ) {
+    if (is.data.frame(flist_or_path)) {
         flist <- flist_or_path
-    } else {
+    } else if (file.exists(flist_or_path)) {
         flist <- load_flist(flist_or_path)
+    } else {
+        stop("Input must be either a path to an flist or a flist dataframe.")
     }
 
-    mpo <- foreach::foreach(row_=iterators::iter(flist, by='row')) %do%
-    {
-        g = load_network(
+    mpo <- foreach::foreach(row_ = iterators::iter(flist, by = "row")) %do% {
+        g <- load_network(
             row_$nwfile,
-            type=row_$nwname,
-            name=row_$nwname,
-            col.names=col.names,
-            select=select,
-            header=header,
-            directed=directed,
-            verbose=verbose
+            type = row_$nwname,
+            name = row_$nwname
+            # col.names = col.names, # TODO: ask @izaakm how these 
+            # select = select,       #       were intended to work
+            # header = header,
+            # directed = directed,
+            # verbose = verbose
         )
         g
     }
@@ -139,7 +147,8 @@ make_dummy_multiplex <- function(
     # For the comparison functions (below), we need to be able to access the
     # network names and Number_of_Layers. The other helper functions
     # (merge_mpo) require additional attributes.
-    mpo$Number_of_Layers = length(mpo)
+
+    mpo$Number_of_Layers = length(mpo) #nolint
 
     # Attributes that are missing from this dummy multiplex:
     # mpo$Number_of_Nodes_Multiplex  # RWR_make_multiplex.R
@@ -164,13 +173,21 @@ make_dummy_multiplex <- function(
 merged_with_all_edges <- function(mpo, verbose=FALSE) {
     message(sprintf("merging %d network layers ...", mpo$Number_of_Layers))
     nl        <- mpo$Number_of_Layers
-    nw.dflist <- lapply(mpo[1:nl], igraph::as_data_frame)
-    nw.df     <- dplyr::bind_rows(nw.dflist)
-    nw.df     <- nw.df %>% dplyr::group_by(type) %>% dplyr::mutate(weightnorm = weight/sum(weight))
-    nw.merged <- igraph::graph_from_data_frame(nw.df , directed = FALSE)
+    nw_dflist <- lapply(mpo[1:nl], igraph::as_data_frame)
+    nw_df     <- dplyr::bind_rows(nw_dflist)
+    nw_df     <- nw_df %>%
+                    dplyr::group_by(type) %>%
+                    dplyr::mutate(
+                        weightnorm = weight / sum(weight)
+                    )
+
+    nw_merged <- igraph::graph_from_data_frame(nw_df, directed = FALSE)
     message("merging network layers DONE.")
-    message(sprintf("Merged network has %d edges and %d rows.", igraph::ecount(nw.merged), igraph::vcount(nw.merged) ))
-    return(nw.merged)
+    message(sprintf("Merged network has %d edges and %d rows.",
+            igraph::ecount(nw_merged), igraph::vcount(nw_merged)
+    ))
+
+    return(nw_merged)
 }
 
 #' @title Merge a multiplex network object and aggregate edges.
@@ -191,29 +208,44 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
 merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
     # IMPORTANT: This one has to be a REAL multiplex (ie, use
     # RWR_make_multiplex.R, not the dummy function in this script)!
-    require(Matrix)
-    n <- mpo$Number_of_Nodes_Multiplex
-    A <- as( matrix(0, ncol=n, nrow=n), "dgCMatrix")
-    for(i in 1:mpo$Number_of_Layers)
-    {
-        A <- A + igraph::as_adjacency_matrix(mpo[[i]], sparse=TRUE)
-    }
-    aggr <- igraph::graph_from_adjacency_matrix(A, mode="undirected", weighted=TRUE, diag=FALSE)
-    aggr <- igraph::set.vertex.attribute(
-        aggr,
-        name="name",
-        index=igraph::V(aggr),
-        value=mpo$Pool_of_Nodes
-    )
-    if (inv) {
-        aggr <- igraph::set.edge.attribute(
-            aggr,
-            "weight",
-            index = E(aggr),
-            value=( 1 / get.edge.attribute(aggr, "weight", index = E(aggr)) )
+
+    n_nodes <- mpo$Number_of_Nodes_Multiplex
+    adj <- as(
+            matrix(
+                0,
+                ncol = n_nodes,
+                nrow = n_nodes
+            ),
+            "dgCMatrix"
         )
+
+    unioned_networks <- NULL
+    for (i in 1:mpo$Number_of_Layers) {
+        unioned_networks <-  igraph::union(mpo[[i]], unioned_networks)
     }
-    return(aggr)
+
+    weight_key_mask <- grepl(
+        ".*weight.*",
+        names(igraph::edge.attributes(unioned_networks))
+    )
+
+    layer_names <- names(
+        igraph::edge.attributes(unioned_networks)
+        )[weight_key_mask]
+
+    summed_edge_counts <- rep(0, length(igraph::E(unioned_networks)))
+    for (layer in layer_names) {
+        layer_weights <- igraph::get.edge.attribute(unioned_networks, layer)
+        weights_no_na <- replace(layer_weights, is.na(layer_weights), 0)
+
+        summed_edge_counts <- summed_edge_counts + weights_no_na
+    }
+
+    igraph::E(unioned_networks)$weight <- summed_edge_counts
+
+    aggr <- igraph::simplify(unioned_networks)
+
+    aggr
 }
 
 #' @title Get the network name.
@@ -224,11 +256,11 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 #' @return A string.
 #'
 #' @export
-get_name <- function(g, default='<G>') {
-    if (is.null(igraph::get.graph.attribute(g, 'name'))) {
-        g_name = default
+get_name <- function(g, default="<G>") {
+    if (is.null(igraph::get.graph.attribute(g, "name"))) {
+        g_name <- default
     } else {
-        g_name = igraph::get.graph.attribute(g, 'name')
+        g_name <- igraph::get.graph.attribute(g, "name")
     }
     return(g_name)
 }
@@ -291,15 +323,20 @@ basic_statistics <- function(
     #     If the graph has a weight edge attribute, then this is used by
     #     default.
     if (is.null(name)) {
-        name = get_name(g, default="<G>")
+        name <-  get_name(g, default = "<G>")
     }
-    title = sprintf("Network stats for network %s", name)
-    hrule = paste0(rep("=", nchar(title)))
+    title <- sprintf("Network stats for network %s", name)
+    hrule <- paste0(rep("=", nchar(title)))
     message(title)
     message(hrule)
     message(sprintf("Number of nodes : %d", igraph::vcount(g)))
     message(sprintf("Number of edges : %d", igraph::ecount(g)))
-    message(sprintf("Diameter        : %.2f", igraph::diameter(g, directed=directed, unconnected=unconnected, weights=weights)))
+    message(sprintf("Diameter        : %.2f", igraph::diameter(
+            g,
+            directed = directed,
+            unconnected = unconnected,
+            weights = weights)
+            ))
     return(NULL)
 }
 
@@ -315,7 +352,7 @@ basic_statistics <- function(
 basic_statistics_multiplex <- function(mpo, verbose=FALSE) {
     # Calculate basic network statistics on each layer of a multiplex network.
     for (i in 1:mpo$Number_of_Layers) {
-        basic_statistics(mpo[[i]], name=names(mpo)[[i]], verbose=verbose)
+        basic_statistics(mpo[[i]], name = names(mpo)[[i]], verbose = verbose)
     }
     return(NULL)
 }
