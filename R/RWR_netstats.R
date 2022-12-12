@@ -364,6 +364,20 @@ basic_statistics_multiplex <- function(mpo, verbose=FALSE) {
 # called by compare_networks().
 ########################################################################
 
+check_weighted_edges <- function(network, network_name) {
+    `%notin%` <- Negate(`%in%`)
+
+    if ("weight" %notin% names(igraph::edge.attributes(network))) {
+        warning(
+            paste(
+                "Network",
+                network_name,
+                "has no weighted edges. All scores will be zero."
+            )
+        )
+    }
+}
+
 #' @title Jaccard similarity coefficient of edges for two networks.
 #'
 #' @param g Reference network.
