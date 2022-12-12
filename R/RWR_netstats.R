@@ -595,92 +595,204 @@ exclusivity <- function(mpo, verbose=FALSE) {
 
 #' @title Command-line interface for RWR_netstats.R
 #'
-#' @param opt List of options
-#'
-#' @return Integer.
+#' @param data                          The filepath to an mpo object.
+#' @param flist                         An flist. Currently creates "faux mpo"
+#'                                      object
+#'                                      for fast statistical inferences.
+#' @param network_1                     A path to an edgelist. Used for basic
+#'                                      statistics, overlap_sim_multiplex_layer,
+#'                                      overlap_pair, and calculate tau
+#' @param network_2                     A path to an edgelist. Used for basic
+#'                                      statistics and overlap_pair.
+#' @param basic_statistics              A boolean denoting a return for basic
+#'                                      statistics concerning supplied networks,
+#'                                      or flists.
+#' @param overlap_sim_multiplex         A boolean denoting a return of jaccard
+#'                                      similarity metrics for the supplied
+#'                                      multiplex
+#' @param overlap_sim_multiplex_layer   A boolean denoting a return of the
+#'                                      calculated edge weight overlap between
+#'                                      a multiplex network and a reference
+#'                                      network (supplied as "network_1")
+#' @param overlap_sim_layer_layer       A boolean denoting a return of jaccard
+#'                                      and edge weight overlap between two
+#'                                      supplied networks (network_1 and
+#'                                      network_2)
+#' @param overlap_score                 A boolean denoting a return of a matrix
+#'                                      of overlap scores between all layers
+#'                                      of the multiplex.
+#' @param calculate_tau                 A boolean denoting a return of the
+#'                                      distribution of "tau", with respect
+#'                                      to the network layers,  calculated via
+#'                                      edge overlap weight / total edgeweight
+#'                                      multipled by the total number of layers
+#' @param merged_with_all_edges         A boolean denoting a return of a merged
+#'                                      down multiplex network along with 
+#'                                      network edge counts and vertex counts.
+#' @param merged_with_edgecounts        A boolean denoting a return of a merged
+#'                                      down multiplex, but simplified with 
+#'                                      edge weights denoting the total number
+#'                                      of layers in which that edge existed.
+#' @param exclusivity                   A boolean denoting a return of total
+#'                                      percentage of edges that exist within
+#'                                      all n layers of the multiplex.
+#' @param verbose                       A boolean denoting the verbosity of
+#'                                      output
+#' @return A list of data frames, igraph networks, and vectors denoting various
+#'         parameter defined statistics.
 #'
 #' @export
-RWR_netstats <- function(opt) {
+RWR_netstats <- function(
+    data = NULL,
+    flist  = NULL,
+    network_1 = NULL,
+    network_2 = NULL,
+    basic_statistics = F,
+    overlap_sim_multiplex = F,
+    overlap_sim_multiplex_layer = F,
+    overlap_sim_layer_layer = F,
+    overlap_score = F,
+    calculate_tau = F,
+    merged_with_all_edges = F,
+    merged_with_edgecounts = F,
+    exclusivity = F,
+    verbose = F) {
+
+    netstat_output <- list()
 
     # Load the multiplex.
-    if ( !is.null(opt$data) ) {
-        # Get 'nw.mpo' from the .Rdata file.
-        load(opt$data)
-    } else if ( !is.null(opt$flist) ) {
-        # Create 'nw.mpo' from the flist.
-        nw.mpo = make_dummy_multiplex(opt$flist, verbose=opt$verbose)
+    if ( !is.null(data) ) {
+        # Get 'nw_mpo' from the .Rdata file.
+        nw_mpo <- RWRtoolkit::load_multiplex_data(data)
+    } else if (!is.null(flist)) {
+        # Create 'nw_mpo' from the flist.
+        nw_mpo <- make_dummy_multiplex(flist, verbose = verbose)
     } else {
-        nw.mpo = NULL
+        nw_mpo <- NULL
     }
 
     # Load reference networks(s).
-    if (!is.null(opt$network_1)) {
-        network_1 = load_network(
-            opt$network_1,
-            name='network_1',
-            verbose=opt$verbose
+    print("Network 1")
+    print(network_1)
+    if (!is.null(network_1)) {
+        network_1 <- load_network(
+            network_1,
+            name = "network_1",
+            verbose = verbose
         )
     } else {
-        network_1 = NULL
+        network_1 <- NULL
     }
+    print(network_1)
 
-    if (!is.null(opt$network_2)) {
-        network_2 = load_network(
-            opt$network_2,
-            name='network_2',
-            verbose=opt$verbose
+    if (!is.null(network_2)) {
+        network_2 <- load_network(
+            network_2,
+            name = "network_2",
+            verbose = verbose
         )
     } else {
-        network_2 = NULL
+        network_2 <- NULL
     }
 
+
+    # ensure that something is available:
+    if (is.null(data) &
+        is.null(flist) &
+        is.null(network_1) &
+        is.null(network_2)
+        ) {
+
+        stop( paste(
+            "[ERROR] You must supply one of the following arguments:",
+            "       data",
+            "       flist",
+            "       (data or flist) and network_1",
+            "       network_1 and/or network_2",
+            sep = "\n"
+        ))
+    }
     # Calculate the requested metrics.
-    if (opt$basic_statistics) {
-        if ( !is.null(network_1) ) {
-            basic_statistics(network_1, verbose=opt$verbose)
+    if (basic_statistics) {
+        if (!is.null(network_1)) {
+            netstat_output$base_stats_net1 <- basic_statistics(
+                                                network_1,
+                                                verbose = verbose)
         }
-        if ( !is.null(network_2) ) {
-            basic_statistics(network_2, verbose=opt$verbose)
+        if (!is.null(network_2)) {
+            netstat_output$base_stats_net2 <- basic_statistics(
+                                                network_2,
+                                                verbose = verbose)
         }
-        if ( !is.null(nw.mpo) ) {
-            basic_statistics_multiplex(nw.mpo, verbose=opt$verbose)
+        if (!is.null(nw_mpo)) {
+            print("mpo")
+            print(nw_mpo)
+            netstat_output$base_stats_mpo <- basic_statistics_multiplex(
+                                                nw_mpo,
+                                                verbose = verbose)
         }
     }
 
-    if (opt$overlapSimilarityMultiplex) {
-        overlap_many_pairwise(nw.mpo, metric='jaccard', verbose=opt$verbose)
+    if (overlap_sim_multiplex) {
+        netstat_output$overlap_sim_multiplex_jaccard <- overlap_many_pairwise(
+                                            nw_mpo,
+                                            metric = "jaccard",
+                                            verbose = verbose)
     }
 
-    if (opt$overlapSimilarityMultiplexLayer) {
-        overlap_many_vs_reference(nw.mpo, network_1, metric='overlap', verbose=opt$verbose)
+    if (overlap_sim_multiplex_layer) {
+        netstat_output$overlap_sim_multiplex_layer <- overlap_many_vs_reference(
+            nw_mpo,
+            network_1,
+            metric = "overlap",
+            verbose = verbose
+        )
     }
 
-    if (opt$overlapSimilarityLayerLayer) {
-        overlap_pair(network_1, network_2, metric='overlap', verbose=opt$verbose)
-        overlap_pair(network_1, network_2, metric='jaccard', verbose=opt$verbose)
+    if (overlap_sim_layer_layer) {
+        netstat_output$overlap_pair_overlap_weight <- overlap_pair(network_1,
+                     network_2,
+                     metric = "overlap",
+                     verbose = verbose)
+        netstat_output$overlap_pair_jaccard <- overlap_pair(network_1,
+                     network_2,
+                     metric = "jaccard",
+                     verbose = verbose)
     }
 
-    if (opt$overlapScore) {
-        overlap_many_pairwise(nw.mpo, metric='overlap', verbose=opt$verbose)
+    if (overlap_score) {
+        netstat_output$mpo_overlap_score <- overlap_many_pairwise(
+                                                        nw_mpo,
+                                                        metric = "overlap",
+                                                        verbose = verbose)
     }
 
-    if (opt$getTau) {
-        get_tau(nw.mpo, network_1, verbose=opt$verbose)
+    if (calculate_tau) {
+        netstat_output$calculated_tau <- calculate_tau(
+                                                nw_mpo,
+                                                network_1,
+                                                verbose = verbose)
     }
 
-    if (opt$merged_with_all_edges) {
-        merged_with_all_edges(nw.mpo, verbose=opt$verbose)
+    if (merged_with_all_edges) {
+        netstat_output$merged_with_all_edges <- merged_with_all_edges(
+                                                        nw_mpo,
+                                                        verbose = verbose)
     }
 
-    if (opt$merged_with_edgecounts) {
-        merged_with_edgecounts(nw.mpo, verbose=opt$verbose)
+    if (merged_with_edgecounts) {
+        netstat_output$merged_with_edgecounts <- merged_with_edgecounts(
+                                                nw_mpo,
+                                                verbose = verbose)
     }
 
-    if (opt$exclusivity) {
-        exclusivity(nw.mpo, verbose=opt$verbose)
+    if (exclusivity) {
+        netstat_output$exclusivity <- exclusivity(
+                                                nw_mpo,
+                                                verbose = verbose)
     }
 
-    return(0)
+    return(netstat_output)
 }
 
 # END
