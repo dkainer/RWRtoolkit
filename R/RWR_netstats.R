@@ -475,26 +475,42 @@ overlap_pair <- function(...) {
 #' @return numeric vector
 #'
 #' @export
-overlap_many_pairwise <- function(mpo, metric='overlap', verbose=FALSE) {
+overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     n <- mpo$Number_of_Layers
-    mat <- matrix(0,nrow=n, ncol=n)
-    if (verbose>0) {
+    mat <- matrix(0, nrow = n, ncol = n)
+
+    #TODO: @izaakm - is this verbose correct?
+    # @verbose was verbose > 0, still curious verbosity - given that metric
+    # is optional
+    if (verbose) {
         message("Calculating pairwise Jaccard Indices ...")
     }
-    for(i in 1:n){
-        for(j in i:n){
-            if (verbose>0) {
+
+    for (i in seq(1, n)) {
+        for (j in seq(i, n)) {
+            if (verbose > 0) {
                 message(sprintf("%s vs %s ...", names(mpo)[i], names(mpo)[j]))
             }
-            mat[i,j] <- compare_networks(mpo[[i]], mpo[[j]], metric=metric, verbose=verbose)
-            mat[j,i] <- mat[i,j]
+
+            network_a <- mpo[[i]]
+            network_b <- mpo[[j]]
+
+            mat[i, j] <- compare_networks(
+                            network_a,
+                            network_b,
+                            metric = metric,
+                            verbose = verbose)
+
+            mat[j, i] <- mat[i, j]
+
         }
     }
-    rownames(mat) = names(mpo)[1:n]
-    colnames(mat) = names(mpo)[1:n]
-    if (verbose>0) {
+    rownames(mat) <- names(mpo)[1:n]
+    colnames(mat) <- names(mpo)[1:n]
+    if (verbose > 0) {
         message("Calculating pairwise Jaccard Indices DONE")
     }
+
     return(mat)
 }
 
