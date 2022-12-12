@@ -4,7 +4,7 @@
 #   2. inst/scripts/run_netstats.R
 # [TODO] I stripped out a lot of the verbosity from the original script.
 #        Need to add that back in.
-# [TODO] What is the expected output? Print to stdout? Write tables of 
+# [TODO] What is the expected output? Print to stdout? Write tables of
 #        metrics to file(s)?
 # [DONE] Docstrings.
 ########################################################################
@@ -116,6 +116,7 @@ make_dummy_multiplex <- function(
     flist_or_path,
     verbose=FALSE
 ) {
+    # TODO: Ask @izaakm why we are not making a real multiplex here:
     # Create a dummy multiplex object (it's just a list of igraph objects).
     # Also, add Number_of_Layers attribute, but other attributes are not added
     # (see RWR_make_multiplex.R for that).
@@ -134,7 +135,7 @@ make_dummy_multiplex <- function(
             row_$nwfile,
             type = row_$nwname,
             name = row_$nwname
-            # col.names = col.names, # TODO: ask @izaakm how these 
+            # col.names = col.names, # TODO: ask @izaakm how these
             # select = select,       #       were intended to work
             # header = header,
             # directed = directed,
@@ -187,7 +188,11 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
             igraph::ecount(nw_merged), igraph::vcount(nw_merged)
     ))
 
-    return(nw_merged)
+    return(
+        list(merged_network = nw_merged,
+                edge_count = igraph::ecount(nw_merged),
+                vertex_count = igraph::vcount(nw_merged))
+    )
 }
 
 #' @title Merge a multiplex network object and aggregate edges.
@@ -327,17 +332,28 @@ basic_statistics <- function(
     }
     title <- sprintf("Network stats for network %s", name)
     hrule <- paste0(rep("=", nchar(title)))
-    message(title)
-    message(hrule)
-    message(sprintf("Number of nodes : %d", igraph::vcount(g)))
-    message(sprintf("Number of edges : %d", igraph::ecount(g)))
-    message(sprintf("Diameter        : %.2f", igraph::diameter(
-            g,
-            directed = directed,
-            unconnected = unconnected,
-            weights = weights)
-            ))
-    return(NULL)
+    vertex_count <- igraph::vcount(g)
+    edge_count <- igraph::ecount(g)
+    network_diameter <- igraph::diameter(
+        g,
+        directed = directed,
+        unconnected = unconnected,
+        weights = weights
+    )
+    if (verbose) {
+        message(title)
+        message(hrule)
+        message(sprintf("Number of nodes : %d",   vertex_count))
+        message(sprintf("Number of edges : %d",   edge_count))
+        message(sprintf("Diameter        : %.2f", network_diameter))
+    }
+
+    return(list(
+        network_name = name,
+        number_of_nodes = vertex_count,
+        number_of_edges = edge_count,
+        diameter = network_diameter
+    ))
 }
 
 #' @title Calculate basic network statistics for each layer of a multiplex
@@ -392,7 +408,10 @@ jaccard_score_edges <- function(g, h, verbose=FALSE) {
     u <- igraph::graph.union(g, h)
     score <- igraph::ecount(i) / igraph::ecount(u)
     if (verbose) {
-        message(sprintf("Jaccard score for edges (%s vs %s): %.2f", get_name(g, default="<G>"), get_name(h, default="<H>"), score))
+        message(sprintf("Jaccard score for edges (%s vs %s): %.2f",
+                get_name(g, default = "<G>"),
+                get_name(h, default = "<H>"),
+                score))
     }
     return(score)
 }
@@ -413,13 +432,21 @@ overlap_score <- function(g, h, verbose=FALSE) {
     # g : reference network, e.g., a "gold-standard"
     # h : network of interest
     # [TODO] If h is very large relative to g, then the score will be small
-    # (the intersect cannot be larger than the smaller network). Is this desirable?
+    # (the intersect cannot be larger than the smaller network).
+    # Is this desirable?
+
+    check_weighted_edges(g, get_name(g, "<G>"))
+    check_weighted_edges(h, get_name(h, "<H>"))
+
     i <- igraph::graph.intersection(g, h)
-    sum_of_i_edge_weights <- sum( igraph::E(i)$weight_1 )
+    sum_of_i_edge_weights <- sum(igraph::E(i)$weight_1)
     h_n_edges <- igraph::ecount(h)
-    score = sum_of_i_edge_weights / h_n_edges
+    score <- sum_of_i_edge_weights / h_n_edges
     if (verbose) {
-        message(sprintf("Overlap score (%s vs %s): %.2f", get_name(g, default="<G>"), get_name(h, default="<H>"), score))
+        message(sprintf("Overlap score (%s vs %s): %.2f",
+        get_name(g, default = "<G>"),
+        get_name(h, default = "<H>"),
+        score))
     }
     return(score)
 }
@@ -434,14 +461,14 @@ overlap_score <- function(g, h, verbose=FALSE) {
 #' @return Score
 #'
 #' @export
-compare_networks <- function(g, h, metric='overlap', verbose=FALSE) {
-    if (metric == 'overlap') {
-        score <- overlap_score(g, h, verbose=verbose)
-    } else if (metric == 'jaccard') {
-        score <- jaccard_score_edges(g, h, verbose=verbose)
+compare_networks <- function(g, h, metric="overlap", verbose=FALSE) {
+    if (metric == "overlap") {
+        score <- overlap_score(g, h, verbose = verbose)
+    } else if (metric == "jaccard") {
+        score <- jaccard_score_edges(g, h, verbose = verbose)
     } else {
         message(sprintf("Unknown metric: %s", metric))
-        score = NULL
+        score <- NULL
     }
 
     return(score)
@@ -514,7 +541,9 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     return(mat)
 }
 
-#' @title Calculate overlap scores between a multiplex network and a reference network.
+#' @title Calculate Many Vs. Reference
+#'
+#' Calculate overlap scores between a multiplex network and a reference network.
 #'
 #' @param mpo multiplex network
 #' @param reference_network reference network
@@ -524,19 +553,30 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
 #' @return numeric vector
 #'
 #' @export
-overlap_many_vs_reference <- function(mpo, reference_network, metric='overlap', verbose=FALSE) {
+overlap_many_vs_reference <- function(
+                                mpo,
+                                reference_network,
+                                metric = "overlap",
+                                verbose = FALSE) {
     # Initialize vectors.
     scores_ <- vector(length = mpo$Number_of_Layers)
     names_ <- vector(length = mpo$Number_of_Layers)
     for (i in 1:mpo$Number_of_Layers) {
-        scores_[i] <- compare_networks(reference_network, mpo[[i]], metric=metric, verbose=verbose)
+        scores_[i] <- compare_networks(
+            reference_network,
+            mpo[[i]],
+            metric = metric,
+            verbose = verbose)
         names_[i] <- names(mpo)[i]
     }
     names(scores_) <- names_
     return(scores_)
 }
 
-#' @title Calculate tau vector for the given multiplex network based on the reference network.
+#' @title Calculate Tau
+#'
+#' Calculate tau vector for the given multiplex
+#' network based on the reference network.
 #'
 #' @param mpo Multiplex network
 #' @param reference_network Reference network
@@ -545,17 +585,25 @@ overlap_many_vs_reference <- function(mpo, reference_network, metric='overlap', 
 #' @return Tau vector (numeric)
 #'
 #' @export
-get_tau <- function(mpo, reference_network, verbose=FALSE) {
-    scores <- overlap_many_vs_reference(mpo, reference_network, metric='overlap', verbose=verbose)
-    if ( !is.null(scores) ) {
-        tau = mpo$Number_of_Layers * (scores/sum(scores))
+calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
+    scores <- overlap_many_vs_reference(mpo,
+                    reference_network,
+                    metric = "overlap",
+                    verbose = verbose)
+
+    if (!is.null(scores)) {
+        tau <- mpo$Number_of_Layers * (scores / sum(scores))
     } else {
-        message('[WARNING] scores is NULL. Cannot calculate tau.')
-        tau = NULL
+        message("[WARNING] scores is NULL. Cannot calculate tau.")
+        tau <- NULL
     }
 
-    if ( verbose & !is.null(tau) ) {
-        message(sprintf("Tau vector: %s", paste(round(tau, digits = 3), collapse = ", ")))
+    if (verbose & !is.null(tau)) {
+        message(sprintf(
+            "Tau vector: %s",
+            paste(
+                round(tau, digits = 3),
+                collapse = ", ")))
     }
 
     return(tau)
@@ -578,19 +626,36 @@ exclusivity <- function(mpo, verbose=FALSE) {
     # RWR_make_multiplex.R, not the dummy function in this script)!
     # Get the number of edges between each node pair.
     merged <- merged_with_edgecounts(mpo)
-    for (i in 1:mpo$Number_of_Layers)
-    {
+    edge_count_of_merged <- igraph::ecount(merged)
+
+    n_found_matrix <- matrix(0, nrow = mpo$Number_of_Layers, ncol = 2)
+    for (i in 1:mpo$Number_of_Layers) {
+        sum_of_edges_in_layer <- sum(igraph::E(merged)$weight == i)
         exc <- round(
-            sum( igraph::E(merged)$weight==i ) / igraph::ecount(merged),
+                sum_of_edges_in_layer / edge_count_of_merged,
             4
         )
-        message(sprintf("proportion of all edges found in %d layers: %.4f", i, exc))
+
+        n_found_matrix[i, ] <- c(i, exc)
+        if (verbose) {
+            message(
+                sprintf(
+                    "proportion of all edges found in %d layers: %.4f",
+                    i,
+                    exc
+                )
+            )
+        }
     }
-    return(NULL)
+
+    pct_found_df <- data.frame(n_found_matrix)
+    colnames(pct_found_df) <- c("n_layers", "pct_found")
+    return(pct_found_df)
 }
 
+
 ########################################################################
-# Command-line interface
+# Main Function
 ########################################################################
 
 #' @title Command-line interface for RWR_netstats.R
