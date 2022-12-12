@@ -151,7 +151,12 @@ describe("RWR_LOE parameter tests", {
     test_data <- "./fake/path/network.Rdata"
     test_seed_geneset <- "../testGenesets/testGeneset1.tsv"
 
-    expect_error(invisible(RWRtoolkit::RWR_LOE(data = test_data, seed_geneset = test_seed_geneset)))
+    expect_error(
+      invisible(
+        RWRtoolkit::RWR_LOE(
+          data = test_data,
+          seed_geneset = test_seed_geneset)
+      ))
   })
 
   it("if eval mode is turned on, metrics are computed and saved", {
