@@ -1,5 +1,7 @@
 ---
 title: "Creating a Multiplex with RWR_Make_Multiplex"
+author: "Matt Lane"
+date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Creating a Multiplex with RWR_Make_Multiplex}

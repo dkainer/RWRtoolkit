@@ -1,5 +1,7 @@
 ---
 title: "RWR CV"
+author: "Matt Lane"
+date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{RWR CV}

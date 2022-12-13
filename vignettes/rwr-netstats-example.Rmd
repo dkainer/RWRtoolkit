@@ -1,0 +1,292 @@
+---
+title: "Using RWR Netstats"
+author: "Matt Lane"
+date: "2022-12-13"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using RWR Netstats}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(RWRtoolkit)
+```
+
+# Netscore: 
+With NetStats, you can generate statistics on your networks with a number of different functions, from generating basic network statistics on a paritcular network layer or multiplex to comparing individual networks against other networks or multiplexes. For example, if you have network layer acting as a gold set standard, you can use that network to test against another non-gold set network or multiplex to determine how closely related they are.  
+
+
+## 1. Introduction
+This document descibes the usage of RWR_netstats. This tool performs a suite of statistical tests on supplied networks. 
+
+## 2. Setup
+Unlike other functions in the RWRtoolkit, the `RWR_netscore` function does not necessarily requre an `mpo` R object for all of its functionality (however, many of its functions do require an mpo object). 
+
+### Available Inputs:
+The current setup of RWR netstats takes a 4 posible input values to generate statistics. 
+- A path to an mpo rdata object
+- A path to an flist
+- A path to an edgelist
+
+ Edgelists are evaluated as: `<Source> <Target> <Weight>`. It should be noted that for the sake of computational speed, the `flist` method does not create an actual multiplex object, but only mimics the multiplex itself (i.e. it does not create the supraadjacency matrix, nor its normalized counterpart).
+
+
+In order to deomonstrate `RWR_netstats`, we will need to generate some networks. Let's generate 4 networks: 
+
+1. 3 layers to act work together as a multiplex
+2. 1 layer to act as a "gold standard" network. 
+
+### Network Layer Generation
+```{r}
+library(ggplot2)
+library(igraph)
+library(patchwork)
+library(RWRtoolkit)
+
+
+# a quick function for generating erdos.renyi layers
+create_layer <- function(n_vertices, probaility, weights){
+  # overwrite letters to contain letter combinations for more options
+  EXTRALETTERS <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
+  layer <- igraph::erdos.renyi.game(n_vertices, probaility)
+  layer <- set_vertex_attr(
+              layer,
+              "name",
+              1:n_vertices,
+              EXTRALETTERS[1:n_vertices]
+            )
+  layer
+}
+
+set.seed(42)
+
+layer1 <- create_layer(30, 1/5) # will have vertices A - AD
+layer2 <- create_layer(15, 1/5) # will have vertices A - O
+layer3 <- create_layer(10, 1/5) # will have vertices A - J
+layer4 <- create_layer(10, 1/5) # will have vertices A - J 
+```
+### Writing Edgelists 
+We now have 4 sample layers all with similar vertices, but randomly created edges, we can create a multiplex out of 3 of them, and use the fourth to act as a reference network. Additionally, we want our edges to have weights, so we will add an additional vector to their edgelists: 
+
+```{r}
+layer1_edgelist <- igraph::as_edgelist(layer1)
+layer2_edgelist <- igraph::as_edgelist(layer2)
+layer3_edgelist <- igraph::as_edgelist(layer3)
+ref_layer <- igraph::as_edgelist(layer4)
+
+# We need our edges to have weights: 
+layer1_edgelist <- cbind(layer1_edgelist, rep(1, 30))
+layer2_edgelist <- cbind(layer2_edgelist, rep(1, 15))
+layer3_edgelist <- cbind(layer3_edgelist, rep(1, 10))
+ref_layer <- cbind(ref_layer, rep(1, 10))
+
+# write to file: 
+write.table(layer1_edgelist, file="layer1.tsv", quote=F, sep="\t")
+write.table(layer2_edgelist, file="layer2.tsv", quote=F, sep="\t")
+write.table(layer3_edgelist, file="layer3.tsv", quote=F, sep="\t")
+write.table(ref_layer, file="layer4.tsv", quote=F, sep="\t")
+```
+
+### Creating an FLIST
+With our files written to a edge lists we can now create an flist file to point to the first three: 
+```{r}
+file_paths <- c("layer1.tsv", "layer2.tsv", "layer3.tsv")
+layer_names <- c("layer1", "layer2", "layer3")
+groups <- c(1, 1, 1)
+
+flist_df <- data.frame(list(
+              filepaths = file_paths,
+              layernames = layer_names,
+              groups = groups
+            ))
+
+flist_filename <- "./multiplex_flist.tsv"
+write.table(flist_df, file = flist_filename, quote = F, sep = "\t", row.names = F, col.names = F)
+```
+
+### Creating the Multiplex
+Finally, we need to create our multiplex to use many of the functions offered within RWR_netstats:
+```{r}
+multiplex_filename <- "./mutliplex.Rdata">
+RWRtoolkit::RWR_make_multiplex(
+                  flist_filename, 
+                  output = multiplex_filename)
+```
+
+## 4. Running RWR Netstats
+
+When running `RWR_netstats`, there are many optoins we can use
+
+
+```{r Fig1, echo=F, out.width="100%", fig.align="center"}
+output <- capture.output({
+  V(goldLayer)$label.cex <- 0.35
+  V(permutedGoldLayer)$label.cex <- 0.35
+  
+  png('layers.png', width=700, height=350, res=300)
+  par(mfrow= c(1,2), mar=c(1,1,1,1))
+  igraph::plot.igraph(goldLayer, main="Gold", vertex.size=20, cex.main=0.5)
+  igraph::plot.igraph(permutedGoldLayer, main="Permuted ", vertex.size=20, cex.main=0.5)
+  dev.off()
+})
+knitr::include_graphics('layers.png')
+```
+
+Once the "truth set" gold network has been generated, we can save this as an edge list:
+
+```{r}
+## Function to convert edgelist from graph and save to file.
+writeEdgelistToFile <- function(filename, layer) {
+  # Create Edgelist and rename columns
+  edgelist <- data.frame(as_edgelist(layer))
+  colnames(edgelist) <- c("node1", "node2")
+
+  # Generate Weight list of all 1s (i.e. to make network unweighted)
+  weights <- rep(1, nrow(edgelist))
+  edgelist$weights <- weights
+
+  # save to file
+  write.table(edgelist, filename, sep = "\t", row.names = FALSE, quote = FALSE)
+}
+
+## Writing Layers to File
+writeEdgelistToFile("gold.tsv", goldLayer)
+writeEdgelistToFile("permutedGold.tsv", permutedGoldLayer)
+```
+
+## 3. Running Netscore 
+First and foremost, let's see a perfect intesect by using our gold network as both the gold and the user network: 
+
+```{r}
+RWRtoolkit::RWR_netscore(gold = "./gold.tsv", network = "./gold.tsv")
+```
+We see here we have complete overlap with 100% intersection.
+
+Let's now see what happens when we remove vertices from our network: 
+
+```{r}
+testNet <- goldLayer
+netscores <- NULL
+
+suppressMessages(
+  for (i in 0:nVertices) {
+    if (i != 0) {
+      vertexForDeletion <- EXTRALETTERS[i]
+      vertexForAddition <- EXTRALETTERS[i + nVertices]
+      print(paste("Removing node", vertexForDeletion), collapse = ",")
+
+      testNet <- delete.vertices(testNet, vertexForDeletion)
+      testNet <- add.vertices(testNet, 1, attr = list(name = vertexForAddition))
+      random_target <- sample(V(testNet)$name, 1)
+
+      print(paste("Adding node", vertexForAddition, "with target", random_target), collapse = ",")
+      testNet <- add.edges(testNet, c(vertexForAddition, random_target))
+    }
+    filename <- paste("testNet_", i, ".tsv", sep = "")
+    writeEdgelistToFile(filename, testNet)
+
+    netscore <- RWR_netscore(gold = "./gold.tsv", filename)
+    netscore$step <- i
+    netscores <- rbind(netscores, netscore)
+  }
+)
+
+netscores
+```
+
+Analyzing the output of the `netscores`, we can see that as we remove nodes and their corresponding edges from the network, we can see that the netscore decreases over time. This is expected as we are individually removing gold network nodes and replacing them at each iteration, as illustrated below.  
+
+```{r  out.width="100%", fig.align="center"}
+p1 <- ggplot(data = netscores, aes(x = step)) +
+  geom_line(aes(y = intersecting_edges), color = "darkred")
+
+p2 <- ggplot(data = netscores, aes(x = step)) +
+  geom_line(aes(y = nodes_in_common), color = "forestgreen")
+
+p3 <- ggplot(data = netscores, aes(x = step, y = intersect_perc)) +
+  geom_line(color = "steelblue") +
+  geom_point()
+
+ggsave(plot = p1 + p2 + p3, file="netscores.png", width=6, height=2, dpi=300)
+knitr::include_graphics('netscores.png')
+```
+
+## Working with Real Data
+
+Let's take our multiplex layers from the `RWR_make_multiplex` example (however, because Netscore uses the filepaths we need only the layer files, and do not need to compute the whole multiplex): 
+
+```{r}
+# An example of a default RWR Make Multiplex with an output "network.Rdata"
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+outdir <- paste(extdata.dir, "/out/rwr_make_multiplex", sep = "")
+
+layers.path <- paste(extdata.dir, "/layers/", sep = "")
+layers <- list.files(layers.path)
+layer_with_paths <- paste(layers.path, layers, sep = "")
+layer_names <- sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(layers))
+```
+
+Now, we have our multiplex data, we can test each of the layers against each other to see how well they're connected. We can easily visualize this with a network such that each vertex in this visualization network illustrates a layer, and the edge thickness illustrates how well the edges score with respect to their intersect:
+
+```{r  out.width="100%", fig.align="center"}
+# Loading the data
+networkEdgeList <- NULL
+
+suppressMessages(
+  for (i in 1:length(layers)) {
+    sourcePath <- layer_with_paths[i]
+    sourceName <- layer_names[i]
+    sourceName <- gsub("_", "\n", sourceName)
+    for (j in 1:length(layers)) {
+      if (i == j) next
+      targetPath <- layer_with_paths[j]
+      targetName <- layer_names[j]
+      targetName <- gsub("_", "\n", targetName)
+      
+      netscore <- RWR_netscore(sourcePath, targetPath)
+      intersectPct <- netscore$intersect_perc
+
+      edgeRow <- list(source = sourceName, target = targetName, weight = intersectPct)
+      networkEdgeList <- rbind(networkEdgeList, edgeRow)
+    }
+  }
+)
+rownames(networkEdgeList) <- NULL
+networkEdgeListDF <- as.data.frame(networkEdgeList)
+
+layerNetwork <- igraph::graph_from_data_frame(networkEdgeListDF)
+weights <- unlist(networkEdgeList[, 3]) / 100
+scale <- colorRamp(c("cyan", "tomato"))
+colorLegend <- apply(scale(weights), 1, function(x) rgb(x[1] / 255, x[2] / 255, x[3] / 255))
+
+#E(layerNetwork)$weight <- weights * 1
+E(layerNetwork)$color <- colorLegend
+edgeWidth <- lapply(E(layerNetwork)$weight, function(x) x * 0.025)
+V(layerNetwork)$label.cex <- 1.5
+
+output <- capture.output({
+  png('layers_scores.png', width=700, height=700, res = 100)
+    
+  plot.igraph(
+    layerNetwork, 
+    edge.width = edgeWidth,
+    layout = igraph::layout.circle,
+    edge.curved = seq(-0.5, 0.5,length = ecount(layerNetwork)),
+    main = "Interlayer Netscores",
+    vertex.label.color="black"
+  )
+  dev.off()
+})
+knitr::include_graphics('layers_scores.png')
+
+```
+
+In the above network, we can see that all of our nodes do have some highly intersecting scores. There is nothing specifically wrong with having a low score between layers, however, it is desirable to be sure that your layers at least highly intersect with some other layers within your network (i.e. having a layer with low intersection to all other layers will result in low scores for all nodes within that network during a random walk, assuming the seeds are not located within that layer). 

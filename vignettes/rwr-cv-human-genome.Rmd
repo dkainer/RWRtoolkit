@@ -1,6 +1,8 @@
 ---
 title: "Using RWR CV See Seed Set Connectivity"
-output: rmarkdown::html_vignette
+author: "Matt Lane"
+date: "2022-12-05"
+output: html_document
 vignette: >
   %\VignetteIndexEntry{Using RWR CV See Seed Set Connectivity}
   %\VignetteEngine{knitr::rmarkdown}
@@ -295,4 +297,3 @@ system(mv_command)
 image_path <- paste(bronze_path, "plot.png", sep="/")
 knitr::include_graphics(image_path)
 ```
-
