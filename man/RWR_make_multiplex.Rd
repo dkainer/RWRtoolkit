@@ -55,7 +55,9 @@ flistdatatable <- data.table::data.table(layer_with_paths, layer_names, groups)
 
 outfile <- paste(outdir, "/multiplex.Rdata", sep = "")
 write.table(flistdatatable,
-  row.names = FALSE, col.names = FALSE, sep = "\t",
+  row.names = FALSE,
+  col.names = FALSE,
+  sep = "\t",
   file = "example.flist", quote = FALSE
 )
 

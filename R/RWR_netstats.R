@@ -13,9 +13,9 @@
 # Helper functions.
 ########################################################################
 ## Template Roxygen documentation:
-# @title Get the number of edges in a network.
+# Get the number of edges in a network.
 #
-# @description Get the number of edges in a network.
+# Get the number of edges in a network.
 #
 # @param type The edge type.
 # @param verbose Print progress to console.
@@ -24,9 +24,9 @@
 #
 # @export
 
-#' @title Load Network
+#' Load Network
 #'
-#' @description Loads an igraph network from a filepath to an edge list.
+#' Loads an igraph network from a filepath to an edge list.
 #'
 #' @param path_to_edgelist A path to a network file in edgelist format. Must
 #' have three columns: 'from', 'to', and 'weight'.
@@ -67,13 +67,13 @@ load_network <- function(
     return(g)
 }
 
-#' @title Load flist
+#' Load flist
 #'
-#' @description `load_flist` loads an flist file from a given path.
+#' `load_flist` loads an flist file from a given path.
 #' An flist file is a tab-delimited file that describes a
 #' multiplex network. It should have the following three columns:
 #'
-#' <path to file> <short name of network> <group>
+#' "path to file" "short name of network" 'group"
 #'
 #' 'groups' are either 1, 2, or 3.  All 1's will form one multiplex network
 #' (e.g. gene-to-gene), All 2's will form a separate multiplex network (e.g.
@@ -100,9 +100,9 @@ load_flist <- function(path_to_flist, verbose=FALSE) {
     return(flist)
 }
 
-#' @title Make a *dummy* multiplex network object.
+#' Make a *dummy* multiplex network object.
 #'
-#' @description Create a multiplex network object from the provided flist. This
+#' Create a multiplex network object from the provided flist. This
 #' is a '*dummy*' multiplex network object because it is simply a list of
 #' network layers with a single extra attribute `Number_of_Layers`.
 #'
@@ -168,9 +168,9 @@ make_dummy_multiplex <- function(
 }
 
 
-#' @title Merge a multiplex network object and keep all edges.
+#' Merge a multiplex network object and keep all edges.
 #'
-#' @description Merge down all layers in a multiplex object, but don't
+#' Merge down all layers in a multiplex object, but don't
 #' aggregate the edges (i.e. keep all edges). This function can take a dummy
 #' multiplex or a real multiplex.
 #'
@@ -204,9 +204,9 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
     )
 }
 
-#' @title Merge a multiplex network object and aggregate edges.
+#' Merge a multiplex network object and aggregate edges.
 #'
-#' @description Merge down all layers and aggregate multi-edges into one edge
+#' Merge down all layers and aggregate multi-edges into one edge
 #' where edge weight is the number of layers in which the two nodes are
 #' connected.
 #'
@@ -257,7 +257,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
     aggr
 }
 
-#' @title Get the network name.
+#' Get the network name.
 #'
 #' @param g An igraph network object.
 #' @param default The default network name.
@@ -284,7 +284,7 @@ get_name <- function(g, default="<G>") {
 # [TODO] average path length.
 # [TODO] degree distribution.
 
-#' @title Calculate basic network statistics for a network and print to screen.
+#' Calculate basic network statistics for a network and print to screen.
 #'
 #' @param g An igraph object.
 #' @param name A name for the network (optional).
@@ -360,7 +360,7 @@ basic_statistics <- function(
     ))
 }
 
-#' @title Calculate basic network statistics for each layer of a multiplex
+#' Calculate basic network statistics for each layer of a multiplex
 #' network and print to screen.
 #'
 #' @param mpo A multiplex object.
@@ -398,7 +398,7 @@ check_weighted_edges <- function(network, network_name) {
     }
 }
 
-#' @title Jaccard similarity coefficient of edges for two networks.
+#' Jaccard similarity coefficient of edges for two networks.
 #'
 #' @param g Reference network.
 #' @param h Network of interest.
@@ -420,7 +420,7 @@ jaccard_score_edges <- function(g, h, verbose=FALSE) {
     return(score)
 }
 
-#' @title Sum of edge weights of the intersection divided by the number of
+#' Sum of edge weights of the intersection divided by the number of
 #' edges in the network of interest.
 #'
 #' @param g Reference network.
@@ -455,7 +455,7 @@ overlap_score <- function(g, h, verbose=FALSE) {
     return(score)
 }
 
-#' @title Compare two networks with the given metric.
+#' Compare two networks with the given metric.
 #'
 #' @param g Reference network.
 #' @param h Network of interest.
@@ -482,7 +482,7 @@ compare_networks <- function(g, h, metric="overlap", verbose=FALSE) {
 # Core functions.
 ########################################################################
 
-#' @title Compare two networks with the given metric.
+#' Compare two networks with the given metric.
 #'
 #' @param g Reference network.
 #' @param h Network of interest.
@@ -497,7 +497,7 @@ overlap_pair <- function(...) {
     compare_networks(...)
 }
 
-#' @title Calculate overlap scores between all layers of a multiplex network.
+#' Calculate overlap scores between all layers of a multiplex network.
 #'
 #' @param mpo A multiplex object.
 #' @param metric Metric to use for comparison.
@@ -545,7 +545,7 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     return(mat)
 }
 
-#' @title Calculate Many Vs. Reference
+#' Calculate Many Vs. Reference
 #'
 #' Calculate overlap scores between a multiplex network and a reference network.
 #'
@@ -577,7 +577,7 @@ overlap_many_vs_reference <- function(
     return(scores_)
 }
 
-#' @title Calculate Tau
+#' Calculate Tau
 #'
 #' Calculate tau vector for the given multiplex
 #' network based on the reference network.
@@ -613,13 +613,13 @@ calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
     return(tau)
 }
 
-#' @title Exclusivity
+#' Exclusivity
 #'
-#' @description Exclusivity is proportion of all edges in the multiplex that
+#' Exclusivity is proportion of all edges in the multiplex that
 #' are found in only one layer. Here we show how many edges are found in 1
 #' layer, 2 layers, 3 layers etc...
 #'
-#' @param mpo
+#' @param mpo     A multiplex object 
 #' @param verbose Print progress to console.
 #'
 #' @return NULL
@@ -685,7 +685,7 @@ parameters_exist <- function(mpo = NULL,
 # Main Function
 ########################################################################
 
-#' @title Command-line interface for RWR_netstats.R
+#' Command-line interface for RWR_netstats.R
 #'
 #' @param data                          The filepath to an mpo object.
 #' @param flist                         An flist. Currently creates "faux mpo"

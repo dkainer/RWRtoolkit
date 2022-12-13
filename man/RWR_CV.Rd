@@ -17,7 +17,7 @@ RWR_CV(
   plot = FALSE,
   out_full_ranks = NULL,
   out_median_ranks = NULL,
-  threads = parallel::detectCores - 1,
+  threads = 1,
   verbose = FALSE,
   write_to_file = FALSE
 )
