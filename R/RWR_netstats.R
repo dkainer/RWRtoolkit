@@ -199,8 +199,8 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
 
     return(
         list(merged_network = nw_merged,
-                edge_count = igraph::ecount(nw_merged),
-                vertex_count = igraph::vcount(nw_merged))
+            edge_count = igraph::ecount(nw_merged),
+            vertex_count = igraph::vcount(nw_merged))
     )
 }
 
@@ -254,7 +254,12 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     aggr <- igraph::simplify(unioned_networks)
 
-    aggr
+
+    list(
+        merged_network = aggr,
+        edge_count = igraph::ecount(aggr),
+        vertex_count = igraph::vcount(aggr)
+    )
 }
 
 #' Get the network name.
@@ -306,7 +311,7 @@ get_name <- function(g, default="<G>") {
 #' \code{\link{igraph::diameter}}.
 #'
 #' @export
-basic_statistics <- function(
+calculate_basic_statistics <- function(
     g,
     name=NULL,
     directed=FALSE,
@@ -352,12 +357,12 @@ basic_statistics <- function(
         message(sprintf("Diameter        : %.2f", network_diameter))
     }
 
-    return(list(
+    return(data.frame(list(
         network_name = name,
         number_of_nodes = vertex_count,
         number_of_edges = edge_count,
         diameter = network_diameter
-    ))
+    )))
 }
 
 #' Calculate basic network statistics for each layer of a multiplex
@@ -371,10 +376,29 @@ basic_statistics <- function(
 #' @export
 basic_statistics_multiplex <- function(mpo, verbose=FALSE) {
     # Calculate basic network statistics on each layer of a multiplex network.
-    for (i in 1:mpo$Number_of_Layers) {
-        basic_statistics(mpo[[i]], name = names(mpo)[[i]], verbose = verbose)
+
+    network_name_list <- c()
+    number_of_nodes_list <- c()
+    number_of_edges_list <- c()
+    diameter_list <- c()
+    for (i in seq(1, mpo$Number_of_Layers)) {
+        outlist <- calculate_basic_statistics(
+            mpo[[i]],
+            name = names(mpo)[[i]],
+            verbose = verbose)
+
+        network_name_list <- c(network_name_list, outlist$network_name)
+        number_of_nodes_list <- c(number_of_nodes_list, outlist$number_of_nodes)
+        number_of_edges_list <- c(number_of_edges_list, outlist$number_of_edges)
+        diameter_list <- c(diameter_list, outlist$diameter)
+
     }
-    return(NULL)
+    return(data.frame(list(
+        network_name = network_name_list,
+        number_of_nodes = number_of_nodes_list,
+        number_of_edges = number_of_edges_list,
+        diameter = diameter_list
+    )))
 }
 
 ########################################################################
@@ -628,11 +652,12 @@ calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
 exclusivity <- function(mpo, verbose=FALSE) {
     # Get the number of edges between each node pair.
     merged <- merged_with_edgecounts(mpo)
-    edge_count_of_merged <- igraph::ecount(merged)
+    merged_net <- merged$merged_network
+    edge_count_of_merged <- merged$edge_count
 
     n_found_matrix <- matrix(0, nrow = mpo$Number_of_Layers, ncol = 2)
     for (i in 1:mpo$Number_of_Layers) {
-        sum_of_edges_in_layer <- sum(igraph::E(merged)$weight == i)
+        sum_of_edges_in_layer <- sum(igraph::E(merged_net)$weight == i)
         exc <- round(
                 sum_of_edges_in_layer / edge_count_of_merged,
             4
@@ -742,12 +767,13 @@ RWR_netstats <- function(
     basic_statistics = F,
     overlap_sim_multiplex = F,
     overlap_sim_multiplex_layer = F,
+    overlap_sim_multiplex_layer_jaccard = F,
     overlap_sim_layer_layer = F,
     overlap_score = F,
-    calculate_tau = F,
+    calculate_tau_for_mpo = F,
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
-    exclusivity = F,
+    calculate_exclusivity_for_mpo = F,
     verbose = F) {
 
     netstat_output <- list()
@@ -755,7 +781,7 @@ RWR_netstats <- function(
     # Load the multiplex.
     if ( !is.null(data) ) {
         # Get 'nw_mpo' from the .Rdata file.
-        nw_mpo <- RWRtoolkit::load_multiplex_data(data)
+        nw_mpo <- load_multiplex_data(data)$nw.mpo
     } else if (!is.null(flist)) {
         # Create 'nw_mpo' from the flist.
         nw_mpo <- make_dummy_multiplex(flist, verbose = verbose)
@@ -764,8 +790,6 @@ RWR_netstats <- function(
     }
 
     # Load reference networks(s).
-    print("Network 1")
-    print(network_1)
     if (!is.null(network_1)) {
         network_1 <- load_network(
             network_1,
@@ -775,7 +799,6 @@ RWR_netstats <- function(
     } else {
         network_1 <- NULL
     }
-    print(network_1)
 
     if (!is.null(network_2)) {
         network_2 <- load_network(
@@ -807,12 +830,12 @@ RWR_netstats <- function(
     # Calculate the requested metrics.
     if (basic_statistics) {
         if (!is.null(network_1)) {
-            netstat_output$base_stats_net1 <- basic_statistics(
+            netstat_output$base_stats_net1 <- calculate_basic_statistics(
                                                 network_1,
                                                 verbose = verbose)
         }
         if (!is.null(network_2)) {
-            netstat_output$base_stats_net2 <- basic_statistics(
+            netstat_output$base_stats_net2 <- calculate_basic_statistics(
                                                 network_2,
                                                 verbose = verbose)
         }
@@ -854,6 +877,25 @@ RWR_netstats <- function(
         )
     }
 
+    if (overlap_sim_multiplex_layer_jaccard &&
+        parameters_exist(
+            mpo = nw_mpo,
+            required_net = "mpo",
+            function_name = "overlap_sim_multiplex_layer_jaccard") &&
+        parameters_exist(
+            network_1 = network_1,
+            required_net = "network_1",
+            function_name = "overlap_sim_multiplex_layer_jaccard")
+        ) {
+
+        netstat_output$overlap_sim_multiplex_layer_jaccard <- overlap_many_vs_reference(
+            nw_mpo,
+            network_1,
+            metric = "jaccard",
+            verbose = verbose
+        )
+    }
+
     if (overlap_sim_layer_layer &&
         parameters_exist(
             network_1 = network_1,
@@ -864,14 +906,19 @@ RWR_netstats <- function(
             required_net = "network_2",
             function_name = "overlap_sim_layer_layer")
         ) {
-        netstat_output$overlap_pair_overlap_weight <- overlap_pair(network_1,
+        overlap_pair_overlap_weight <- overlap_pair(network_1,
                      network_2,
                      metric = "overlap",
                      verbose = verbose)
-        netstat_output$overlap_pair_jaccard <- overlap_pair(network_1,
+        overlap_pair_jaccard <- overlap_pair(network_1,
                      network_2,
                      metric = "jaccard",
                      verbose = verbose)
+
+        netstat_output$overlap_sim_layer_layer <- data.frame(list(
+            overlap = overlap_pair_overlap_weight,
+            jaccard = overlap_pair_jaccard
+        ))
     }
 
     if (overlap_score  &&
@@ -885,7 +932,7 @@ RWR_netstats <- function(
                                                         verbose = verbose)
     }
 
-    if (calculate_tau &&
+    if (calculate_tau_for_mpo &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
@@ -916,7 +963,7 @@ RWR_netstats <- function(
                                                 verbose = verbose)
     }
 
-    if (exclusivity &&
+    if (calculate_exclusivity_for_mpo &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
