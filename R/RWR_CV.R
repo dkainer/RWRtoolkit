@@ -1159,9 +1159,10 @@ RWR_CV <- function(data = NULL,
   }
 
   if (write_to_file) {
-    if(! file.exists(out_path)) {
-      dir.create(out_path)
-    }
+  if (!file.exists(outdir_path)) {
+    print("Creating directory")
+    dir.create(outdir_path, recursive = TRUE)
+  }
 
     combined <- res_combined %>%
       dplyr::group_by(fold) %>%
