@@ -2,7 +2,7 @@
 title: "Using RWR CV See Seed Set Connectivity"
 author: "Matt Lane"
 date: "2022-12-05"
-output: html_document
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Using RWR CV See Seed Set Connectivity}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,19 +18,19 @@ knitr::opts_chunk$set(
 
 # RWR CV
 ## Working with Real Data
+```{r setup}
+library(RWRtoolkit)
+```
 
 Using RWR CV we can test the predictive ability of a particular multiplex network. From Sullivan et al. `<<CITE KYLE @ GRIN PAPER>>`, can obtain a gold set and a muliplex consisting of human genes: 
 
 ## Loading the Multiplex
-```{r setup}
-library(RWRtoolkit)
-
+```{r Loading}
 humanMultiplexURL <- "https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true"
 humanMultiplexPath <- url(humanMultiplexURL)
 
 load(humanMultiplexPath)
 ```
-
 
 Similar to Sullivan et al. we can use genes with the same GO description as a gold standard set. For this example we will use GO genes with a GABAergic GO Description. We will then need to annotate those genes with a "set" (in that we _could_ denote multiple sets within the same gold set, however this is solely an annotation):
 
@@ -155,12 +155,8 @@ In the gold set run, we can see that the top ranked genes from our network are i
 
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(gold_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
+image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
 
-image_path <- paste(gold_path, "plot.png", sep="/")
 knitr::include_graphics(image_path)
 ```
 
@@ -171,11 +167,8 @@ head(bronze_cv_kfold_output$metrics)
 Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(bronze_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
-image_path <- paste(bronze_path, "plot.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+
 knitr::include_graphics(image_path)
 ```
 
@@ -214,12 +207,8 @@ In the gold set run, we can see that the top ranked genes from our network are i
 
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(gold_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
+image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
 
-image_path <- paste(gold_path, "plot.png", sep="/")
 knitr::include_graphics(image_path)
 ```
 
@@ -230,11 +219,8 @@ head(bronze_cv_loo_output$metrics)
 Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(bronze_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
-image_path <- paste(bronze_path, "plot.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+
 knitr::include_graphics(image_path)
 ```
 
@@ -274,12 +260,8 @@ In the gold set run, we can see that the top ranked genes from our network are i
 
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(gold_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
+image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
 
-image_path <- paste(gold_path, "plot.png", sep="/")
 knitr::include_graphics(image_path)
 ```
 
@@ -290,10 +272,7 @@ head(bronze_cv_singleton_output$metrics)
 Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-previous_name <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta.RData?raw=true_default.plots.png", sep="/")
-new_name <- paste(bronze_path, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
-image_path <- paste(bronze_path, "plot.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+
 knitr::include_graphics(image_path)
 ```
