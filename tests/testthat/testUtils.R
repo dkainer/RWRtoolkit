@@ -19,172 +19,220 @@ describe("load_geneset", {
   })
 
   it("fails to load the geneset due to bad file path", {
-    filePath <- "../testGenesets/bad/file/path.tsv"
+    file_path <- "../testGenesets/bad/file/path.tsv"
 
-    expectedErrorMessage <- paste("ERROR: geneset file does not exist:", filePath)
-    expect_error(RWRtoolkit::load_geneset(filePath), expectedErrorMessage)
+    expected_err_msg <- paste(
+      "ERROR: geneset file does not exist:", 
+      file_path)
+    expect_error(RWRtoolkit::load_geneset(file_path), expected_err_msg)
   })
 
   it("loads bad geneset", {
-    filePath <- "../testGenesets/testGeneset_Bad_oneColumn.tsv"
-    expectedErrorMessage <- "Your geneset file is incorrectly formatted. Please see documentation."
+    file_path <- "../testGenesets/testGeneset_Bad_oneColumn.tsv"
+    expected_err_msg <- "Your geneset file is incorrectly formatted. Please see documentation." #nolint msg
 
-    expect_error(RWRtoolkit::load_geneset(filePath), expectedErrorMessage)
+    expect_error(RWRtoolkit::load_geneset(file_path), expected_err_msg)
   })
 
-  it("loads incorrectly formatted geneset", {
-    filePath <- "../testGenesets/testGeneset1.csv"
-    expectedErrorMessage <- "Your geneset file is incorrectly formatted. Please see documentation."
+  it("loads csv formatted geneset", {
+    file_path <- "../testGenesets/testGeneset1.csv"
 
-    expect_error(RWRtoolkit::load_geneset(filePath), expectedErrorMessage)
-  })
-
-  it("loads unfiltered geneset with no multiplex network", {
-    filePath <- "../testGenesets/testGeneset1.tsv"
     setid <- c("setA", "setA")
     gene <- c("1", "2")
     weight <- c(1, 1)
-    expectedGeneset <- data.frame(setid, gene, weight)
-    expectedExtras <- NULL
-    expectedOutput <- list("geneset" = expectedGeneset, "extras" = expectedExtras)
+    expected_geneset <- data.table::data.table(setid, gene, weight)
+    expected_extras <- NULL
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(filePath)
-
-    expect_equal(output, expectedOutput)
+    output <- RWRtoolkit::load_geneset(file_path)
+    expect_equal(output, expected_output)
   })
 
+  it("loads a geneset with more than 3 columns, but only reads the first 3", {
+    file_path <- "../testGenesets/test_geneset_5_cols.tsv"
+     setid <- c("setA", "setA")
+     gene <- c("1", "2")
+     weight <- c(0.5, 0.2)
+     expected_geneset <- data.table::data.table(setid, gene, weight)
+     expected_extras <- NULL
+     expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
+
+     output <- RWRtoolkit::load_geneset(file_path)
+    print("OUTPUT IS")
+    print(output)
+     expect_equal(output, expected_output)
+  })
+  
+  it("loads unfiltered geneset with no multiplex network", {
+    file_path <- "../testGenesets/testGeneset1.tsv"
+    setid <- c("setA", "setA")
+    gene <- c("1", "2")
+    weight <- c(1, 1)
+    expected_geneset <- data.table::data.table(setid, gene, weight)
+    expected_extras <- NULL
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
+
+    output <- RWRtoolkit::load_geneset(file_path)
+
+    expect_equal(output, expected_output)
+  })
+
+
   it("loads weighted unfiltered geneset  with no multiplex network", {
-    filePath <- "../testGenesets/testGeneset2.tsv"
+    file_path <- "../testGenesets/testGeneset2.tsv"
     setid <- c("setB", "setB")
     gene <- c("2", "3")
     weight <- c(0.4, 0.6)
-    expectedGeneset <- data.frame(setid, gene, weight)
-    expectedExtras <- NULL
-    expectedOutput <- list("geneset" = expectedGeneset, "extras" = expectedExtras)
+    expected_geneset <- data.table::data.table(setid, gene, weight)
+    expected_extras <- NULL
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(filePath)
+    output <- RWRtoolkit::load_geneset(file_path)
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 
-  it("loads un-weighted unfiltered geneset with 3 columns with no multiplex network", {
+  it("loads un-weighted unfiltered geneset with 3 columns with no multiplex network", {  #nolint title
     ## Has a third column, but words, not weights.
-    filePath <- "../testGenesets/testGeneset3.tsv"
+    file_path <- "../testGenesets/testGeneset3.tsv"
     setid <- c("setC", "setC")
     gene <- c("4", "5")
     weight <- c(1, 1)
-    expectedGeneset <- data.frame(setid, gene, weight)
-    expectedExtras <- NULL
-    expectedOutput <- list("geneset" = expectedGeneset, "extras" = expectedExtras)
+    expected_geneset <- data.table::data.table(setid, gene, weight)
+    expected_extras <- NULL
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(filePath)
+    output <- RWRtoolkit::load_geneset(file_path)
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 
   it("loads filtered geneset filtered by the multiplex pool of nodes", {
-    # Even though testGeneset2 has two genes: (2, 3) - the pool of nodes has nodes 0, 1, 2.
-    # The intersection of the two is specifically gene 2, which is the only output we expect to see.
-    Pool_of_Nodes <- c("0", "1", "2")
-    nw.mpo <- data.frame(Pool_of_Nodes)
-    filePath <- "../testGenesets/testGeneset2.tsv"
+    # Even though testGeneset2 has two genes: (2, 3) 
+    #   - the pool of nodes has nodes 0, 1, 2.
+    # The intersection of the two is specifically gene 2,
+    #    which is the only output we expect to see.
+    Pool_of_Nodes <- c("0", "1", "2")     #nolint
+    nw.mpo <- data.frame(Pool_of_Nodes)   #nolint
+    file_path <- "../testGenesets/testGeneset2.tsv"
     setid <- c("setB")
     gene <- c("2")
     weight <- c(0.4)
-    expectedGeneset <- data.frame(setid, gene, weight)
+    expected_geneset <- data.table::data.table(setid, gene, weight)
     gene <- c("3")
     weight <- c(0.6)
-    expectedExtras <- data.frame(setid, gene, weight)
-    expectedOutput <- list("geneset" = expectedGeneset, "extras" = expectedExtras)
+    expected_extras <- data.table::data.table(setid, gene, weight)
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
 
-    output <- expect_warning(RWRtoolkit::load_geneset(filePath, nw.mpo))
-    expect_equal(output, expectedOutput)
+    output <- expect_warning(RWRtoolkit::load_geneset(file_path, nw.mpo))
+    expect_equal(output, expected_output)
   })
 
   it("loads filtered geneset filtered by the multiplex pool of nodes, all filtered", {
-    # Even though testGeneset2 has two genes: (2, 3) - the pool of nodes has nodes 0, 1, 2.
-    # The intersection of the two is specifically gene 2, which is the only output we expect to see.
-    Pool_of_Nodes <- c("0", "1")
-    nw.mpo <- data.frame(Pool_of_Nodes)
-    filePath <- "../testGenesets/testGeneset2.tsv"
-    expectedGeneset <- data.frame(setid = character(), gene = character(), weight = double())
+    # Even though testGeneset2 has two genes: (2, 3)
+    #- the pool of nodes has nodes 0, 1, 2.
+    # The intersection of the two is specifically gene 2,
+    # which is the only output we expect to see.
+    Pool_of_Nodes <- c("0", "1") #nolint
+    nw.mpo <- data.frame(Pool_of_Nodes) #nolint
+    file_path <- "../testGenesets/testGeneset2.tsv"
+    expected_geneset <- data.table::data.table(
+        setid = character(),
+        gene = character(),
+        weight = double())
     setid <- c("setB", "setB")
     gene <- c("2", "3")
     weight <- c(0.4, 0.6)
-    expectedExtras <- data.frame(setid, gene, weight)
-    expectedOutput <- list("geneset" = expectedGeneset, "extras" = expectedExtras)
+    expected_extras <- data.table::data.table(setid, gene, weight)
+    expected_output <- list(
+      "geneset" = expected_geneset,
+      "extras" = expected_extras)
 
-    output <- expect_warning(RWRtoolkit::load_geneset(filePath, nw.mpo))
+    output <- expect_warning(RWRtoolkit::load_geneset(file_path, nw.mpo))
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
+
+
 })
 
 describe("get_or_set_tau", {
   it("Returns numeric value if tau is numeric", {
     # Where tau values for layer one = 1.25 and layer 2 = 0.75
 
-    optTau <- c(1.25, 0.75)
-    expectedOutput <- optTau
+    opt_tau <- c(1.25, 0.75)
+    expected_output <- opt_tau
 
-    output <- RWRtoolkit::get_or_set_tau(nw.mpo, optTau)
+    output <- RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau)
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 
   it("Returns numeric values if tau is string list obtained via command line", {
     # Where tau values for layer one = 1.25 and layer 2 = 0.75
-    optTau <- "1.25,0.75"
-    expectedOutput <- c(1.25, 0.75)
+    opt_tau <- "1.25,0.75"
+    expected_output <- c(1.25, 0.75)
 
-    output <- RWRtoolkit::get_or_set_tau(nw.mpo, optTau)
+    output <- RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau)
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 
-  it("Returns one for each layer with warning because of incorrect sum of tau vals", {
+  it("Returns one for each layer with warning because of incorrect sum of tau vals", {  #nolint
     # Where tau values for layer one = 0.25 and layer 2 = 0.75, don't sum to 2
-    optTau <- c(0.25, 0.75)
-    expectedOutput <- c(1, 1)
+    opt_tau <- c(0.25, 0.75)
+    expected_output <- c(1, 1)
 
-    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, optTau))
+    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau))
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 
   it("Returns one for each layer with warning because of incorrect list size", {
     # Where tau values for layer one = 0.25 and layer 2 = 0.75, don't sum to 2
-    optTau <- "0.75"
-    expectedOutput <- c(1, 1)
+    opt_tau <- "0.75"
+    expected_output <- c(1, 1)
 
-    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, optTau))
+    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau))
 
-    expect_equal(output, expectedOutput)
+    expect_equal(output, expected_output)
   })
 })
 
 describe("chunk", {
   it("takes in a dataframe, and separates it by N values (number of folds for kfold cross val)", {
-    geneList <- c("a", "b", "c", "d", "e", "f")
-    nFolds <- 3
-    expectedOutputLength <- 3
+    gene_lists <- c("a", "b", "c", "d", "e", "f")
+    n_folds <- 3
+    expected_outputlength <- 3
 
-    output <- RWRtoolkit::chunk(geneList, nFolds)
+    output <- RWRtoolkit::chunk(gene_lists, n_folds)
 
-    expect_equal(length(names(output)), expectedOutputLength)
+    expect_equal(length(names(output)), expected_outputlength)
     expect_equal(output["1"][[1]], c("a", "b"))
     expect_equal(output["2"][[1]], c("c", "d"))
     expect_equal(output["3"][[1]], c("e", "f"))
   })
 
   it("Warns users if gene set length is smaller than num folds", {
-    geneList <- c("a", "b", "c")
-    nFolds <- 4
-    expectedOutputLength <- 3
+    gene_lists <- c("a", "b", "c")
+    n_folds <- 4
+    expected_outputlength <- 3
 
-    output <- expect_warning(RWRtoolkit::chunk(geneList, nFolds))
+    output <- expect_warning(RWRtoolkit::chunk(gene_lists, n_folds))
 
-    expect_equal(length(names(output)), expectedOutputLength)
+    expect_equal(length(names(output)), expected_outputlength)
   })
 })
 
@@ -197,30 +245,30 @@ describe("write_table", {
   })
 
   it("Writes table to existing path", {
-    fauxListOfNodes <- c("A", "B", "C", "D")
+    faux_list_of_nodes <- c("A", "B", "C", "D")
     path <- "./someFakeFile.txt"
 
-    stubWriteTable <- mock()
-    stub(RWRtoolkit::write_table, "write.table", stubWriteTable)
-    RWRtoolkit::write_table(fauxListOfNodes, path)
+    write_table_stub <- mock()
+    stub(RWRtoolkit::write_table, "write.table", write_table_stub)
+    RWRtoolkit::write_table(faux_list_of_nodes, path)
 
-    expect_called(stubWriteTable, 1)
-    expect_args(stubWriteTable, 1, fauxListOfNodes, path, "\t", F, T, F)
+    expect_called(write_table_stub, 1)
+    expect_args(write_table_stub, 1, faux_list_of_nodes, path, "\t", F, T, F)
   })
 
   it("Writes table to nonexisting path", {
-    fauxListOfNodes <- c("A", "B", "C", "D")
-    nonExistentPath <- "./someOtherPath/recursiveDepth/output.txt"
-    expectedDirectory <- "recursiveDepth"
+    faux_list_of_nodes <- c("A", "B", "C", "D")
+    bad_path <- "./someOtherPath/recursiveDepth/output.txt"
+    expected_dir <- "recursiveDepth"
 
-    stubWriteTable <- mock()
-    stub(RWRtoolkit::write_table, "write.table", stubWriteTable)
-    RWRtoolkit::write_table(fauxListOfNodes, nonExistentPath)
-    checkDir <- system("ls ./someOtherPath/", intern = T)
+    write_table_stub <- mock()
+    stub(RWRtoolkit::write_table, "write.table", write_table_stub)
+    RWRtoolkit::write_table(faux_list_of_nodes, bad_path)
+    check_dir <- system("ls ./someOtherPath/", intern = T)
 
-    expect_equal(checkDir[1], expectedDirectory)
-    expect_called(stubWriteTable, 1)
-    expect_args(stubWriteTable, 1, fauxListOfNodes, nonExistentPath, "\t", F, T, F)
+    expect_equal(check_dir[1], expected_dir)
+    expect_called(write_table_stub, 1)
+    expect_args(write_table_stub, 1, faux_list_of_nodes, bad_path, "\t", F, T, F)
   })
 })
 
@@ -274,122 +322,123 @@ describe("get_base_name", {
 })
 
 describe("get_file_path", {
-  it("appends default extension to a filename with no specified out directory", {
-    baseFileName <- "someFile"
-    expectedFileName <- "someFile.tsv"
+  it("appends default extension to a filename with no specified out directory", { #nolint
+    base_filename <- "someFile"
+    expected_basefilename <- "someFile.tsv"
 
-    outputFileName <- RWRtoolkit::get_file_path(baseFileName)
+    outfilename <- RWRtoolkit::get_file_path(base_filename)
 
-    expect_equal(outputFileName, expectedFileName)
+    expect_equal(outfilename, expected_basefilename)
   })
 
 
   it("appends extension to a filename with no specified out directory", {
-    baseFileName <- "someFile"
-    expectedFileName <- "someFile.csv"
-    fileExtension <- ".csv"
+    base_filename <- "someFile"
+    expected_basefilename <- "someFile.csv"
+    file_extension <- ".csv"
 
-    outputFileName <- RWRtoolkit::get_file_path(baseFileName, ext = fileExtension)
+    outfilename <- RWRtoolkit::get_file_path(base_filename, ext = file_extension)
 
-    expect_equal(outputFileName, expectedFileName)
+    expect_equal(outfilename, expected_basefilename)
   })
   it("appends extension to a filename with specified out directory", {
-    baseFileName <- "someFile"
-    outDirectoryPath <- "/some/path/to/file"
-    expectedFileName <- "/some/path/to/file/someFile.tsv"
+    base_filename <- "someFile"
+    outdirpath <- "/some/path/to/file"
+    expected_basefilename <- "/some/path/to/file/someFile.tsv"
 
-    outputFileName <- RWRtoolkit::get_file_path(baseFileName, outdir = outDirectoryPath)
+    outfilename <- RWRtoolkit::get_file_path(base_filename, outdir = outdirpath)
 
-    expect_equal(outputFileName, expectedFileName)
+    expect_equal(outfilename, expected_basefilename)
   })
 })
 
 describe("dump_layers", {
   it("extracts specific layers and writes them to a table", {
     load("../testMultiplex/network.Rdata")
-    fakeFilePath <- "someFilePath/network.tsv"
-    expectedLayer1Name <- "m1"
-    expectedLayer2Name <- "m2"
-    expectedNumberOfCalls <- 2
+    fakefile_path <- "somefile_path/network.tsv"
+    expected_layer1name <- "m1"
+    expected_layer2name <- "m2"
+    expected_num_calls <- 2
     from <- c("0", "0", "1")
     to <- c("1", "2", "2")
     weight <- c(0.5, 1.0, 0.5)
     type <- c("m1", "m1", "m1")
-    expectedLayer1DF <- data.frame(from, to, weight, type)
+    expected_layer1_df <- data.frame(from, to, weight, type)
     from <- c("0", "0", "1", "2")
     to <- c("2", "3", "2", "3")
     weight <- c(1, 1, 1, 1)
     type <- c("m2", "m2", "m2", "m2")
-    expectedLayer2DF <- data.frame(from, to, weight, type)
+    expected_layer2_df <- data.frame(from, to, weight, type)
 
-    stubGetFilePath <- mock(fakeFilePath, fakeFilePath)
-    stubWriteTable <- mock()
-    stub(RWRtoolkit::dump_layers, "get_file_path", stubGetFilePath)
-    stub(RWRtoolkit::dump_layers, "write_table", stubWriteTable)
+    get_filepath_stub <- mock(fakefile_path, fakefile_path)
+    write_table_stub <- mock()
+    stub(RWRtoolkit::dump_layers, "get_file_path", get_filepath_stub)
+    stub(RWRtoolkit::dump_layers, "write_table", write_table_stub)
     RWRtoolkit::dump_layers(nw.mpo)
 
-    expect_called(stubGetFilePath, expectedNumberOfCalls)
-    expect_args(stubGetFilePath, 1, expectedLayer1Name, NULL)
-    expect_args(stubGetFilePath, 2, expectedLayer2Name, NULL)
-    expect_called(stubWriteTable, 2)
-    expect_args(stubWriteTable, 1, expectedLayer1DF, fakeFilePath)
-    expect_args(stubWriteTable, 2, expectedLayer2DF, fakeFilePath)
+    expect_called(get_filepath_stub, expected_num_calls)
+    expect_args(get_filepath_stub, 1, expected_layer1name, NULL)
+    expect_args(get_filepath_stub, 2, expected_layer2name, NULL)
+    expect_called(write_table_stub, 2)
+    expect_args(write_table_stub, 1, expected_layer1_df, fakefile_path)
+    expect_args(write_table_stub, 2, expected_layer2_df, fakefile_path)
   })
 
   it("writes nothing to a table if no layers exist in object", {
     load("../testMultiplex/network.Rdata")
-    expectedNumberOfCalls <- 0
-    fakeFilePath <- "someFilePath/network.tsv"
+    expected_num_calls <- 0
+    fakefile_path <- "somefile_path/network.tsv"
     nw.mpo$m1 <- NULL # Remove layers from network.
     nw.mpo$m2 <- NULL
 
-    stubGetFilePath <- mock(fakeFilePath, fakeFilePath)
-    stubWriteTable <- mock()
-    stub(RWRtoolkit::dump_layers, "get_file_path", stubGetFilePath)
-    stub(RWRtoolkit::dump_layers, "write_table", stubWriteTable)
+    get_filepath_stub <- mock(fakefile_path, fakefile_path)
+    write_table_stub <- mock()
+    stub(RWRtoolkit::dump_layers, "get_file_path", get_filepath_stub)
+    stub(RWRtoolkit::dump_layers, "write_table", write_table_stub)
     RWRtoolkit::dump_layers(nw.mpo)
 
-    expect_called(stubGetFilePath, expectedNumberOfCalls)
-    expect_called(stubWriteTable, expectedNumberOfCalls)
+    expect_called(get_filepath_stub, expected_num_calls)
+    expect_called(write_table_stub, expected_num_calls)
   })
 })
 
 describe("dump_nodes", {
   it("throws an error if a multiplexMH object is not passed in as mpo", {
-    nw.mpo <- NULL
-    expectedNumberOfCalls <- 0
+    nw.mpo <- NULL #nolint
+    expected_num_calls <- 0
 
-    stubWriteTable <- mock()
-    stub(RWRtoolkit::dump_nodes, "write_table", stubWriteTable)
+    write_table_stub <- mock()
+    stub(RWRtoolkit::dump_nodes, "write_table", write_table_stub)
     expect_error(RWRtoolkit::dump_nodes(nw.mpo))
 
-    expect_called(stubWriteTable, expectedNumberOfCalls)
+    expect_called(write_table_stub, expected_num_calls)
   })
   it("extracts nodes from the multiplexMH object and saves to file", {
     load("../testMultiplex/network.Rdata")
     mpo <- nw.mpo1 # loaded from the network.Rdata
-    mpoNodes <- c("0", "1", "2")
-    expectedDataFrame <- data.frame(mpoNodes)
-    expectedNumberOfCalls <- 1
-    fakeFilePath <- "./someFile/path/file.txt"
+    mpo_nodes <- c("0", "1", "2")
+    expected_dataframe <- data.frame(list(mpoNodes=mpo_nodes))
+    expected_num_calls <- 1
+    fakefile_path <- "./someFile/path/file.txt"
 
-    stubWriteTable <- mock()
-    stubGetFilePath <- mock(fakeFilePath)
-    stub(RWRtoolkit::dump_nodes, "write_table", stubWriteTable)
-    stub(RWRtoolkit::dump_nodes, "get_file_path", stubGetFilePath)
+    write_table_stub <- mock()
+    get_filepath_stub <- mock(fakefile_path)
+    stub(RWRtoolkit::dump_nodes, "write_table", write_table_stub)
+    stub(RWRtoolkit::dump_nodes, "get_file_path", get_filepath_stub)
+
+
     RWRtoolkit::dump_nodes(nw.mpo1)
-
-    expect_called(stubGetFilePath, expectedNumberOfCalls)
-    expect_called(stubWriteTable, expectedNumberOfCalls)
-    expect_args(stubWriteTable, 1, expectedDataFrame, fakeFilePath)
+    print(expected_dataframe)
+    expect_called(get_filepath_stub, expected_num_calls)
+    expect_called(write_table_stub, expected_num_calls)
+    expect_args(write_table_stub, 1, expected_dataframe, fakefile_path)
   })
 })
 
 
 # removes test files so as not to clutter everything up
-teardown(
-  {
-    system("rm -rf ./someOtherPath") # removes path to written table via write_table
+teardown({
+    system("rm -rf ./someOtherPath") # nolint removes path to written table via write_table
     system("rm ./tableOutput")
   },
   env = parent.frame()

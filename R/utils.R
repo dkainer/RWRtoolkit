@@ -19,17 +19,23 @@
 # RWRtoolkit. If not, see <https://www.gnu.org/licenses/>.
 ########################################################################
 
-load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE) {
+load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
   if (is.null(path)) {
     return(NULL)
   } else if (!file.exists(path)) {
     stop("ERROR: geneset file does not exist: ", path)
   } else {
-    geneset <- read.table(path, header = F, colClasses = c("character"))
+    # geneset <- read.table(path, header = F, colClasses = c("character"))
+    geneset <- data.table::fread(
+                  path,
+                  header =F,
+                  select = select,
+                  colClasses = c("character")
+                )
     if (ncol(geneset) < 2) {
       stop("Your geneset file is incorrectly formatted. Please see documentation.") #nolint message
     }
-
+1
     # Check if seed weights are included by user or not.
     numericV3 <- suppressWarnings(as.numeric(geneset$V3))
     if (!is.null(geneset$V3) && all(!is.null(numericV3)) && all(!is.na(numericV3))) {
@@ -290,6 +296,10 @@ dump_nodes <- function(mpo, outdir = NULL) {
   if (length(df) == 0) stop("Pool of Nodes to be saved has 0 nodes")
 
   file_path <- get_file_path("pool-of-nodes", outdir = outdir)
+  print("File path")
+  print(file_path)
+  print("actualdf")
+  print(df)
   write_table(df, file_path)
   message(sprintf("Saved pool of nodes: %s", file_path))
 }
@@ -297,7 +307,11 @@ dump_nodes <- function(mpo, outdir = NULL) {
 generate_randomset <- function(mpo, n = 10, name = "RAND", outdir = NULL) {
   random_nodes <- data.frame(geneset = name, sample(mpo$Pool_of_Nodes, n))
   file_path <- get_file_path(paste0("geneset_", name), outdir = outdir)
-  write.table(random_nodes, file_path, col.names = F, row.names = F, quote = F, sep = "\t")
+
+  write.table(random_nodes,
+              file_path,
+              col.names = F,
+              row.names = F, quote = F, sep = "\t")
   message(sprintf("Saved random ganeset: %s", file_path))
   random_nodes
 }
