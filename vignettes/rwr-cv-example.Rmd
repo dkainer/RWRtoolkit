@@ -191,6 +191,7 @@ For each of these, scoring metrics are then used to generate the final tables co
 With our multiplex and gold set genes in place, we can run `RWR_CV`. First, let's run `kfold` on the gold set genes to see how well they perform. By using `kfold` genes are randomly split into groups of seeds to see how well those seed groups can recall the left out genes: 
 
 ```{r}
+
 goldsetCV_kfoldOutput <- RWRtoolkit::RWR_CV(
   data = multiplexNetworkPath,
   geneset_path = goldsetPath,
@@ -207,14 +208,11 @@ goldsetCV_kfoldOutput <- RWRtoolkit::RWR_CV(
 ```{r, echo=F, out.width="100%", fig.align="center"}
 # file renaming here is unnecessary
 directory <- 'testset_kfold'
-plot_name <- "RWR-CV_goldSet_toy_network.Rdata_default.plots.png"
+plot_name <- "RWR-CV_goldSet_toy_network_default.plots.png"
 previous_name <- paste(directory, plot_name, sep="/")
-new_name <- paste(directory, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
 
-image_path <- paste(directory, "plot.png", sep="/")
-knitr::include_graphics(image_path)
+
+knitr::include_graphics(previous_name)
 ```
 
 
@@ -239,14 +237,10 @@ goldsetCV_looOutput <- RWRtoolkit::RWR_CV(
 ```{r, echo=F, out.width="100%", fig.align="center"}
 # file renaming here is unnecessary
 directory <- 'testset_loo'
-plot_name <- "RWR-CV_goldSet_toy_network.Rdata_default.plots.png"
+plot_name <- "RWR-CV_goldSet_toy_network_default.plots.png"
 previous_name <- paste(directory, plot_name, sep="/")
-new_name <- paste(directory, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
 
-image_path <- paste(directory, "plot.png", sep="/")
-knitr::include_graphics(image_path)
+knitr::include_graphics(previous_name)
 ```
 
 
@@ -268,12 +262,8 @@ goldsetCV_singletonsOutput <- RWRtoolkit::RWR_CV(
 ```{r, echo=F, out.width="100%", fig.align="center"}
 # file renaming here is unnecessary
 directory <- 'testset_singletons'
-plot_name <- "RWR-CV_goldSet_toy_network.Rdata_default.plots.png"
+plot_name <- "RWR-CV_goldSet_toy_network_default.plots.png"
 previous_name <- paste(directory, plot_name, sep="/")
-new_name <- paste(directory, "plot.png", sep="/")
-mv_command <- paste("mv", previous_name, new_name)
-system(mv_command)
 
-image_path <- paste(directory, "plot.png", sep="/")
-knitr::include_graphics(image_path)
+knitr::include_graphics(previous_name)
 ```
