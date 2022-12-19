@@ -12,12 +12,13 @@ RWR_netstats(
   basic_statistics = F,
   overlap_sim_multiplex = F,
   overlap_sim_multiplex_layer = F,
+  overlap_sim_multiplex_layer_jaccard = F,
   overlap_sim_layer_layer = F,
   overlap_score = F,
-  calculate_tau = F,
+  calculate_tau_for_mpo = F,
   merged_with_all_edges = F,
   merged_with_edgecounts = F,
-  exclusivity = F,
+  calculate_exclusivity_for_mpo = F,
   verbose = F
 )
 }
@@ -57,12 +58,6 @@ network_2)}
 of overlap scores between all layers
 of the multiplex.}
 
-\item{calculate_tau}{A boolean denoting a return of the
-distribution of "tau", with respect
-to the network layers,  calculated via
-edge overlap weight / total edgeweight
-multipled by the total number of layers}
-
 \item{merged_with_all_edges}{A boolean denoting a return of a merged
 down multiplex network along with
 network edge counts and vertex counts.}
@@ -72,12 +67,18 @@ down multiplex, but simplified with
 edge weights denoting the total number
 of layers in which that edge existed.}
 
+\item{verbose}{A boolean denoting the verbosity of
+output}
+
+\item{calculate_tau}{A boolean denoting a return of the
+distribution of "tau", with respect
+to the network layers,  calculated via
+edge overlap weight / total edgeweight
+multipled by the total number of layers}
+
 \item{exclusivity}{A boolean denoting a return of total
 percentage of edges that exist within
 all n layers of the multiplex.}
-
-\item{verbose}{A boolean denoting the verbosity of
-output}
 }
 \value{
 A list of data frames, igraph networks, and vectors denoting various
