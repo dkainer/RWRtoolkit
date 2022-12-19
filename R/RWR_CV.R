@@ -1159,6 +1159,10 @@ RWR_CV <- function(data = NULL,
   }
 
   if (write_to_file) {
+    if(! file.exists(out_path)) {
+      dir.create(out_path)
+    }
+
     combined <- res_combined %>%
       dplyr::group_by(fold) %>%
       dplyr::slice_head(prop = numranked)
@@ -1208,6 +1212,7 @@ RWR_CV <- function(data = NULL,
     outdir = outdir_path,
     ext = ".summary.tsv"
   )
+
   if (write_to_file) {
     write_table(metrics$summary, out_path)
   }
@@ -1218,5 +1223,10 @@ RWR_CV <- function(data = NULL,
     save_plots_cv(metrics, geneset, folds, data, modname, outdir_path)
   }
 
-  return(list("fullranks" = res_combined, "medianranks" = res_avg, "metrics" = metrics$res_avg, "summary" = metrics$summary))
+  return(
+    list("fullranks" = res_combined,
+         "medianranks" = res_avg,
+         "metrics" = metrics$res_avg,
+         "summary" = metrics$summary)
+      )
 }
