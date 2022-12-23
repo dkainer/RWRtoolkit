@@ -55,7 +55,7 @@ Imports:
 Suggests: 
     testthat,
     mockery,
-    gostres,
+    gprofiler2,
     knitr,
     rmarkdown
 Remotes:
