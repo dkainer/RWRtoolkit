@@ -12,7 +12,7 @@ describe("RWR_netstats", {
     it("loads an igraph object from an edgelist", {
       path_to_edgelist <- "../testNetworks/abc_layer1.tsv"
 
-      actual_network <- RWRtoolkit::load_network(path_to_edgelist)
+      actual_network <- load_network(path_to_edgelist)
 
       expected_network <- igraph::make_graph(expected_elements, directed = F)
 
@@ -29,7 +29,7 @@ describe("RWR_netstats", {
       type <- "testnetwork"
       name <- "TESTLAYER"
 
-      actual_network <- RWRtoolkit::load_network(
+      actual_network <- load_network(
         path_to_edgelist = path_to_edgelist,
         type = type,
         name = name,
@@ -68,14 +68,14 @@ describe("RWR_netstats", {
 
     it("loads an flist from a file", {
       flist_path <- "../testFlists/abc_flist.txt"
-      actual_flist <- RWRtoolkit::load_flist(flist_path)
+      actual_flist <- load_flist(flist_path)
 
       expect_equal(actual_flist, expected_flist)
     })
 
     it("loads the first 3 columns of an flist from file", {
       flist_path <- "../testFlists/test_flist_5cols.tsv"
-      actual_flist <- RWRtoolkit::load_flist(flist_path)
+      actual_flist <- load_flist(flist_path)
 
       expect_equal(actual_flist, expected_flist)
     })
@@ -433,7 +433,7 @@ describe("RWR_netstats", {
             "Network <X> has no weighted edges.",
             "All scores will be zero."
           )
-          expect_warning(RWRtoolkit::check_weighted_edges(network, "<X>"))
+          expect_warning(check_weighted_edges(network, "<X>"))
     })
 
     it("does not throw a warning when weighted edges exist", {
@@ -441,7 +441,7 @@ describe("RWR_netstats", {
           E(network_x)$weight <- 1
 
           # No warnings thrown: 
-          RWRtoolkit::check_weighted_edges(network_x, "<x>")
+          check_weighted_edges(network_x, "<x>")
           
     })
 

@@ -85,7 +85,7 @@ run_test_for_diff_graph_data <- function(
   expected_normalized_mat <- supra_adj_mat[[2]]
 
   invisible(
-    RWRtoolkit::make_homogenous_network(
+    make_homogenous_network(
       nw_groups,
       delta,
       output_filename,
@@ -100,7 +100,7 @@ run_test_for_diff_graph_data <- function(
 describe("make_multiplex", {
   it("throws an error when fed an flist tibble with non-existant files", {
     nw_groups <- list_of(nw_tibble_bad_path)
-    expect_error(RWRtoolkit::make_multiplex(nw_groups[[1]]))
+    expect_error(make_multiplex(nw_groups[[1]]))
   })
 
   it("also makes a multiplex", {
@@ -125,7 +125,7 @@ describe("make_multiplex", {
 
     invisible(
       capture.output(
-        output <- RWRtoolkit::make_multiplex(nw_groups[[1]])
+        output <- make_multiplex(nw_groups[[1]])
       )
     )
 
@@ -155,7 +155,7 @@ describe("make_homogenous_network", {
     verbose <- FALSE
 
     invisible(
-      RWRtoolkit::make_homogenous_network(
+      make_homogenous_network(
         nw_groups,
         delta,
         output_filename,
@@ -215,7 +215,7 @@ describe("make_homogenous_network", {
     colnames(expected_normalized_mat) <- colnames
 
     invisible(
-      RWRtoolkit::make_homogenous_network(
+      make_homogenous_network(
         nw_groups,
         delta,
         output_filename,
@@ -345,7 +345,7 @@ describe("make_homogenous_network", {
     verbose <- FALSE
 
     expect_error(
-      RWRtoolkit::make_homogenous_network(
+      make_homogenous_network(
         nw_groups,
         delta,
         output_filename,
@@ -383,7 +383,7 @@ describe("make_heterogeneous_multiplex", {
     out <- "network.Rdata"
 
     invisible(
-      RWRtoolkit::make_heterogeneous_multiplex(
+      make_heterogeneous_multiplex(
         nw_group_input,
         delta,
         lambda,

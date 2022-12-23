@@ -75,23 +75,23 @@ res_tibble_dummy <- generate_mock_rwr_result_tibble(res_dummy, Seeds)
 ########################################################################
 describe("RWR_LOE calc_metrics_loe", {
   it("throws a warning if there are query genes in the seed geneset", {
-    expect_warning(RWRtoolkit::calc_metrics_loe(res_dummy, genesetA_2genes, genesetB_3genes))
+    expect_warning(calc_metrics_loe(res_dummy, genesetA_2genes, genesetB_3genes))
   })
 
   it("returns a list of two objects back", {
-    output <- RWRtoolkit::calc_metrics_loe(res_dummy, genesetA_2genes, genesetC_2genes)
+    output <- calc_metrics_loe(res_dummy, genesetA_2genes, genesetC_2genes)
 
     expect_equal(2, length(output))
   })
 
   it("results contain the correct amount of genes (no dupes)", {
-    output <- RWRtoolkit::calc_metrics_loe(res_dummy, genesetA_2genes, genesetC_2genes)
+    output <- calc_metrics_loe(res_dummy, genesetA_2genes, genesetC_2genes)
 
     expect_equal(nrow(output$result), nrow(genesetC_2genes))
   })
 
   it("results contain the correct amount of genes (with dupes)", {
-    output <- expect_warning(RWRtoolkit::calc_metrics_loe(res_dummy, genesetA_2genes, genesetB_3genes))
+    output <- expect_warning(calc_metrics_loe(res_dummy, genesetA_2genes, genesetB_3genes))
 
     ## Expected output's length with duplicates is because all 3 one of the query set genes is also
     ## in the seed genes.
@@ -112,7 +112,7 @@ describe("RWR_LOE save_plots_loe", {
     test_modname <- "testmod"
     test_outdir <- "plots"
 
-    expected_outputFileName <- RWRtoolkit::get_file_path(
+    expected_outputFileName <- get_file_path(
       test_seed_geneset$setid[1], 
       test_query_geneset$setid[1], 
       test_modname,
@@ -120,7 +120,7 @@ describe("RWR_LOE save_plots_loe", {
       ext = "metrics.png"
     )
 
-    RWRtoolkit::save_plots_loe(
+    save_plots_loe(
       metrics = test_metrics,
       seed_geneset = test_seed_geneset,
       query_geneset = test_query_geneset,

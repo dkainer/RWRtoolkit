@@ -55,7 +55,7 @@ describe("update_folds_by_method", {
     method <- "unsupported_method"
     numFolds <- 5
 
-    expect_error(RWRtoolkit::update_folds_by_method(geneset, method, numFolds))
+    expect_error(update_folds_by_method(geneset, method, numFolds))
   })
 
   it("sets folds to the number of rows within the geneset for LOO", {
@@ -65,7 +65,7 @@ describe("update_folds_by_method", {
     expected_chunks <- NULL
     expected_method <- "loo"
 
-    output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
+    output <- update_folds_by_method(geneset, method, numFolds)
 
     expect_equal(output[[1]], expected_folds)
     expect_equal(output[[2]], geneset)
@@ -84,7 +84,7 @@ describe("update_folds_by_method", {
     expected_folds <- 3
     expected_method <- "loo"
 
-    output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
+    output <- update_folds_by_method(geneset, method, numFolds)
 
     expect_equal(output[[1]], expected_folds)
     expect_equal(output[[2]], geneset)
@@ -99,7 +99,7 @@ describe("update_folds_by_method", {
     expected_chunks <- NULL
     expected_method <- "singletons"
 
-    output <- RWRtoolkit::update_folds_by_method(geneset, method, NA)
+    output <- update_folds_by_method(geneset, method, NA)
 
     expect_equal(output[[1]], expected_folds)
     expect_equal(output[[2]], geneset)
@@ -138,8 +138,8 @@ describe("update_folds_by_method", {
     expected_method <- "kfold"
 
     mock_sample <- mock(sequence(3), gene)
-    stub(RWRtoolkit::update_folds_by_method, "sample", mock_sample)
-    output <- RWRtoolkit::update_folds_by_method(geneset, method, numFolds)
+    stub(update_folds_by_method, "sample", mock_sample)
+    output <- update_folds_by_method(geneset, method, numFolds)
 
     expect_equal(output[[1]], expected_folds)
     expect_equal(output[[2]], geneset)
@@ -459,13 +459,13 @@ describe("RWR", {
     )
 
     # Stub functions with mocks
-    stub(RWRtoolkit::RWR, "update_folds_by_method", mock_update_folds_by_method)
-    stub(RWRtoolkit::RWR, "extract_lo_and_seed_genes_cv", mock_extract_leftout_and_seed_genes_cv)
-    stub(RWRtoolkit::RWR, "RandomWalkRestartMH::Random.Walk.Restart.Multiplex", mock_RWRMH)
-    stub(RWRtoolkit::RWR, "create_rankings_cv", mock_create_rankings_cv)
+    stub(RWR, "update_folds_by_method", mock_update_folds_by_method)
+    stub(RWR, "extract_lo_and_seed_genes_cv", mock_extract_leftout_and_seed_genes_cv)
+    stub(RWR, "RandomWalkRestartMH::Random.Walk.Restart.Multiplex", mock_RWRMH)
+    stub(RWR, "create_rankings_cv", mock_create_rankings_cv)
     expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)
 
-    response <- RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
+    response <- RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
 
     expect_equal(response, expected_response)
     expect_args(mock_update_folds_by_method, 1, geneset_3genes, method, expected_folds)
@@ -555,7 +555,7 @@ describe("Post Processing", {
         "seed" = expected_seed, "leftout" = expected_lefout, "method" = expected_method
       )
 
-      output <- RWRtoolkit::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
+      output <- post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
 
       expect_equal(output, expected_output)
     })
@@ -606,7 +606,7 @@ describe("Post Processing", {
       )
 
 
-      output <- RWRtoolkit::post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
+      output <- post_process_rwr_output_cv(rwr_res, extras, numfolds, nw.mpo)
       expect_equal(output, expected_output)
     })
 
@@ -697,7 +697,7 @@ describe("Post Processing", {
       )
 
 
-      output <- RWRtoolkit::post_process_rwr_output_cv(res, extras, folds, nw.mpo)
+      output <- post_process_rwr_output_cv(res, extras, folds, nw.mpo)
 
       expect_equal(output, expected_output)
     })
@@ -749,7 +749,7 @@ describe("Post Processing", {
         num_in_network = c(4, 4, 4, 4)
       )
 
-      output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined)
+      output <- calculate_average_rank_across_folds_cv(res_combined)
 
       expect_equal(output, expected_output)
     })
@@ -808,7 +808,7 @@ describe("Post Processing", {
         num_in_network = c(4, 4, 4, 4, 4, 4)
       )
 
-      output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined)
+      output <- calculate_average_rank_across_folds_cv(res_combined)
       expect_equal(output, expected_output)
     })
 
@@ -907,7 +907,7 @@ describe("Post Processing", {
         num_in_network = c(3, 3, 3, 3, 3, 3)
       )
 
-      output <- RWRtoolkit::calculate_average_rank_across_folds_cv(res_combined_loo)
+      output <- calculate_average_rank_across_folds_cv(res_combined_loo)
 
       expect_equal(output, expected_output)
     })

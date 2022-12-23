@@ -25,11 +25,11 @@ describe("merged multiplex", {
       "PKM", "PMM1", "TALDO1", "TKT", "TPI1", "KHK", "PMM2"
     )
     load(data)
-    geneset1_plus_extras <- RWRtoolkit::load_geneset(geneset1, nw.mpo)
+    geneset1_plus_extras <- load_geneset(geneset1, nw.mpo)
     source_genes <- geneset1_plus_extras[[1]]
-    geneset2_plus_extras <- RWRtoolkit::load_geneset(geneset2, nw.mpo)
+    geneset2_plus_extras <- load_geneset(geneset2, nw.mpo)
     target_genes <- geneset2_plus_extras[[1]]
-    nw_merged <- RWRtoolkit::merge_networks(nw.mpo)
+    nw_merged <- merge_networks(nw.mpo)
     returned_nodes <- names(V(nw_merged))
 
     expect_equal(
@@ -44,12 +44,12 @@ describe("shortest paths result", {
   it("has correct dimensions", {
     #### of dimensionality
     load(data)
-    geneset1_plus_extras <- RWRtoolkit::load_geneset(geneset1, nw.mpo)
+    geneset1_plus_extras <- load_geneset(geneset1, nw.mpo)
     source_genes <- geneset1_plus_extras[[1]]
-    geneset2_plus_extras <- RWRtoolkit::load_geneset(geneset2, nw.mpo)
+    geneset2_plus_extras <- load_geneset(geneset2, nw.mpo)
     target_genes <- geneset2_plus_extras[[1]]
-    nw_merged <- RWRtoolkit::merge_networks(nw.mpo)
-    res <- RWRtoolkit::get_shortest_paths(
+    nw_merged <- merge_networks(nw.mpo)
+    res <- get_shortest_paths(
       nw_merged,
       source_genes,
       target_genes

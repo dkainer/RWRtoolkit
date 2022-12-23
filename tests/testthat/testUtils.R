@@ -13,7 +13,7 @@ describe("load_geneset", {
 
 
   it("returns null if geneset path is null", {
-    output <- RWRtoolkit::load_geneset(NULL)
+    output <- load_geneset(NULL)
 
     expect_equal(output, NULL)
   })
@@ -24,14 +24,14 @@ describe("load_geneset", {
     expected_err_msg <- paste(
       "ERROR: geneset file does not exist:", 
       file_path)
-    expect_error(RWRtoolkit::load_geneset(file_path), expected_err_msg)
+    expect_error(load_geneset(file_path), expected_err_msg)
   })
 
   it("loads bad geneset", {
     file_path <- "../testGenesets/testGeneset_Bad_oneColumn.tsv"
     expected_err_msg <- "Your geneset file is incorrectly formatted. Please see documentation." #nolint msg
 
-    expect_error(RWRtoolkit::load_geneset(file_path), expected_err_msg)
+    expect_error(load_geneset(file_path), expected_err_msg)
   })
 
   it("loads csv formatted geneset", {
@@ -46,7 +46,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(file_path)
+    output <- load_geneset(file_path)
     expect_equal(output, expected_output)
   })
 
@@ -61,7 +61,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-     output <- RWRtoolkit::load_geneset(file_path)
+     output <- load_geneset(file_path)
     print("OUTPUT IS")
     print(output)
      expect_equal(output, expected_output)
@@ -78,7 +78,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(file_path)
+    output <- load_geneset(file_path)
 
     expect_equal(output, expected_output)
   })
@@ -95,7 +95,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(file_path)
+    output <- load_geneset(file_path)
 
     expect_equal(output, expected_output)
   })
@@ -112,7 +112,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- RWRtoolkit::load_geneset(file_path)
+    output <- load_geneset(file_path)
 
     expect_equal(output, expected_output)
   })
@@ -136,7 +136,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- expect_warning(RWRtoolkit::load_geneset(file_path, nw.mpo))
+    output <- expect_warning(load_geneset(file_path, nw.mpo))
     expect_equal(output, expected_output)
   })
 
@@ -160,7 +160,7 @@ describe("load_geneset", {
       "geneset" = expected_geneset,
       "extras" = expected_extras)
 
-    output <- expect_warning(RWRtoolkit::load_geneset(file_path, nw.mpo))
+    output <- expect_warning(load_geneset(file_path, nw.mpo))
 
     expect_equal(output, expected_output)
   })
@@ -175,7 +175,7 @@ describe("get_or_set_tau", {
     opt_tau <- c(1.25, 0.75)
     expected_output <- opt_tau
 
-    output <- RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau)
+    output <- get_or_set_tau(nw.mpo, opt_tau)
 
     expect_equal(output, expected_output)
   })
@@ -185,7 +185,7 @@ describe("get_or_set_tau", {
     opt_tau <- "1.25,0.75"
     expected_output <- c(1.25, 0.75)
 
-    output <- RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau)
+    output <- get_or_set_tau(nw.mpo, opt_tau)
 
     expect_equal(output, expected_output)
   })
@@ -195,7 +195,7 @@ describe("get_or_set_tau", {
     opt_tau <- c(0.25, 0.75)
     expected_output <- c(1, 1)
 
-    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau))
+    output <- expect_warning(get_or_set_tau(nw.mpo, opt_tau))
 
     expect_equal(output, expected_output)
   })
@@ -205,7 +205,7 @@ describe("get_or_set_tau", {
     opt_tau <- "0.75"
     expected_output <- c(1, 1)
 
-    output <- expect_warning(RWRtoolkit::get_or_set_tau(nw.mpo, opt_tau))
+    output <- expect_warning(get_or_set_tau(nw.mpo, opt_tau))
 
     expect_equal(output, expected_output)
   })
@@ -217,7 +217,7 @@ describe("chunk", {
     n_folds <- 3
     expected_outputlength <- 3
 
-    output <- RWRtoolkit::chunk(gene_lists, n_folds)
+    output <- chunk(gene_lists, n_folds)
 
     expect_equal(length(names(output)), expected_outputlength)
     expect_equal(output["1"][[1]], c("a", "b"))
@@ -230,7 +230,7 @@ describe("chunk", {
     n_folds <- 4
     expected_outputlength <- 3
 
-    output <- expect_warning(RWRtoolkit::chunk(gene_lists, n_folds))
+    output <- expect_warning(chunk(gene_lists, n_folds))
 
     expect_equal(length(names(output)), expected_outputlength)
   })
@@ -241,7 +241,7 @@ describe("write_table", {
     table <- NA
     path <- "./tableOutput"
 
-    expect_warning(RWRtoolkit::write_table(table, path))
+    expect_warning(write_table(table, path))
   })
 
   it("Writes table to existing path", {
@@ -249,8 +249,8 @@ describe("write_table", {
     path <- "./someFakeFile.txt"
 
     write_table_stub <- mock()
-    stub(RWRtoolkit::write_table, "write.table", write_table_stub)
-    RWRtoolkit::write_table(faux_list_of_nodes, path)
+    stub(write_table, "write.table", write_table_stub)
+    write_table(faux_list_of_nodes, path)
 
     expect_called(write_table_stub, 1)
     expect_args(write_table_stub, 1, faux_list_of_nodes, path, "\t", F, T, F)
@@ -262,8 +262,8 @@ describe("write_table", {
     expected_dir <- "recursiveDepth"
 
     write_table_stub <- mock()
-    stub(RWRtoolkit::write_table, "write.table", write_table_stub)
-    RWRtoolkit::write_table(faux_list_of_nodes, bad_path)
+    stub(write_table, "write.table", write_table_stub)
+    write_table(faux_list_of_nodes, bad_path)
     check_dir <- system("ls ./someOtherPath/", intern = T)
 
     expect_equal(check_dir[1], expected_dir)
@@ -276,7 +276,7 @@ describe("get_base_name", {
   it("extracts a basename from a full file path", {
     full_fp <- "/Users/mattlane/projects/RWRtoolkit/inst/example_data/net.Rdata"
 
-    actual_basename <- RWRtoolkit::get_base_name(full_fp)
+    actual_basename <- get_base_name(full_fp)
 
     expected_basename <- "net"
     expect_equal(actual_basename, expected_basename)
@@ -285,7 +285,7 @@ describe("get_base_name", {
   it("extracts a basename from a full url with query params", {
     full_url <- "http://www.github.com/username/net.Rdata?raw=True"
 
-    actual_basename <- RWRtoolkit::get_base_name(full_url)
+    actual_basename <- get_base_name(full_url)
 
     expected_basename <- "net"
     expect_equal(actual_basename, expected_basename)
@@ -294,7 +294,7 @@ describe("get_base_name", {
   it("extracts a basename from only a basename", {
     base_with_ext <- "net.Rdata"
 
-    actual_basename <- RWRtoolkit::get_base_name(base_with_ext)
+    actual_basename <- get_base_name(base_with_ext)
 
     expected_basename <- "net"
     expect_equal(actual_basename, expected_basename)
@@ -304,7 +304,7 @@ describe("get_base_name", {
   it("extracts a basename from only a basename with no ext", {
     base_with_ext <- "net"
 
-    actual_basename <- RWRtoolkit::get_base_name(base_with_ext)
+    actual_basename <- get_base_name(base_with_ext)
 
     expected_basename <- "net"
     expect_equal(actual_basename, expected_basename)
@@ -313,7 +313,7 @@ describe("get_base_name", {
   it("extracts a basename but leaves non-rdata ext", {
     base_with_nonrdata_ext <- "net.something.r"
 
-    actual_basename <- RWRtoolkit::get_base_name(base_with_nonrdata_ext)
+    actual_basename <- get_base_name(base_with_nonrdata_ext)
 
     expected_basename <- "net.something.r"
     expect_equal(actual_basename, expected_basename)
@@ -326,7 +326,7 @@ describe("get_file_path", {
     base_filename <- "someFile"
     expected_basefilename <- "someFile.tsv"
 
-    outfilename <- RWRtoolkit::get_file_path(base_filename)
+    outfilename <- get_file_path(base_filename)
 
     expect_equal(outfilename, expected_basefilename)
   })
@@ -337,7 +337,7 @@ describe("get_file_path", {
     expected_basefilename <- "someFile.csv"
     file_extension <- ".csv"
 
-    outfilename <- RWRtoolkit::get_file_path(base_filename, ext = file_extension)
+    outfilename <- get_file_path(base_filename, ext = file_extension)
 
     expect_equal(outfilename, expected_basefilename)
   })
@@ -346,7 +346,7 @@ describe("get_file_path", {
     outdirpath <- "/some/path/to/file"
     expected_basefilename <- "/some/path/to/file/someFile.tsv"
 
-    outfilename <- RWRtoolkit::get_file_path(base_filename, outdir = outdirpath)
+    outfilename <- get_file_path(base_filename, outdir = outdirpath)
 
     expect_equal(outfilename, expected_basefilename)
   })
@@ -372,9 +372,9 @@ describe("dump_layers", {
 
     get_filepath_stub <- mock(fakefile_path, fakefile_path)
     write_table_stub <- mock()
-    stub(RWRtoolkit::dump_layers, "get_file_path", get_filepath_stub)
-    stub(RWRtoolkit::dump_layers, "write_table", write_table_stub)
-    RWRtoolkit::dump_layers(nw.mpo)
+    stub(dump_layers, "get_file_path", get_filepath_stub)
+    stub(dump_layers, "write_table", write_table_stub)
+    dump_layers(nw.mpo)
 
     expect_called(get_filepath_stub, expected_num_calls)
     expect_args(get_filepath_stub, 1, expected_layer1name, NULL)
@@ -393,9 +393,9 @@ describe("dump_layers", {
 
     get_filepath_stub <- mock(fakefile_path, fakefile_path)
     write_table_stub <- mock()
-    stub(RWRtoolkit::dump_layers, "get_file_path", get_filepath_stub)
-    stub(RWRtoolkit::dump_layers, "write_table", write_table_stub)
-    RWRtoolkit::dump_layers(nw.mpo)
+    stub(dump_layers, "get_file_path", get_filepath_stub)
+    stub(dump_layers, "write_table", write_table_stub)
+    dump_layers(nw.mpo)
 
     expect_called(get_filepath_stub, expected_num_calls)
     expect_called(write_table_stub, expected_num_calls)
@@ -408,8 +408,8 @@ describe("dump_nodes", {
     expected_num_calls <- 0
 
     write_table_stub <- mock()
-    stub(RWRtoolkit::dump_nodes, "write_table", write_table_stub)
-    expect_error(RWRtoolkit::dump_nodes(nw.mpo))
+    stub(dump_nodes, "write_table", write_table_stub)
+    expect_error(dump_nodes(nw.mpo))
 
     expect_called(write_table_stub, expected_num_calls)
   })
@@ -423,11 +423,11 @@ describe("dump_nodes", {
 
     write_table_stub <- mock()
     get_filepath_stub <- mock(fakefile_path)
-    stub(RWRtoolkit::dump_nodes, "write_table", write_table_stub)
-    stub(RWRtoolkit::dump_nodes, "get_file_path", get_filepath_stub)
+    stub(dump_nodes, "write_table", write_table_stub)
+    stub(dump_nodes, "get_file_path", get_filepath_stub)
 
 
-    RWRtoolkit::dump_nodes(nw.mpo1)
+    dump_nodes(nw.mpo1)
     print(expected_dataframe)
     expect_called(get_filepath_stub, expected_num_calls)
     expect_called(write_table_stub, expected_num_calls)
