@@ -232,7 +232,7 @@ area_under_curve <- function(x, y, from = min(x, na.rm = TRUE), to = max(x, na.r
   return(res)
 }
 
-write_table <- function(table, path, verbose = FALSE) {
+write_table <- function(table, path, row_names = F, verbose = FALSE) {
   if (length(table) == 0 || any(is.na(table))) {
     warning(sprintf("Table to be saved at %s is empty", path))
   }
@@ -247,7 +247,7 @@ write_table <- function(table, path, verbose = FALSE) {
     sep = "\t",
     quote = F,
     col.names = T,
-    row.names = F
+    row.names = row_names
   )
   if (verbose) {
     message(sprintf("Saved data to file: %s", path))
