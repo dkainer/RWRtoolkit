@@ -33,11 +33,11 @@ parse_arguments <- function() {
                     by RWR_make_MHobject.R"
         ),
         make_option(
-            c("-o", "--out"),
+            c("-o", "--outdir"),
             action = "store",
-            default = "network.Rdata",
+            default = "netstats",
             type = "character",
-            help = 'Output file name (default "network.Rdata")'
+            help = 'Output file name (default "netstats")'
         ),
         make_option(
             c("--network_1"),
@@ -187,6 +187,7 @@ main <- function() {
         merged_with_all_edges = opt$merged_with_all_edges,
         merged_with_edgecounts = opt$merged_with_edgecounts,
         exclusivity = opt$exclusivity,
+        outdir_path = opt$outdir,
         verbose = opt$verbose
     )
 }
