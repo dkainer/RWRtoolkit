@@ -705,6 +705,66 @@ parameters_exist <- function(mpo = NULL,
     return_val
 }
 
+write_stats_to_file_if_fp <- function(
+    outdir_path = NULL,
+    filename = NULL,
+    netstats = NULL,
+    write_rows = F,
+    verbose = FALSE ){
+    
+    if(is.null(outdir_path)) return()
+
+    outfile_path <- paste(outdir_path, filename,  sep = "/")
+
+    write_table(netstats, outfile_path, write_rows, verbose = verbose)
+}
+
+write_networks_to_file_if_fp <- function(
+    outdir_path = NULL,
+    filename = NULL,
+    netstats_network = NULL,
+    verbose = FALSE ){
+    
+    if(is.null(outdir_path)) return()
+
+    outfile_path <- paste(outdir_path, filename,  sep = "/")
+
+    edgelist <- igraph::get.edgelist(netstats_network, names=T)
+
+    from <- edgelist[,1]
+    to <- edgelist[,2]
+    weight <- igraph::E(netstats_network)$weight
+
+    edge_attributes <- names(igraph::edge.attributes(netstats_network))
+    
+    if (length(edge_attributes) > 1){
+        weight_norm <- igraph::E(netstats_network)$weightnorm
+        type <- igraph::E(netstats_network)$type
+
+        write_table(
+            data.frame(
+                from = from,
+                to = to,
+                weight = weight,
+                weightnorm = weight_norm,
+                type = type
+            ),
+            outfile_path,
+            verbose
+        )
+        return()
+    }
+
+    write_table(
+        data.frame(
+            from = from,
+            to = to,
+            weight = weight
+        ),
+        outfile_path,
+        verbose
+    )
+}
 
 ########################################################################
 # Main Function
@@ -757,7 +817,34 @@ parameters_exist <- function(mpo = NULL,
 #'                                      output
 #' @return A list of data frames, igraph networks, and vectors denoting various
 #'         parameter defined statistics.
-#'
+#' @example 
+#' 
+#' # An example of running netstats with all statistics: 
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
+#' mpo_path <- paste(extdata.dir, "string_interactions.Rdata", sep = "/")
+#' gold <- paste(extdata.dir, "netstat/combined_score-random-gold.tsv", sep="/")
+#' test <- paste(extdata.dir, "netstat/combined_score-random-test.tsv", sep="/")
+#' 
+#' output_nstats <- RWR_netstats(
+#'      data = mpo_path,
+#'      network_1 = gold,
+#'      network_2 = test,
+#'      basic_statistics = T,
+#'      overlap_sim_multiplex = T,
+#'      overlap_sim_multiplex_layer = T,
+#'      overlap_sim_multiplex_layer_jaccard = T,
+#'      overlap_sim_layer_layer = T,
+#'      overlap_score = T,
+#'      calculate_tau_for_mpo = T,
+#'      merged_with_all_edges = T,
+#'      merged_with_edgecounts = T,
+#'      calculate_exclusivity_for_mpo = T,
+#'      outdir_path = "./",
+#'      verbose = T
+#' )
+#' 
+#' print(output_nstats)
+#' 
 #' @export
 RWR_netstats <- function(
     data = NULL,
@@ -774,9 +861,15 @@ RWR_netstats <- function(
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
     calculate_exclusivity_for_mpo = F,
+    outdir_path = NULL,
     verbose = F) {
 
     netstat_output <- list()
+
+
+    if(!is.null(outdir_path)){
+        dir.create(outdir_path, recursive = TRUE)
+    }
 
     # Load the multiplex.
     if ( !is.null(data) ) {
@@ -844,6 +937,20 @@ RWR_netstats <- function(
                                                 nw_mpo,
                                                 verbose = verbose)
         }
+        
+        #write base stats to file: 
+        filestats <- rbind(
+            netstat_output$base_stats_net1,
+            netstat_output$base_stats_net2,
+            netstat_output$base_stats_mpo
+        )
+
+        write_stats_to_file_if_fp(
+                outdir_path,
+                "base_stats.tsv",
+                filestats,
+                F,
+                verbose)
     }
 
     if (overlap_sim_multiplex &&
@@ -856,6 +963,12 @@ RWR_netstats <- function(
                                             nw_mpo,
                                             metric = "jaccard",
                                             verbose = verbose)
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "overlap_sim_multiplex_jaccard.tsv",
+            netstat_output$overlap_sim_multiplex_jaccard,
+            T,
+            verbose)
     }
 
     if (overlap_sim_multiplex_layer &&
@@ -875,6 +988,13 @@ RWR_netstats <- function(
             metric = "overlap",
             verbose = verbose
         )
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "overlap_sim_multiplex_layer.tsv",
+            netstat_output$overlap_sim_multiplex_layer,
+            T,
+            verbose)
     }
 
     if (overlap_sim_multiplex_layer_jaccard &&
@@ -894,6 +1014,15 @@ RWR_netstats <- function(
             metric = "jaccard",
             verbose = verbose
         )
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "overlap_sim_multiplex_layer_jaccard.tsv",
+            netstat_output$overlap_sim_multiplex_layer_jaccard,
+            T,
+            verbose)
+
+
     }
 
     if (overlap_sim_layer_layer &&
@@ -919,6 +1048,15 @@ RWR_netstats <- function(
             overlap = overlap_pair_overlap_weight,
             jaccard = overlap_pair_jaccard
         ))
+
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "overlap_sim_layer_layer.tsv",
+            netstat_output$overlap_sim_layer_layer,
+            F,
+            verbose)
+
     }
 
     if (overlap_score  &&
@@ -930,6 +1068,14 @@ RWR_netstats <- function(
                                                         nw_mpo,
                                                         metric = "overlap",
                                                         verbose = verbose)
+
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "mpo_overlap_score.tsv",
+            netstat_output$mpo_overlap_score,
+            T,
+            verbose)
     }
 
     if (calculate_tau_for_mpo &&
@@ -941,6 +1087,13 @@ RWR_netstats <- function(
                                                 nw_mpo,
                                                 network_1,
                                                 verbose = verbose)
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "calculated_tau.tsv",
+            netstat_output$calculated_tau,
+            T,
+            verbose)
     }
 
     if (merged_with_all_edges &&
@@ -951,6 +1104,12 @@ RWR_netstats <- function(
         netstat_output$merged_with_all_edges <- merged_with_all_edges(
                                                         nw_mpo,
                                                         verbose = verbose)
+
+        write_networks_to_file_if_fp(
+            outdir_path,
+            "merged_with_all_edges.tsv",
+            netstat_output$merged_with_all_edges$merged_network,
+            verbose )
     }
 
     if (merged_with_edgecounts  &&
@@ -961,6 +1120,12 @@ RWR_netstats <- function(
         netstat_output$merged_with_edgecounts <- merged_with_edgecounts(
                                                 nw_mpo,
                                                 verbose = verbose)
+
+        write_networks_to_file_if_fp(
+            outdir_path,
+            "merged_with_edgecounts.tsv",
+            netstat_output$merged_with_edgecounts$merged_network,
+            verbose )
     }
 
     if (calculate_exclusivity_for_mpo &&
@@ -971,7 +1136,16 @@ RWR_netstats <- function(
         netstat_output$exclusivity <- exclusivity(
                                                 nw_mpo,
                                                 verbose = verbose)
+
+
+        write_stats_to_file_if_fp(
+            outdir_path,
+            "exclusivity.tsv",
+            netstat_output$exclusivity,
+            F,
+            verbose)
     }
+    
 
     return(netstat_output)
 }
