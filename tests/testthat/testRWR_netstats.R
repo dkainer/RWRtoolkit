@@ -920,7 +920,7 @@ describe("RWR_netstats", {
           network_1 = net1_file_path,
           network_2 = net2_file_path,
           basic_statistics = T,
-          overlap_sim_multiplex = T,
+          overlap_sim_multiplex_jaccard = T,
           overlap_sim_multiplex_layer = T,
           overlap_sim_layer_layer = T,
           overlap_score = T,

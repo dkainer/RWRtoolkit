@@ -852,7 +852,7 @@ RWR_netstats <- function(
     network_1 = NULL,
     network_2 = NULL,
     basic_statistics = F,
-    overlap_sim_multiplex = F,
+    overlap_sim_multiplex_jaccard = F,
     overlap_sim_multiplex_layer = F,
     overlap_sim_multiplex_layer_jaccard = F,
     overlap_sim_layer_layer = F,
@@ -866,10 +866,6 @@ RWR_netstats <- function(
 
     netstat_output <- list()
 
-
-    if(!is.null(outdir_path)){
-        dir.create(outdir_path, recursive = TRUE)
-    }
 
     # Load the multiplex.
     if ( !is.null(data) ) {
@@ -953,11 +949,11 @@ RWR_netstats <- function(
                 verbose)
     }
 
-    if (overlap_sim_multiplex &&
+    if (overlap_sim_multiplex_jaccard &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
-            function_name = "overlap_sim_multiplex")
+            function_name = "overlap_sim_multiplex_jaccard")
         ) {
         netstat_output$overlap_sim_multiplex_jaccard <- overlap_many_pairwise(
                                             nw_mpo,
@@ -1059,7 +1055,7 @@ RWR_netstats <- function(
 
     }
 
-    if (overlap_score  &&
+    if (overlap_score &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
