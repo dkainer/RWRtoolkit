@@ -224,7 +224,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     unioned_networks <- NULL
     for (i in 1:mpo$Number_of_Layers) {
-        
+        E(mpo[[i]])$weight <- 1
         unioned_networks <-  igraph::union(mpo[[i]], unioned_networks)
     }
 
