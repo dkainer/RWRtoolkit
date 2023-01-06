@@ -234,10 +234,11 @@ extract_node_from_row <- function(path_df,
 #'  Extract Highest Scoring Path
 #'
 #' `extract_highest_scoring_path`  parses through the dataframe output of
-#' RWR_ShortestPaths and extracts the highest valued edge per layer of a
+#' RWR_ShortestPaths and extracts the highest weighted edge per layer of a
 #' user defined path. The method with which these edges are extracted can
-#'  be either by the normalized weight (default) or by the non-normalized
-#' weight.
+#' be either by the normalized weight (default) or by the non-normalized
+#' weight. If the edges are unweighted, this will not yield any meaningful
+#' results
 #'
 #' @param shortest_paths_df A dataframe denoting the shortest paths of
 #'                          between a series of predefined genes. The output
