@@ -221,12 +221,6 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
 merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     n_nodes <- mpo$Number_of_Nodes_Multiplex
-    adj <- Matrix::Matrix(
-                0,
-                ncol = n_nodes,
-                nrow = n_nodes,
-                sparse = T
-            )
 
     unioned_networks <- NULL
     for (i in 1:mpo$Number_of_Layers) {
