@@ -230,6 +230,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     unioned_networks <- NULL
     for (i in 1:mpo$Number_of_Layers) {
+        
         unioned_networks <-  igraph::union(mpo[[i]], unioned_networks)
     }
 
@@ -861,6 +862,7 @@ RWR_netstats <- function(
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
     calculate_exclusivity_for_mpo = F,
+    exclusivity = F,
     outdir_path = NULL,
     verbose = F) {
 

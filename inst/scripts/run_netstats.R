@@ -78,13 +78,13 @@ parse_arguments <- function() {
             help = "overlap_sim_layer_layer"
         ),
         make_option(
-            c("--overlapScore"),
+            c("--overlap_score"),
             action = "store_true",
             default = FALSE,
             help = "overlapScore"
         ),
         make_option(
-            c("--getTau"),
+            c("--calculate_tau"),
             action = "store_true",
             default = FALSE,
             help = "getTau"
@@ -186,7 +186,7 @@ main <- function() {
         calculate_tau = opt$calculate_tau,
         merged_with_all_edges = opt$merged_with_all_edges,
         merged_with_edgecounts = opt$merged_with_edgecounts,
-        exclusivity = opt$exclusivity,
+        calculate_exclusivity_for_mpo = opt$exclusivity,
         outdir_path = opt$outdir,
         verbose = opt$verbose
     )
