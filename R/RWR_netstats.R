@@ -650,9 +650,9 @@ exclusivity <- function(mpo, verbose=FALSE) {
 
     n_found_matrix <- matrix(0, nrow = mpo$Number_of_Layers, ncol = 2)
     for (i in 1:mpo$Number_of_Layers) {
-        sum_of_edges_in_layer <- sum(igraph::E(merged_net)$weight == i)
+        num_edges_found <- sum(igraph::E(merged_net)$weight == i)
         exc <- round(
-                sum_of_edges_in_layer / edge_count_of_merged,
+                num_edges_found / edge_count_of_merged,
             4
         )
 
