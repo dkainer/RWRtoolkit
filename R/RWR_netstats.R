@@ -543,7 +543,7 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     }
 
     for (i in seq(1, n)) {
-        for (j in seq(i, n)) {
+        for (j in seq(1, n)) {
             if (verbose > 0) {
                 message(sprintf("%s vs %s ...", names(mpo)[i], names(mpo)[j]))
             }
@@ -556,8 +556,6 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
                             network_b,
                             metric = metric,
                             verbose = verbose)
-
-            mat[j, i] <- mat[i, j]
 
         }
     }

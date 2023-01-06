@@ -583,7 +583,16 @@ describe("RWR_netstats", {
 
       it("calls compare networks 6 times for pairwise comparisons w/ jaccard", {
         metric <- "jaccard"
-        comp_networks_stub <- mock(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+        comp_networks_stub <- mock(
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0)
 
         stub(
           RWRtoolkit::overlap_many_pairwise,
@@ -601,19 +610,30 @@ describe("RWR_netstats", {
         colnames(expected_output) <- c("layer1", "layer2", "layer3")
 
         expect_equal(actual_output, expected_output)
-        expect_called(comp_networks_stub, 6)
+        expect_called(comp_networks_stub, 9)
         expect_args(comp_networks_stub, 1, nw.mpo[[1]], nw.mpo[[1]], metric, F)
         expect_args(comp_networks_stub, 2, nw.mpo[[1]], nw.mpo[[2]], metric, F)
         expect_args(comp_networks_stub, 3, nw.mpo[[1]], nw.mpo[[3]], metric, F)
-        expect_args(comp_networks_stub, 4, nw.mpo[[2]], nw.mpo[[2]], metric, F)
-        expect_args(comp_networks_stub, 5, nw.mpo[[2]], nw.mpo[[3]], metric, F)
-        expect_args(comp_networks_stub, 6, nw.mpo[[3]], nw.mpo[[3]], metric, F)
+        expect_args(comp_networks_stub, 4, nw.mpo[[2]], nw.mpo[[1]], metric, F)
+        expect_args(comp_networks_stub, 5, nw.mpo[[2]], nw.mpo[[2]], metric, F)
+        expect_args(comp_networks_stub, 6, nw.mpo[[2]], nw.mpo[[3]], metric, F)
+        expect_args(comp_networks_stub, 7, nw.mpo[[3]], nw.mpo[[1]], metric, F)
+        expect_args(comp_networks_stub, 8, nw.mpo[[3]], nw.mpo[[2]], metric, F)
+        expect_args(comp_networks_stub, 9, nw.mpo[[3]], nw.mpo[[3]], metric, F)
       })
 
       it("cals compare networks 6 times for pairwise comparison w/ overlap", {
         metric <- "overlap"
-        comp_networks_stub <- mock(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
-
+        comp_networks_stub <- mock(
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0, 
+          1.0)
         stub(
           RWRtoolkit::overlap_many_pairwise,
           "compare_networks",
@@ -627,13 +647,16 @@ describe("RWR_netstats", {
         colnames(expected_output) <- c("layer1", "layer2", "layer3")
 
         expect_equal(actual_output, expected_output)
-        expect_called(comp_networks_stub, 6)
+        expect_called(comp_networks_stub, 9)
         expect_args(comp_networks_stub, 1, nw.mpo[[1]], nw.mpo[[1]], metric, F)
         expect_args(comp_networks_stub, 2, nw.mpo[[1]], nw.mpo[[2]], metric, F)
         expect_args(comp_networks_stub, 3, nw.mpo[[1]], nw.mpo[[3]], metric, F)
-        expect_args(comp_networks_stub, 4, nw.mpo[[2]], nw.mpo[[2]], metric, F)
-        expect_args(comp_networks_stub, 5, nw.mpo[[2]], nw.mpo[[3]], metric, F)
-        expect_args(comp_networks_stub, 6, nw.mpo[[3]], nw.mpo[[3]], metric, F)
+        expect_args(comp_networks_stub, 4, nw.mpo[[2]], nw.mpo[[1]], metric, F)
+        expect_args(comp_networks_stub, 5, nw.mpo[[2]], nw.mpo[[2]], metric, F)
+        expect_args(comp_networks_stub, 6, nw.mpo[[2]], nw.mpo[[3]], metric, F)
+        expect_args(comp_networks_stub, 7, nw.mpo[[3]], nw.mpo[[1]], metric, F)
+        expect_args(comp_networks_stub, 8, nw.mpo[[3]], nw.mpo[[2]], metric, F)
+        expect_args(comp_networks_stub, 9, nw.mpo[[3]], nw.mpo[[3]], metric, F)
       })
     })
 
