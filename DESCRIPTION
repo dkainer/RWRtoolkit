@@ -57,7 +57,8 @@ Suggests:
     mockery,
     gprofiler2,
     knitr,
-    rmarkdown
+    rmarkdown,
+    RColorBrewer
 Remotes:
     github::dkainer/RandomWalkRestartMH, 
     bioc::RCy3
