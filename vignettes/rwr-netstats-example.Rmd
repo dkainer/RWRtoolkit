@@ -17,6 +17,9 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+library(ggplot2)
+library(igraph)
+library(patchwork)
 library(RWRtoolkit)
 library(RColorBrewer)
 ```
@@ -47,11 +50,6 @@ In order to deomonstrate `RWR_netstats`, we will need to generate some networks.
 
 ### Network Layer Generation
 ```{r}
-library(ggplot2)
-library(igraph)
-library(patchwork)
-library(RWRtoolkit)
-
 
 # a quick function for generating erdos.renyi layers
 create_layer <- function(n_vertices, probaility, weights){
@@ -284,7 +282,7 @@ netstats <- RWRtoolkit::RWR_netstats(
 
 edgecount_layer <- netstats$merged_with_edgecounts$merged_network
 n_colors <- length(unique(E(edgecount_layer)$weight))
-pal <- brewer.pal(n_colors, "Spectral")
+pal <- brewer.pal(n_colors, "Set2")
 names(pal) <- unique(E(edgecount_layer)$weight)
 E(edgecount_layer)$color <- unlist(lapply(E(edgecount_layer)$weight, function(x) pal[[x]]))
 
