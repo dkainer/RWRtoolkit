@@ -29,7 +29,11 @@
 # Internal Functions
 ########################################################################
 
-update_folds_by_method <- function(geneset, method, num_folds, verbose = FALSE) {
+update_folds_by_method <- function(
+  geneset,
+  method,
+  num_folds,
+  verbose = FALSE) {
   chunks <- NULL
   if (method %in% c("loo", "singletons")) {
     folds <- nrow(geneset)
@@ -87,21 +91,21 @@ extract_lo_and_seed_genes_cv <- function(geneset, method, r, chunks = NULL) {
   if (method == "singletons") {
     seed_genes <- geneset %>%
       dplyr::slice(r) %>%
-      dplyr::pull(gene) # Get one seed gene.
+      dplyr::pull(gene) # nolint       Get one seed gene.  
     leftout <- geneset %>%
-      dplyr::filter(gene != seed_genes) %>%
+      dplyr::filter(gene != seed_genes) %>%     #nolint
       dplyr::pull(gene)
   } else if (method == "loo") {
     leftout <- geneset %>%
       dplyr::slice(r) %>%
-      dplyr::pull(gene) # leave out one gene.
+      dplyr::pull(gene) # nolint        leave out one gene.
     seed_genes <- geneset %>%
-      dplyr::filter(!gene %in% leftout) %>%
+      dplyr::filter(!gene %in% leftout) %>%  #nolint
       dplyr::pull(gene)
   } else {
     leftout <- chunks[[r]] # get the r'th fold for CV
     seed_genes <- geneset %>%
-      dplyr::filter(!gene %in% leftout) %>%
+      dplyr::filter(!gene %in% leftout) %>%  #nolint
       dplyr::pull(gene)
   }
 
