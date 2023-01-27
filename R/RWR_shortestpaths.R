@@ -432,7 +432,7 @@ RWR_ShortestPaths <- function( # nolint
   }
 
   if (cyto) {
-    open_cytoscape(res, source_geneset, target_geneset)
+    open_cytoscape(res, source_genes, target_genes)
   }
 
   return(res)
