@@ -55,7 +55,7 @@ updateFoldsByMethod_cv <- function(geneset, method, numFolds, verbose=FALSE) {
     } else {
         stop("ERROR: CV method not recognised. must be one of loo, singletons or kfold. Stopping")
     }
-    return (list(folds, geneset, chunks, method))
+    return (list(folds = folds, geneset = geneset, chunks = chunks, method = method))
 }
 
 extract_leftout_and_seed_genes_cv <- function(geneset, method, r, chunks=NULL) {
@@ -111,20 +111,14 @@ create_rankings_cv <- function(rwr, networks, r, name, geneset, method,
 
 
 # For 'loo' and 'kfold', each gene is leftout once, so gets ranked once.
-RWR <- function(geneset, adjnorm, mpo, method, numFolds, restart = 0.7,
+RWR <- function(geneset, adjnorm, mpo, method, numFolds, chunks, restart = 0.7,
                 tau = c(1,1), name='default', threads=1, verbose=FALSE) {
 
     # This is the name of the combined networks.
     networks <- paste(names(mpo)[1:mpo$Number_of_Layers], collapse = "_")
 
-    updated_data_list <- updateFoldsByMethod_cv(geneset, method, numFolds)
-    folds <- updated_data_list[[1]]
-    geneset <- updated_data_list[[2]]
-    chunks <- updated_data_list[[3]]
-    method <- updated_data_list[[4]]
-
     doParallel::registerDoParallel(cores=threads)
-    res <- foreach::foreach(r = 1:folds) %dopar% {
+    res <- foreach::foreach(r = 1:numFolds) %dopar% {
 
         leftout_seed.gene_list <- extract_leftout_and_seed_genes_cv(geneset, method, r, chunks)
         leftout <- leftout_seed.gene_list[[1]]
@@ -137,7 +131,7 @@ RWR <- function(geneset, adjnorm, mpo, method, numFolds, restart = 0.7,
     }
     doParallel::stopImplicitCluster()
 
-    res
+    return(res)
 }
 
 
@@ -197,18 +191,18 @@ calc_metrics_cv <- function(res_combined, res_avg) {
             dplyr::group_by(fold) %>%
             dplyr::summarise(value = sum(REC)/dplyr::n(), measure="AUROC"))
 
-        ### get metrics based on reranking of median ranks
+        ### get metrics based on reranking of mean ranks
         res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
         # 5. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
                             dplyr::filter(TP==1) %>%
-                            dplyr::summarise(fold="medrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
+                            dplyr::summarise(fold="meanrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
         # 6. AUPRC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max") , measure="AUPRC") )
+                            dplyr::summarise(fold="meanrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max") , measure="AUPRC") )
         # 7. AUROC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
+                            dplyr::summarise(fold="meanrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
     }
 
 
@@ -226,18 +220,18 @@ calc_metrics_cv <- function(res_combined, res_avg) {
                             dplyr::filter(InValset==1 & rank <= sum(InValset)) %>%
                             dplyr::summarise(fold="all", value=dplyr::n(), measure="RankedBelowNumgeneset"))
 
-        ### get metrics based on median ranks
+        ### get metrics based on mean ranks
         res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
         # 3. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
                             dplyr::filter(TP==1) %>%
-                            dplyr::summarise(fold="medrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
+                            dplyr::summarise(fold="meanrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
         # 4. AUPRC of median ranks (uses trapezoid method)
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max"), measure="AUPRC"))
+                            dplyr::summarise(fold="meanrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max"), measure="AUPRC"))
         # 5. AUROC of median ranks
         output <- rbind(output, res_avg %>%
-                            dplyr::summarise(fold="medrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
+                            dplyr::summarise(fold="meanrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
     }
 
     output$geneset <- res_combined$geneset[1]
@@ -253,59 +247,52 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
     ggplot2::theme_set(ggplot2::theme_classic())
     
     thestats <- metrics$summary %>% 
-        dplyr::filter(fold!="medrank") %>% 
+        dplyr::filter(fold!="meanrank") %>% 
         dplyr::group_by(measure) %>% 
         dplyr::summarise(mean = round(mean(value),3)) %>% 
         tibble::column_to_rownames("measure")
     
-    themedians <- metrics$summary %>% 
-      dplyr::filter(fold=="medrank") %>% 
+    themeans <- metrics$summary %>% 
+      dplyr::filter(fold=="meanrank") %>% 
       dplyr::mutate(value = round(value,3)) %>% 
         tibble::column_to_rownames("measure") %>% 
       dplyr::select(value)
       
+    #updateFoldsByMethod_cv
     
-    ################################
-    # KFOLD (few folds)
-    ################################
+    ####### KFOLD (few folds) ########
+
     if(metrics$res_combined$method[1] == "kfold")
     {
         ### ROC
         p1 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined, 
-                      ggplot2::aes(x=FPR, y=REC, group=fold, col="folds"), alpha=0.5) + 
             ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(FPR) %>% dplyr::summarise(mean = mean(REC)), 
                       ggplot2::aes(x=FPR, y=mean, col="mean of folds")) +
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=FPR, y=REC, col="median ranks")) + 
             ggplot2::geom_abline(ggplot2::aes(intercept=0, slope=1), linetype="dashed", col="darkgrey") +
             #ggplot2::annotate("text", label=paste0("mean AUROC = ",thestats["AUROC",]), x = 0.75, y = 0.01, size = 4, colour = "darkorange3") + 
             ggplot2::xlab("FPR") +
             ggplot2::ylab("TPR (Recall)") + 
             ggplot2::scale_color_manual(name = "ROC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
+                               breaks = c("mean of folds"),
+                               values = c("mean of folds" = "darkorange") ) +
             ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]), 
                           caption = paste0("mean of folds AUROC = ", thestats["AUROC",])) +
             ggplot2::theme(legend.position="top", legend.box = "horizontal")
         
-        ### PRC (don't show mean of folds line because it looks crazy when folds vary a bit in size)
-        p2 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined, 
-                      ggplot2::aes(x=REC, y=PREC, group=fold, col="folds"), alpha=0.5) + 
-            # ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(REC) %>% dplyr::summarise(mean = mean(PREC)), 
-            #                  ggplot2::aes(x=round(REC,2), y=mean, col="mean of folds")) +
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=REC, y=PREC, col="median ranks")) +
-            ggplot2::geom_hline(yintercept=sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted", colour="darkred") +
-            ggplot2::geom_hline(yintercept=thestats["ExpectedAUPRC",], linetype="dotted", colour="darkorange") +
-            ggplot2::scale_color_manual(name = "PRC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",], " | expected = ", thestats["ExpectedAUPRC",],
-                                           " | median ranks = ", themedians["AUPRC",])) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal") +
-            ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
+        ### PRC
+        # p2 <- ggplot2::ggplot() + 
+        #    # ggplot2::geom_line(data=metrics$res_combined, 
+        #   #            ggplot2::aes(x=REC, y=PREC, group=fold, col="folds"), alpha=0.5) + 
+        #     ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(REC) %>% dplyr::summarise(mean = mean(PREC)), 
+        #                       ggplot2::aes(x=round(REC,2), y=mean, col="mean of folds")) +
+        #    # ggplot2::geom_hline(yintercept=sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted", colour="darkred") +
+        #     ggplot2::geom_hline(yintercept=thestats["ExpectedAUPRC",], linetype="dotted", colour="darkorange") +
+        #     ggplot2::scale_color_manual(name = "PRC",
+        #                        breaks = c("mean of folds"),
+        #                        values = c("mean of folds" = "darkorange") ) +
+        #     ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",])) +
+        #     ggplot2::theme(legend.position="top", legend.box = "horizontal") +
+        #     ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
         
         ### Interpolated PRC
         # for each fold, interpolating the PR values at specific recall (x-axis) positions
@@ -323,50 +310,50 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         stepcurve <- rbind(pr, lag1) %>% dplyr::arrange(recall, dplyr::desc(maxprec))
 
         p3 <- ggplot2::ggplot(stepcurve) + 
-            ggplot2::geom_line(ggplot2::aes(x=recall, y=maxprec, group=fold, col="folds"), alpha=0.5) + 
+           # ggplot2::geom_line(ggplot2::aes(x=recall, y=maxprec, group=fold, col="folds"), alpha=0.5) + 
             ggplot2::geom_line(data=stepcurve %>% dplyr::group_by(recall) %>% dplyr::summarise(meanprec=mean(maxprec)), 
                       ggplot2::aes(x=recall, y=meanprec, col="mean of folds")) + 
+            ggplot2::geom_hline(yintercept=thestats["ExpectedAUPRC",], linetype="dotted", col="darkorange") +
             ggplot2::scale_color_manual(name = "Interpolated PRC",
-                               breaks = c("folds", "mean of folds"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange")) +
+                               breaks = c("mean of folds"),
+                               values = c("mean of folds" = "darkorange")) +
             ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
-            ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
+            ggplot2::expand_limits(x=c(0,1), y=c(0, 1)) + 
+            ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),
+                          caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",]))
         
-        ### Precision @ K (where K = ranking)
-        # p4 <- ggplot() + 
-        #     geom_line(data=metrics$res_combined, 
-        #               aes(x=rank, y=PREC, group=fold, col="folds"), alpha=0.5) + 
-        #     geom_line(data=metrics$res_combined %>% group_by(rank) %>% summarise(mean = (max(PREC)-min(PREC))/2), 
-        #               aes(x=rank, y=mean, col="mean of folds")) + 
-        #     geom_line(data=metrics$res_avg, 
-        #               aes(x=rerank, y=PREC, col="median ranks")) +
-        #     geom_hline(yintercept = sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") +
-        #     annotate("text", label=paste0("mean AUPRC = ",thestats["AUPRC",]), x = 0.75, y = 0.95, size = 4, colour = "darkorange3") + 
-        #     scale_color_manual(name = "Precision @ rank K",
-        #                        breaks = c("folds", "mean of folds", "median ranks"),
-        #                        values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-        #     theme(legend.position="top", legend.box = "horizontal") +
-        #     xlim(0,100)
         
         # early recall (TPR)
         p6 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::slice_head(n=100),
-                      ggplot2::aes(x=rank, y=REC, group=fold, col="folds"), alpha=0.5 ) + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::slice_head(n=100) %>% 
+            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(rank<=100) %>% 
                           dplyr::group_by(rank) %>% dplyr::summarise(REC = mean(REC)), 
-                      ggplot2::aes(x=rank, y=REC, col="mean of folds")) + 
+                          ggplot2::aes(x=rank, y=REC, col="mean of folds")) + 
             ggplot2::xlab("rank position") + 
             ggplot2::ylab("TPR (Recall)") + 
             ggplot2::scale_color_manual(name = "Early Recall",
-                               breaks = c("folds", "mean of folds"),
-                               values = c("folds" = "grey", "mean of folds" = "darkorange") ) +
+                               breaks = c("mean of folds"),
+                               values = c("mean of folds" = "darkorange") ) +
             ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
             ggplot2::expand_limits(y=c(0, 1))
         
-        p7 <- ggplot2::ggplot(metrics$res_avg %>% dplyr::filter(InValset==1)) + 
-            ggplot2::geom_histogram(ggplot2::aes(x=rerank), binwidth=100, fill="darkred") + 
-            ggplot2::xlab("CV median rank (binwidth=100)") + 
-            ggplot2::ylab("Geneset genes in bin")# ranking distribution of hits in bins of 100 for median of folds
+        # rank distribution of true positive hits
+        p7 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+          ggplot2::geom_density(ggplot2::aes(x=rank, group=fold), col="#AAAAAA1A") + 
+          ggplot2::geom_hline( ggplot2::aes(col="uniform dist", yintercept=1/nrow(metrics$res_avg)), linetype="dashed") + 
+          ggplot2::theme(legend.position="top", legend.box = "horizontal")
+          
+        plotcomp <- ggplot2::ggplot_build(p7)
+        meandensity <- plotcomp$data[[1]] %>% group_by(x) %>% summarise(hit_density = mean(ymax))
+        p7 <- p7 +  ggplot2::geom_line(data = meandensity, ggplot2::aes(x = x, y = hit_density, col="mean of folds")) + 
+          ggplot2::scale_color_manual(name = "Recall Density",
+                                      breaks = c("mean of folds", "uniform dist"),
+                                      values = c("mean of folds" = "darkorange", "uniform dist"="black") )
+          
+        
+        # p7 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+        #     ggplot2::geom_histogram(ggplot2::aes(x=rank), binwidth=100, fill="darkorange") + 
+        #     ggplot2::xlab("CV rank (binwidth=100)") + 
+        #     ggplot2::ylab("Geneset genes in bin")# ranking distribution of hits in bins of 100 for mean of folds
 
         
         fname = paste("RWR-CV", metrics$res_combined$geneset[1], basename(dataPath), modname, sep="_")
@@ -374,57 +361,52 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         out_path = file.path(outdirPath, fname)
         
         png(out_path, width = 1200, height=1000)
-        grid::pushViewport(grid::viewport(layout = grid::grid.layout(3, 2)))
+        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
 
-        # print( (p1+p3)/(p5 + p6)/(p7) + plot_layout(heights=c(2,2,1)) )
         print(p1, vp = vplayout(1, 1))
-        print(p2, vp = vplayout(1, 2))
-        print(p3, vp = vplayout(2, 1))
-        print(p6, vp = vplayout(2, 2))
-        print(p7, vp = vplayout(3, 1:2))
+        print(p3, vp = vplayout(1, 2))
+        print(p6, vp = vplayout(2, 1))
+        print(p7, vp = vplayout(2, 2))
         
         dev.off()
         message('File saved:', out_path, "\n")
     }
     
-    #######################################
-    # SINGLETONS (many folds)
-    #######################################
+    ######## SINGLETONS (many folds) #########
+
     if(metrics$res_combined$method[1] == "singletons") {
         ### ROC
         p1 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(FPR) %>% dplyr::summarise(REC = mean(REC)), 
-                      ggplot2::aes(x=FPR, y=REC, col="mean of folds")) +
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=FPR, y=REC, col="median ranks")) + 
-            ggplot2::geom_abline(ggplot2::aes(intercept=0, slope=1), linetype="dashed", col="darkgrey") +
-            ggplot2::xlab("FPR") +
-            ggplot2::ylab("TPR (Recall)") + 
-            ggplot2::scale_color_manual(name = "ROC",
-                               breaks = c("mean of folds", "median ranks"),
-                               values = c("mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]), 
+          ggplot2::geom_line(data=metrics$res_combined %>% dplyr::group_by(FPR) %>% dplyr::summarise(mean = mean(REC)), 
+                             ggplot2::aes(x=FPR, y=mean, col="mean of folds")) +
+          ggplot2::geom_abline(ggplot2::aes(intercept=0, slope=1), linetype="dashed", col="darkgrey") +
+          #ggplot2::annotate("text", label=paste0("mean AUROC = ",thestats["AUROC",]), x = 0.75, y = 0.01, size = 4, colour = "darkorange3") + 
+          ggplot2::xlab("FPR") +
+          ggplot2::ylab("TPR (Recall)") + 
+          ggplot2::scale_color_manual(name = "ROC",
+                                      breaks = c("mean of folds"),
+                                      values = c("mean of folds" = "darkorange") ) +
+          ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]), 
                         caption = paste0("mean of folds AUROC = ", thestats["AUROC",])) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal")
+          ggplot2::theme(legend.position="top", legend.box = "horizontal")
         
         ### PRC
-        p2 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(InValset==1) %>% dplyr::group_by(REC) %>% dplyr::summarise(PREC = mean(PREC)), 
-                      ggplot2::aes(x=REC, y=PREC, col="mean of folds")) + 
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=REC, y=PREC, col="median ranks")) + 
-            ggplot2::geom_hline(yintercept = sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") + 
-            ggplot2::scale_color_manual(name = "Precision / Recall",
-                               breaks = c("mean of folds", "median ranks"),
-                               values = c("mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal") +
-            ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",], " | expected = ", thestats["ExpectedAUPRC",],
-                                                                                       " | median ranks = ", themedians["AUPRC",])) +
-            ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
+        # p2 <- ggplot2::ggplot() + 
+        #     ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(InValset==1) %>% dplyr::group_by(REC) %>% dplyr::summarise(PREC = mean(PREC)), 
+        #               ggplot2::aes(x=REC, y=PREC, col="mean of folds")) + 
+        #     ggplot2::geom_line(data=metrics$res_avg, 
+        #               ggplot2::aes(x=REC, y=PREC, col="median ranks")) + 
+        #     ggplot2::geom_hline(yintercept = sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") + 
+        #     ggplot2::scale_color_manual(name = "Precision / Recall",
+        #                        breaks = c("mean of folds", "median ranks"),
+        #                        values = c("mean of folds" = "darkorange", "median ranks" = "darkred") ) +
+        #     ggplot2::theme(legend.position="top", legend.box = "horizontal") +
+        #     ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",], " | expected = ", thestats["ExpectedAUPRC",])) +
+        #     ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
         
         ### Interpolated PRC
-        # for each fold, interpolating the PR values at specific recall (x-axis) positions
-        pr          <- expand.grid(fold=as.factor(seq(1, folds,by=1)), recall = seq(0,1,by=0.1))
+        # for each singleton, interpolating the PR values at specific recall (x-axis) positions
+        pr          <- expand.grid(fold=seq(1, folds,by=10), recall = seq(0,1,by=0.1))
         pr$maxprec  <- foreach::foreach(f=pr$fold, r = pr$recall, .combine = c) %do%
             {
                 prec <- metrics$res_combined  %>% dplyr::filter(fold==f, REC >= r) %>% dplyr::pull(PREC)
@@ -438,32 +420,41 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         stepcurve <- rbind(pr, lag1) %>% dplyr::arrange(recall, dplyr::desc(maxprec))
         p3 <- ggplot2::ggplot(stepcurve) + 
             ggplot2::geom_line(data=stepcurve %>% dplyr::group_by(recall) %>% dplyr::summarise(meanprec=mean(maxprec)), 
-                      ggplot2::aes(x=recall, y=meanprec, col="mean of folds")) + 
-            ggplot2::geom_line(data=metrics$res_avg, 
-                      ggplot2::aes(x=REC, y=PREC, col="median ranks")) +
+                      ggplot2::aes(x=recall, y=meanprec, col="mean of subset of folds")) + 
             ggplot2::scale_color_manual(name = "Interpolated PRC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal")
+                               breaks = c("mean of subset of folds"),
+                               values = c("mean of subset of folds" = "darkorange") ) +
+            ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
+            ggplot2::expand_limits(x=c(0,1), y=c(0, 1)) + 
+            ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),
+                        caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",]))
         
         # early recall (TPR)
         p5 <- ggplot2::ggplot() + 
-            ggplot2::geom_line(data=metrics$res_combined %>% dplyr::slice_head(n=100) %>% 
-                          dplyr::group_by(rank) %>% dplyr::summarise(REC = mean(REC)), 
-                      ggplot2::aes(x=rank, y=REC, col="mean of folds")) + 
-            ggplot2::xlab("rank position") + 
-            ggplot2::ylab("TPR (Recall)") + 
-            ggplot2::scale_color_manual(name = "Early Recall",
-                               breaks = c("mean of folds", "median ranks"),
-                               values = c("mean of folds" = "darkorange") ) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal") +
-            ggplot2::expand_limits(y=c(0, 1))
+          ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(rank<=100) %>% 
+                               dplyr::group_by(rank) %>% dplyr::summarise(REC = mean(REC)), 
+                             ggplot2::aes(x=rank, y=REC, col="mean of folds")) + 
+          ggplot2::xlab("rank position") + 
+          ggplot2::ylab("TPR (Recall)") + 
+          ggplot2::scale_color_manual(name = "Early Recall",
+                                      breaks = c("mean of folds"),
+                                      values = c("mean of folds" = "darkorange") ) +
+          ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
+          ggplot2::expand_limits(y=c(0, 1))
         
-        # ranking distribution of hits in bins of 100 for median of folds
-        p6 <- ggplot2::ggplot(metrics$res_avg %>% dplyr::filter(InValset==1)) + 
-            ggplot2::geom_histogram(aes(x=rerank), binwidth=100, fill="darkred") + 
-            ggplot2::xlab("CV median rank (binwidth=100)") + 
-            ggplot2::ylab("Geneset genes in bin")
+        # rank distribution of true positive hits
+        p7 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+          ggplot2::geom_density(ggplot2::aes(x=rank, group=fold),col="#AAAAAA1A") + 
+          ggplot2::geom_hline( ggplot2::aes(col="uniform dist", yintercept=1/nrow(metrics$res_avg)), linetype="dashed") + 
+          ggplot2::theme(legend.position="top", legend.box = "horizontal")
+        
+        plotcomp <- ggplot2::ggplot_build(p7)
+        meandensity <- plotcomp$data[[1]] %>% group_by(x) %>% summarise(hit_density = mean(ymax))
+        p7 <- p7 +  ggplot2::geom_line(data = meandensity, ggplot2::aes(x = x, y = hit_density, col="mean of folds")) + 
+          ggplot2::scale_color_manual(name = "Recall Density",
+                                      breaks = c("mean of folds", "uniform dist"),
+                                      values = c("mean of folds" = "darkorange", "uniform dist"="black") )
+        
         
         fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(dataPath), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
@@ -472,34 +463,34 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         png(out_path, width = 1200, height=1000)
         # print( (p1+p2)/(p3+p4)/(p5) + plot_layout(heights=c(2,2,1)) )
           
-        grid::pushViewport(grid::viewport(layout = grid::grid.layout(3, 2)))
+        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
         
         print(p1, vp = vplayout(1, 1))  # Top left
-        print(p2, vp = vplayout(1, 2))  # Top right 
-        print(p3, vp = vplayout(2, 1))  # Bottom Left
-        print(p5, vp = vplayout(2, 2))  # Bottom Right
-        print(p6, vp = vplayout(3, 1:2))  # Bottom Right
+        print(p3, vp = vplayout(1, 2))  # top R
+        print(p5, vp = vplayout(2, 1))  # Bottom L
+        print(p7, vp = vplayout(2, 2))  # Bottom R
         
         dev.off()
         cat('File saved:', out_path,"\n")
     }
     
-    ################################
-    # LOO
-    ################################
+
+    ####### LOO ############
+
     if(metrics$res_combined$method[1] == "loo")
     {
         # early recall
-        p1 <- ggplot2::ggplot(metrics$res_avg %>% dplyr::slice_head(n=100)) + 
-            ggplot2::geom_line(ggplot2::aes(x=rerank, y=REC, col="median ranks")) +
-            ggplot2::xlab("rank position") + 
-            ggplot2::ylab("TPR (Recall)") +
-            ggplot2::scale_color_manual(name = "Early Recall",
-                               breaks = c("median ranks"),
-                               values = c("median ranks" = "darkred") ) +
-            ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
-            ggplot2::expand_limits(y=c(0, 1)) + 
-            ggplot2::labs(subtitle=paste0(metrics$res_avg$geneset[1]))
+        p1 <- ggplot2::ggplot() + 
+          ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(rank<=100) %>% 
+                               dplyr::group_by(rank) %>% dplyr::summarise(REC = mean(REC)), 
+                             ggplot2::aes(x=rank, y=REC, col="mean of folds")) + 
+          ggplot2::xlab("rank position") + 
+          ggplot2::ylab("TPR (Recall)") + 
+          ggplot2::scale_color_manual(name = "Early Recall",
+                                      breaks = c("mean of folds"),
+                                      values = c("mean of folds" = "darkorange") ) +
+          ggplot2::theme(legend.position="top", legend.box = "horizontal") + 
+          ggplot2::expand_limits(y=c(0, 1))
         
        
         # PRC  step curve
@@ -518,11 +509,9 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         p2 <- ggplot2::ggplot(stepcurve) + 
             ggplot2::geom_line(data=stepcurve %>% dplyr::group_by(recall) %>% dplyr::summarise(meanprec=mean(maxprec)), 
                       ggplot2::aes(x=recall, y=meanprec, col="mean of folds")) + 
-            ggplot2::geom_line(data=metrics$res_avg, 
-                             ggplot2::aes(x=REC, y=PREC, col="median ranks")) +
             ggplot2::scale_color_manual(name = "Interpolated PRC",
-                               breaks = c("folds", "mean of folds", "median ranks"),
-                               values = c("folds"="grey", "mean of folds" = "darkorange", "median ranks" = "darkred") ) +
+                               breaks = c("folds", "mean of folds"),
+                               values = c("folds"="grey", "mean of folds" = "darkorange") ) +
             ggplot2::theme(legend.position="top", legend.box = "horizontal")
         
         # precision / recall
@@ -538,11 +527,12 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         #     expand_limits(x=c(0,1), y=c(0, 1))
         
             
-        # ranking distribution of hits in bins of 100 for median of folds
-        p4 <- ggplot2::ggplot(metrics$res_avg %>% dplyr::filter(InValset==1)) + 
-            ggplot2::geom_histogram(ggplot2::aes(x=rerank), binwidth=100, fill="darkred") + 
-            ggplot2::xlab("CV median rank (binwidth=100)") + 
-            ggplot2::ylab("Geneset genes in bin")
+        # ranking distribution of hits in bins of 100 
+        p7 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+          ggplot2::geom_density(ggplot2::aes(x=rank, group=fold),col="grey", alpha=0.5)
+        plotcomp <- ggplot2::ggplot_build(p7)
+        meandensity <- plotcomp$data[[1]] %>% group_by(x) %>% summarise(hit_density = mean(ymax))
+        p7 <- p7 +  ggplot2::geom_line(data = meandensity, ggplot2::aes(x = x, y = hit_density), col="darkorange")
         
         fname = paste("RWR-CV",metrics$res_combined$geneset[1],basename(dataPath), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
@@ -557,7 +547,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         
         print(p1, vp = vplayout(1, 1))  # Top left
         print(p2, vp = vplayout(1, 2))  # Top right 
-        print(p4, vp = vplayout(2, 2))  # Bottom Right
+        print(p7, vp = vplayout(2, 2))  # Bottom Right
         dev.off()
         message(paste('File saved:', out_path))
        
@@ -631,10 +621,13 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
     # get the average ranks across all CV folds/runs
     res_avg <- res_combined %>%
         dplyr::group_by(NodeNames) %>%
-        dplyr::summarise(medrank = median(rank), InValset = dplyr::first(InValset), geneset=dplyr::first(geneset),
-                  num_in_network=dplyr::first(num_in_network)) %>%
-        dplyr::arrange(medrank) %>%
-        dplyr::mutate(rerank = rank(medrank, ties.method = "min"), .after=medrank) # here we rerank the median ranks of the folds to go from 1:nrow again
+        dplyr::summarise(meanrank = mean(rank), 
+                         medrank = median(rank), 
+                         InValset = dplyr::first(InValset), 
+                         geneset=dplyr::first(geneset),
+                         num_in_network=dplyr::first(num_in_network)) %>%
+        dplyr::arrange(meanrank) %>%
+        dplyr::mutate(rerank = rank(meanrank, ties.method = "min"), .after=meanrank) # here we rerank the median ranks of the folds to go from 1:nrow again
 
     res_avg
 }
@@ -731,11 +724,15 @@ RWR_CV <- function(
     # print(class(geneset))
     # print(geneset)
 
+    # adjust method and/or folds depending on geneset size. Also shuffle geneset.
+    updated_data_list <- updateFoldsByMethod_cv(geneset, method, folds)
+    
     ############# run RWR  #####################################################
-    res     <- RWR(geneset, nw.adjnorm, nw.mpo, method, folds, restart, tau, modname, threads, verbose)
+    res     <- RWR(updated_data_list$geneset, nw.adjnorm, nw.mpo, updated_data_list$method, updated_data_list$folds, updated_data_list$chunks,
+                   restart, tau, modname, threads, verbose)
 
     ############# post process results  ########################################
-    res_combined <- post_process_rwr_output_cv(res, extras, folds, nw.mpo)
+    res_combined <- post_process_rwr_output_cv(res, extras, updated_data_list$folds, nw.mpo)
     # get the average ranks across all CV folds/runs
     res_avg <- calculate_average_rank_across_folds_cv(res_combined)
     # calculate ROC, PRC, P@k, AUROC, AUPRC, NDCG
@@ -800,7 +797,7 @@ RWR_CV <- function(
     ############# Save plots  ##################################################
     if (plot) {
         message('Saving plots ...')
-        save_plots_cv(metrics, geneset, folds, dataPath, modname, outdirPath)
+        save_plots_cv(metrics, updated_data_list$geneset, updated_data_list$folds, dataPath, modname, outdirPath)
     }
 
     return(list("fullranks"=res_combined,"medianranks"=res_avg,"metrics"=metrics$res_avg,"summary"=metrics$summary))
