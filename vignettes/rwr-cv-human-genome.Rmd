@@ -17,14 +17,18 @@ knitr::opts_chunk$set(
 ```
 
 # RWR CV
-## Working with Real Data
+## 1. Introduction
+This document descibes the usage of RWR_CV and the parsing of RWR_CV's output. Using RWR_CV we can test the predictive ability of a particular multiplex network with respect to a set of genes. To run this algorithm, we will need a multiplex object and a geneset. 
+
+## 2. Setup
+In order to run `RWR_CV`, we will need an `mpo` object. These are derived from the `RWRtoolkit::RWR_make_multiplex` function.  For this vignette, we will use previously defined multiplex objects. 
+
+### Obtaining the Network
 ```{r setup}
 library(RWRtoolkit)
 ```
+From Sullivan et al. 2022, we can obtain a pre-generated [multiplex consisting of 10 layers](https://www.medrxiv.org/content/10.1101/2022.04.20.22273895v2.full-text#sec-15):  
 
-Using RWR CV we can test the predictive ability of a particular multiplex network. From Sullivan et al. `<<CITE KYLE @ GRIN PAPER>>`, can obtain a gold set and a muliplex consisting of human genes: 
-
-## Loading the Multiplex
 ```{r Loading}
 humanMultiplexURL <- "https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true"
 humanMultiplexPath <- url(humanMultiplexURL)
@@ -32,8 +36,20 @@ humanMultiplexPath <- url(humanMultiplexURL)
 load(humanMultiplexPath)
 ```
 
-Similar to Sullivan et al. we can use genes with the same GO description as a gold standard set. For this example we will use GO genes with a GABAergic GO Description. We will then need to annotate those genes with a "set" (in that we _could_ denote multiple sets within the same gold set, however this is solely an annotation):
+### Building a "Gold Set"
+We will need a "gold set" of genes to test our network against. These "gold standard" genes are ones that are previously defined as being highly related in some fashion (e.g. genes with the same GO or Mapman description). 
 
+Sullivan et al. used genes with the [same GO description as a gold standard set](https://www.medrxiv.org/content/medrxiv/early/2022/04/27/2022.04.20.22273895/DC2/embed/media-2.xlsx?download=true) to act as a "gold set" of genes for their experiment, and we will do the same. For this example we will use GO genes with a GABAergic GO Description (defined in table S1). We will then need to annotate those genes with a "set", as goldset files follow the format (where the set name is some defining string and the gene ids are strings that match to node names within the multiplex): 
+
+
+| **Set Name** | **Gene ID** |
+|:---------|:-------------|
+| goldSet | node1 |
+| goldSet | node2 |
+| goldSet | node3 |
+| goldSet | node4 |
+
+We can create our own gold set file with:
 ```{r}
 # Define Genes
 GABAergicSeedGenes <- c(
@@ -61,8 +77,12 @@ filenameGoldset <- "./goldset_gaba.tsv"
 write.table(seedGeneDF, filenameGoldset, sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
-## Building a "Bronze Set"
-We have built our gold set of GABAergic GO described genes above. In order to illustrate what entirely is occurring with RWR_CV, we will now replace genes known to be related within the GABAergic description, and instead replace them with those randomly sampled within the network: 
+### Building a "Bronze Set"
+While the original intention of RWR_CV is to test the predictive capability of a particular network with respect to a known gold set, we can (for this case) generate a set that we will pretend is "known to be well connected" and call it the **bronze set**.
+
+The general idea behind creating this bronze set is to illustrate how scoring works with respect to a set of genes that are not well connected within the supplied network. 
+
+We have built our gold set of GABAergic GO described genes above. We will now replace genes known to be related within the GABAergic description with others randomly sampled within the network: 
 
 ```{r}
 # Replace 60% of GABAergic genes with randomly sampled genes
@@ -83,18 +103,20 @@ filenameRandomSample <- "./partially_random_sample_seeds.tsv"
 write.table(seedGeneDF, filenameRandomSample, row.names = FALSE, quote = FALSE)
 ```
 
+We now have two sets of genes: one in which there exists known connections between all genes within the set, and another with known connections between only $\frac{1}{3}$ of the genes. Running RWR_CV for both our gold set and our bronze set, we can then compare the outputs. 
+
 # Runing RWR CV
-When running RWR_CV, there exist multiple methods in which to test the gold sets with respect to the networks. Users have the ability to select a method of either: 
+When running RWR_CV, there exist multiple methods in which to test the gene sets with respect to the networks. Users have the ability to select a method of either: 
  - KFold: Each relevant gene R is ranked once. There are K folds with the expectation of R / K left out per fold. 
  
  - Leave One Out (LOO): Each relevant gene R is ranked once in that there are R total folds, with 1 gene left out per fold. 
  
  - Singletons: Each relevant gene R is ranked $R-1$ times. There are R folds, with $R-1$ left out per fold. 
 
+Given the nature of how each method works, the above methods do have differing outputs: 
+
 For each of these, scoring metrics are then used to generate the final tables consisting of: 
 - `fullranks`:  These data include the ranks for each particular fold within the k folds for each node within the network. 
-
-- `medianranks`: These data are the median rank data for each particular node over all k folds of the cross validation. 
 
 - `metrics`: These data include the information from `medianranks` on top of: 
     - True positive (TP): that is, are the ranked genes within median ranks members of the provided gene set
@@ -105,23 +127,30 @@ For each of these, scoring metrics are then used to generate the final tables co
     
     - False Negative: FN
     
-    - Cumulative Scores for TP / FP / TN / FN as ranks increase. 
+    - Cumulative Scores for TP / FP / TN / FN as ranks increase.
+
     - False Positive Rate (FPR):  The cumulative false positive for at row i over the total number of false positives. 
+
     - Precision:  True Positive / ( True Positive + False Positive)
+
     - Recall:  True Positive / (True Positive + False Negative) 
 
 - `summary`: The Summary of the k fold output contains: 
   - Fold: The associated fold
+
   - Value: The Value of the function noted in `measure`
+
   - Measure: 
+
     - `P@NumLeftOut`: Percentage of the number of genes left out
+
     - `AvgPrec`: Average Precision. 
+
   - Geneset:  The geneset of the associated input genes.
 
 
-We now have two sets of genes: one in which there exists known connections between all genes within the set, and another with known connections between only $\frac{1}{3}$ of the genes. Running RWR_CV for both our gold set and our bronze set, we can then compare the outputs. 
-
 ### Kfold
+With our multiplex, gold and bronze set genes in place, we can run `RWR_CV`. First, let's run `kfold` on the gold set genes to see how well they perform. By using the `kfold` method, genes are randomly split into groups of seeds to see how well those seed groups can recall the left out genes: 
 
 ```{r}
 gold_path <- "goldset_kfold_output"
@@ -146,13 +175,12 @@ bronze_cv_kfold_output <- RWRtoolkit::RWR_CV(
 
 ```
 ### RWR_CV Kfold Output Analysis
-After running the above two functions, we can see the main difference between the two gene sets in their output metrics and summaries: 
+After running the above two functions, we can see the main difference between the two gene sets in their output metrics: 
 ### Gold Set
 ```{r}
 head(gold_cv_kfold_output$metrics)
 ```
-In the gold set run, we can see that the top ranked genes from our network are in the validation set of genes, resulting in more true positives:  
-
+In the gold set run, when initially viewing the head of the dataframe, we can see that the top ranked genes from our network are in the validation set of gene (resulting in true positive matches). Additionally, upon visual inspection of the plots, we can see that our ROC curve quickly ranks all genes within the network!
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
 image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
@@ -164,7 +192,7 @@ knitr::include_graphics(image_path)
 ```{r}
 head(bronze_cv_kfold_output$metrics)
 ```
-Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
+Notice that the Bronze Set , however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. That means that as the random walker traversed the network, it took quite a while to recall the other genes within the set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
 image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
@@ -173,8 +201,9 @@ knitr::include_graphics(image_path)
 ```
 
 
-
 ### Leave One Out 
+Instead of randomly shuffling the gene set k times for a train/test split, we can remove only one gene from the gene set and see how quickly the random walker can recall that gene. This is doen for every gene within the genes set, so if there exist N genes, we will rn a random walk N times: 
+
 ```{r}
 gold_path <- "goldset_loo_output"
 gold_cv_loo_output <- RWRtoolkit::RWR_CV(
@@ -203,8 +232,7 @@ Now, instead of using our method of separation as kfold, we can leave only 1 nod
 ```{r}
 head(gold_cv_loo_output$metrics)
 ```
-In the gold set run, we can see that the top ranked genes from our network are in the validation set of genes, resulting in more true positives:  
-
+Similarly to the above output for kfold, we can see that the top ranked genes in the goldset run from our network are in the validation set of genes, resulting in more true positives:  
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
 image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
@@ -224,9 +252,8 @@ image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex
 knitr::include_graphics(image_path)
 ```
 
-
 ### Singletons
-With our method of separation being "singletons", we leave out all nodes except for 1:
+With our method of separation being "singletons", we leave out all nodes except for 1, and see how well that single node can recall the others within the set:
 
 ```{r}
 gold_path <- "goldset_singleton_output"
@@ -276,3 +303,8 @@ image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex
 
 knitr::include_graphics(image_path)
 ```
+
+
+## References
+Digging deeper into GWAS signal using GRIN implicates additional genes contributing to suicidal behavior
+Kyle A. Sullivan, Matthew Lane, Mikaela Cashman, J. Izaak Miller, Mirko Pavicic, Angelica M. Walker, Ashley Cliff, Jonathon Romero, Xuejun Qin, Jennifer Lindquist, Niamh Mullins, Anna Docherty, Hilary Coon, Douglas M. Ruderfer, International Suicide Genetics Consortium, VA Million Veteran Program, MVP Suicide Exemplar Workgroup, Michael R. Garvin, John P. Pestian, Allison E. Ashley-Koch, Jean C. Beckham, Benjamin McMahon, David W. Oslin, Nathan A. Kimbrel, Daniel A. Jacobson, David Kainer
