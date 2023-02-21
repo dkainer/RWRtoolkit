@@ -42,7 +42,7 @@ Network variables will be:
 
 - `nw.mpo`:     The multiplex object
 - `nw.adj`:     The supra-adjacency matrix
-- `nw.adjnorm`  The normalized supra-adjacency matrix
+- `nw.adjnorm`: The normalized supra-adjacency matrix
 
 ```{r}
 regulationNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true"
