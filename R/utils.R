@@ -103,23 +103,23 @@ calc_ROCPRC <- function(df, scorescol=NULL, labelscol=NULL, totP = NULL) {
     ### assumes scorescol is already sorted in the order you want it (best to worst)
     df <- dplyr::mutate(df,
                  TP = dplyr::case_when(get(scorescol)>0  & get(labelscol)==1 ~ 1, TRUE ~ 0),
-                 FP = dplyr::case_when(get(scorescol)>0  & get(labelscol)==0 ~ 1, TRUE ~ 0),
-                 TN = dplyr::case_when(get(scorescol)==0 & get(labelscol)==0 ~ 1, TRUE ~ 0),
-                 FN = dplyr::case_when(get(scorescol)==0 & get(labelscol)==1 ~ 1, TRUE ~ 0))
+                 FP = dplyr::case_when(get(scorescol)>0  & get(labelscol)==0 ~ 1, TRUE ~ 0))
+                 #TN = dplyr::case_when(get(scorescol)==0 & get(labelscol)==0 ~ 1, TRUE ~ 0),
+                 #FN = dplyr::case_when(get(scorescol)==0 & get(labelscol)==1 ~ 1, TRUE ~ 0))
     
     if(is.null(totP))
         totP    <- sum(get(labelscol, df)==1) # number of positives in gold set
     totN    <- sum(get(labelscol, df)==0) # number of negatives in gold set
     totTP   <- sum(df$TP==1, na.rm = T) # true positive predictions
-    totTN   <- sum(df$TN==1, na.rm = T) # true negative predictions
+    #totTN   <- sum(df$TN==1, na.rm = T) # true negative predictions
     totFP   <- sum(df$FP==1, na.rm = T) # false positive predictions (i.e. an edge/gene was predicted but should not have been )
-    totFN   <- sum(df$FN==1, na.rm = T) # false negative predictions (i.e. an edge/gene was not predicted but should have been)
+    #totFN   <- sum(df$FN==1, na.rm = T) # false negative predictions (i.e. an edge/gene was not predicted but should have been)
     
     df <- dplyr::mutate(df, 
                  cum_TP = cumsum(TP), 
-                 cum_FP = cumsum(FP),
-                 cum_TN = cumsum(TN), 
-                 cum_FN = cumsum(FN))
+                 cum_FP = cumsum(FP))
+                 #cum_TN = cumsum(TN), 
+                 #cum_FN = cumsum(FN))
     
     df <- dplyr::mutate(df, 
                  FPR  = round(cum_FP / (totN),3),
