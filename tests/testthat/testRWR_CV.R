@@ -518,7 +518,6 @@ describe("Post Processing", {
   describe("post_process_rwr_output_cv", {
     it("binds rows and arranges by rank with no extras", {
       extras <- NULL
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
 
       # because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
       expected_nodenames <- c(
@@ -565,7 +564,6 @@ describe("Post Processing", {
       gene <- c("5", "6")
       weight <- c(0.6, 0.9)
       extras <- data.frame(setid, gene, weight)
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
 
       # because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
       expected_nodenames <- c(
@@ -655,8 +653,6 @@ describe("Post Processing", {
       gene <- c("5", "6")
       weight <- c(0.6, 0.9)
       extras <- data.frame(setid, gene, weight)
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
-
 
       expected_nodenames <- c(
         first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1],
@@ -742,8 +738,9 @@ describe("Post Processing", {
 
       expected_output <- tibble::tibble(
         NodeNames = c("0", "1", "2", "3"),
-        medrank = c(1, 2, 2.5, 3),
+        meanrank = c(1, 2, 2.5, 3),
         rerank = c(1, 2, 3, 4),
+        medrank = c(1, 2, 2.5, 3),
         InValset = c(0, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA"),
         num_in_network = c(4, 4, 4, 4)
@@ -759,7 +756,6 @@ describe("Post Processing", {
       gene <- c("5", "6")
       weight <- c(0.6, 0.9)
       extras <- data.frame(setid, gene, weight)
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
 
       # because all faux layers are ranked in order of 1, 2, 3, then the corresponding expected arrangement is the first from each, then the second, etc.
       nodenames <- c(
@@ -801,8 +797,9 @@ describe("Post Processing", {
 
       expected_output <- tibble::tibble(
         NodeNames = c("0", "1", "2", "3", "5", "6"),
-        medrank = c(1, 2, 2.5, 3, 4, 4),
+        meanrank = c(1, 2, 2.5, 3, 4, 4),
         rerank = c(1, 2, 3, 4, 5, 5),
+        medrank = c(1, 2, 2.5, 3, 4, 4),
         InValset = c(0, 1, 1, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA", "setA", "setA"),
         num_in_network = c(4, 4, 4, 4, 4, 4)
@@ -815,7 +812,6 @@ describe("Post Processing", {
     it("takes the combined folds from LOO and calculates the average of them", {
       method <- "loo"
       numfolds <- 3 ## immiterial as singletons uses nrows of geneset
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
 
       setid <- c("setA", "setA", "setA")
       gene <- c("1", "2", "3")
@@ -846,18 +842,18 @@ describe("Post Processing", {
       third_fold_invalset <- c(1, 0, 1)
       third_fold_leftout <- c(3)
 
-      layer1 <- generate_expected_rwr_cv_layer(first_fold_nodes, first_fold_scores, first_fold_invalset, num_in_network, rep(1, repititions), rep(first_fold_leftout, repititions), seeds, networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
+
+
+      layer1 <- generate_expected_rwr_cv_layer(first_fold_nodes, first_fold_scores, first_fold_invalset, num_in_network, rep(1, repititions), rep(first_fold_leftout, repititions), seeds,  networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
       layer2 <- generate_expected_rwr_cv_layer(second_fold_nodes, second_fold_scores, second_fold_invalset, num_in_network, rep(2, repititions), rep(second_fold_leftout, repititions), seeds, networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
       layer3 <- generate_expected_rwr_cv_layer(third_fold_nodes, third_fold_scores, third_fold_invalset, num_in_network, rep(3, repititions), rep(third_fold_leftout, repititions), seeds, networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
       # RWRtoolkit::RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds)
-
+      
       res <- list(layer1, layer2, layer3)
       setid <- c("setA", "setA")
       gene <- c("5", "6")
       weight <- c(0.6, 0.9)
       extras <- data.frame(setid, gene, weight)
-      load("../testMultiplex/unitTestMultiplex.Rdata") # load nw.mpo
-
 
       nodenames <- c(
         first_fold_nodes[1], second_fold_nodes[1], third_fold_nodes[1],
@@ -899,9 +895,10 @@ describe("Post Processing", {
 
       expected_output <- tibble::tibble(
         NodeNames = c("0", "1", "3", "2", "5", "6"),
-        medrank = c(1.5, 2, 2, 3, 4, 4),
+        meanrank = c(1.5, 2, 2, 7 / 3, 4, 4), 
         # Note: On tie of non-extra, count increases on rerank so we get 1, 2, 2, -> 4 (instead of 1,2,2,3)
         rerank = c(1, 2, 2, 4, 5, 5),
+        medrank = c(1.5, 2, 2, 3, 4, 4),
         InValset = c(0, 1, 1, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA", "setA", "setA"),
         num_in_network = c(3, 3, 3, 3, 3, 3)
@@ -909,6 +906,9 @@ describe("Post Processing", {
 
       output <- calculate_average_rank_across_folds_cv(res_combined_loo)
 
+  print("EXPECTED EQUAL?")
+  print(expected_output)
+  print(output)
       expect_equal(output, expected_output)
     })
   })
