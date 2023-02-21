@@ -271,6 +271,8 @@ calc_metrics_cv <- function(res_combined, res_avg) {
         labelscol = "InValset"
       ))
 
+
+        ### calculate ROC/PRC per-fold
     # 1. precision @ numleftout (aka R-PREC)
     output <- res_combined %>%
       dplyr::group_by(fold) %>%
@@ -372,6 +374,7 @@ calc_metrics_cv <- function(res_combined, res_avg) {
       ))
   }
 
+     
 
   if (res_combined$method[1] == "loo") {
     ### DON'T get metrics per fold since only 1 gene is left out per fold!!
@@ -390,7 +393,6 @@ calc_metrics_cv <- function(res_combined, res_avg) {
         value = dplyr::n(),
         measure = "RankedBelowNumgeneset"
       ))
-
     ### get metrics based on median ranks
     res_avg <- calc_ROCPRC(res_avg,
       scorescol = "rerank",
@@ -987,16 +989,17 @@ post_process_rwr_output_cv <- function(res, extras, folds, nw.mpo) {
   res_combined
 }
 
-calculate_average_rank_across_folds_cv <- function(res_combined) {
-  # get the average ranks across all CV folds/runs
-  res_avg <- res_combined %>%
-    dplyr::group_by(NodeNames) %>%
-    dplyr::summarise(
-      medrank = median(rank), InValset = dplyr::first(InValset), geneset = dplyr::first(geneset),
-      num_in_network = dplyr::first(num_in_network)
-    ) %>%
-    dplyr::arrange(medrank) %>%
-    dplyr::mutate(rerank = rank(medrank, ties.method = "min"), .after = medrank) # here we rerank the median ranks of the folds to go from 1:nrow again
+calculate_average_rank_across_folds_cv <- function(res_combined){
+    # get the average ranks across all CV folds/runs
+    res_avg <- res_combined %>%
+        dplyr::group_by(NodeNames) %>%
+        dplyr::summarise(meanrank = mean(rank), 
+                         medrank = median(rank), 
+                         InValset = dplyr::first(InValset), 
+                         geneset=dplyr::first(geneset),
+                         num_in_network=dplyr::first(num_in_network)) %>%
+        dplyr::arrange(meanrank) %>%
+        dplyr::mutate(rerank = rank(meanrank, ties.method = "min"), .after=meanrank) # here we rerank the median ranks of the folds to go from 1:nrow again
 
   res_avg
 }
