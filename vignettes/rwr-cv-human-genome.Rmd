@@ -24,7 +24,7 @@ This document descibes the usage of RWR_CV and the parsing of RWR_CV's output. U
 In order to run `RWR_CV`, we will need an `mpo` object. These are derived from the `RWRtoolkit::RWR_make_multiplex` function.  For this vignette, we will use previously defined multiplex objects. 
 
 ### Obtaining the Network
-```{r setup}
+```{r Setup}
 library(RWRtoolkit)
 ```
 From Sullivan et al. 2022, we can obtain a pre-generated [multiplex consisting of 10 layers](https://www.medrxiv.org/content/10.1101/2022.04.20.22273895v2.full-text#sec-15):  
@@ -50,7 +50,7 @@ Sullivan et al. used genes with the [same GO description as a gold standard set]
 | goldSet | node4 |
 
 We can create our own gold set file with:
-```{r}
+```{r Goldset Creation}
 # Define Genes
 GABAergicSeedGenes <- c(
   "ENSG00000171132", "ENSG00000109189", "ENSG00000163485", "ENSG00000157103",
@@ -84,7 +84,7 @@ The general idea behind creating this bronze set is to illustrate how scoring wo
 
 We have built our gold set of GABAergic GO described genes above. We will now replace genes known to be related within the GABAergic description with others randomly sampled within the network: 
 
-```{r}
+```{r Bronze Set Creation}
 # Replace 60% of GABAergic genes with randomly sampled genes
 set.seed(42)
 `%notin%` <- Negate(`%in%`)
@@ -149,10 +149,10 @@ For each of these, scoring metrics are then used to generate the final tables co
   - Geneset:  The geneset of the associated input genes.
 
 
-### Kfold
+### kFold
 With our multiplex, gold and bronze set genes in place, we can run `RWR_CV`. First, let's run `kfold` on the gold set genes to see how well they perform. By using the `kfold` method, genes are randomly split into groups of seeds to see how well those seed groups can recall the left out genes: 
 
-```{r}
+```{r Running kFold}
 gold_path <- "goldset_kfold_output"
 gold_cv_kfold_output <- RWRtoolkit::RWR_CV(
   data = humanMultiplexURL,
@@ -202,9 +202,9 @@ knitr::include_graphics(image_path)
 
 
 ### Leave One Out 
-Instead of randomly shuffling the gene set k times for a train/test split, we can remove only one gene from the gene set and see how quickly the random walker can recall that gene. This is doen for every gene within the genes set, so if there exist N genes, we will rn a random walk N times: 
+Instead of randomly shuffling the gene set k times for a train/test split, we can remove only one gene from the gene set and see how quickly the random walker can recall that gene. This is doen for every gene within the genes set, so if there exist N genes, we will run a random walk N times: 
 
-```{r}
+```{r Running LOO}
 gold_path <- "goldset_loo_output"
 gold_cv_loo_output <- RWRtoolkit::RWR_CV(
   data = humanMultiplexURL,
@@ -255,7 +255,7 @@ knitr::include_graphics(image_path)
 ### Singletons
 With our method of separation being "singletons", we leave out all nodes except for 1, and see how well that single node can recall the others within the set:
 
-```{r}
+```{r Running Singletons}
 gold_path <- "goldset_singleton_output"
 gold_cv_singleton_output <- RWRtoolkit::RWR_CV(
   data = humanMultiplexURL,
