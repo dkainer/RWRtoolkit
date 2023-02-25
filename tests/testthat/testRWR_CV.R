@@ -406,8 +406,8 @@ describe("RWR", {
     method <- "singletons"
     numfolds <- 3 ## immiterial as singletons uses nrows of geneset
     tau <- c(1, 1)
-    expected_chunks <- NULL
-    expected_folds <- 3
+    chunks <- NULL
+
     first_fold_seeds <- c("1")
     first_fold_nodes <- c("0", "2", "3")
     first_fold_scores <- c(0.7, 0.25, 0.07)
@@ -441,7 +441,6 @@ describe("RWR", {
     second_mockLayer <- generate_expected_rwr_cv_layer(second_fold_nodes, second_fold_scores, second_inValSet, num_in_network, rep(2, repititions), leftout, second_fold_seeds, networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
     third_mockLayer <- generate_expected_rwr_cv_layer(third_fold_nodes, third_fold_scores, third_inValSet, num_in_network, rep(3, repititions), leftout, third_fold_seeds, networks, c("setA", "setA", "setA"), rep(method, repititions), num_seeds, num_leftout, name)
 
-    mock_update_folds_by_method <- mock(list(expected_folds, geneset_3genes, expected_chunks, method))
     mock_extract_leftout_and_seed_genes_cv <- mock(
       first_mockExtractReturn,
       second_mockExtractReturn,
@@ -459,20 +458,28 @@ describe("RWR", {
     )
 
     # Stub functions with mocks
-    stub(RWR, "update_folds_by_method", mock_update_folds_by_method)
     stub(RWR, "extract_lo_and_seed_genes_cv", mock_extract_leftout_and_seed_genes_cv)
     stub(RWR, "RandomWalkRestartMH::Random.Walk.Restart.Multiplex", mock_RWRMH)
     stub(RWR, "create_rankings_cv", mock_create_rankings_cv)
     expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)
 
-    response <- RWR(geneset_3genes, nw.adjnorm, nw.mpo, method, numfolds, tau = tau)
+    response <- RWR(
+      geneset = geneset_3genes,
+      adjnorm = nw.adjnorm, 
+      mpo = nw.mpo, 
+      method = method, 
+      num_folds = numfolds,
+      chunks = chunks, 
+      tau = tau
+    )
+
 
     expect_equal(response, expected_response)
-    expect_args(mock_update_folds_by_method, 1, geneset_3genes, method, expected_folds)
-    expect_called(mock_update_folds_by_method, 1)
-    expect_args(mock_extract_leftout_and_seed_genes_cv, 1, geneset_3genes, method, 1, expected_chunks)
-    expect_args(mock_extract_leftout_and_seed_genes_cv, 2, geneset_3genes, method, 2, expected_chunks)
-    expect_args(mock_extract_leftout_and_seed_genes_cv, 3, geneset_3genes, method, 3, expected_chunks)
+
+
+    expect_args(mock_extract_leftout_and_seed_genes_cv, 1, geneset_3genes, method, 1, chunks)
+    expect_args(mock_extract_leftout_and_seed_genes_cv, 2, geneset_3genes, method, 2, chunks)
+    expect_args(mock_extract_leftout_and_seed_genes_cv, 3, geneset_3genes, method, 3, chunks)
     expect_called(mock_extract_leftout_and_seed_genes_cv, 3)
 
     expect_args(mock_RWRMH, 1, nw.adjnorm, nw.mpo, first_fold_seeds, 0.7, tau)
