@@ -84,7 +84,7 @@ update_folds_by_method <- function(
   } else {
     stop("ERROR: CV method not recognised. must be one of loo, singletons or kfold. Stopping") # nolint message
   }
-  return(list(folds, geneset, chunks, method))
+  return(list(folds=folds, geneset=geneset, chunks=chunks, method=method))
 }
 
 extract_lo_and_seed_genes_cv <- function(geneset, method, r, chunks = NULL) {
@@ -173,13 +173,13 @@ create_rankings_cv <- function(rwr,
   rwr$RWRM_Results
 }
 
-
 # For 'loo' and 'kfold', each gene is leftout once, so gets ranked once.
 RWR <- function(geneset,
                 adjnorm,
                 mpo,
                 method,
                 num_folds,
+                chunks,
                 restart = 0.7,
                 tau = c(1, 1),
                 name = "default",
@@ -188,14 +188,8 @@ RWR <- function(geneset,
   # This is the name of the combined networks.
   networks <- paste(names(mpo)[1:mpo$Number_of_Layers], collapse = "_")
 
-  updated_data_list <- update_folds_by_method(geneset, method, num_folds)
-  folds <- updated_data_list[[1]]
-  geneset <- updated_data_list[[2]]
-  chunks <- updated_data_list[[3]]
-  method <- updated_data_list[[4]]
-
   doParallel::registerDoParallel(cores = threads)
-  res <- foreach::foreach(r = 1:folds) %dopar% {
+  res <- foreach::foreach(r = 1:num_folds) %dopar% {
     lo_seed_genelist <- extract_lo_and_seed_genes_cv(
       geneset,
       method,
@@ -258,7 +252,7 @@ calc_metrics_cv <- function(res_combined, res_avg) {
 
   # n() no longer works if dplyr not attached #4062
   # https://github.com/tidyverse/dplyr/issues/4062
-  # https://github.com/tidyverse/dplyr/blob/master/NEWS.md#breaking-changes
+    # https://github.com/tidyverse/dplyr/blob/master/NEWS.md#breaking-changes
     if(res_combined$method[1] %in% c("kfold","singletons")) {  # cannot use opt$method here since that can be overridden in RWR
 
         ### calculate ROC/PRC per-fold
@@ -574,8 +568,8 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
           ggplot2::scale_color_manual(name = "Recall Density",
                                       breaks = c("mean of folds", "uniform dist"),
                                       values = c("mean of folds" = "darkorange", "uniform dist"="black") )
-        
-        
+
+
         fname = paste("RWR-CV",metrics$res_combined$geneset[1],get_base_name(dataPath), modname, sep="_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
         out_path = file.path(outdirPath, fname)
@@ -647,8 +641,11 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         #     expand_limits(x=c(0,1), y=c(0, 1))
         
             
+
         # ranking distribution of hits in bins of 100 
-        p7 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+        in_valset_data <- metrics$res_combined %>% dplyr::filter(InValset==1)
+
+        p7 <- ggplot2::ggplot(in_valset_data) + 
           ggplot2::geom_density(ggplot2::aes(x=rank, group=fold),col="grey", alpha=0.5)
         plotcomp <- ggplot2::ggplot_build(p7)
         meandensity <- plotcomp$data[[1]] %>% dplyr::group_by(x) %>% dplyr::summarise(hit_density = mean(ymax))
@@ -888,6 +885,13 @@ RWR_CV <- function(data = NULL,
   geneset <- geneset_list$geneset
   extras <- geneset_list$extras
 
+  # check and update data if necessary 
+  updated_data_list <- update_folds_by_method(geneset, method, folds)
+  folds <- updated_data_list$folds
+  geneset <- updated_data_list$geneset
+  chunks <- updated_data_list$chunks
+  method <- updated_data_list$method
+
 
   ############# run RWR  #####################################################
   res <- RWR(geneset,
@@ -895,6 +899,7 @@ RWR_CV <- function(data = NULL,
              nw_mpo,
              method,
              folds,
+             chunks,
              restart,
              tau,
              modname,
@@ -983,7 +988,6 @@ RWR_CV <- function(data = NULL,
   ############# Save plots  ##################################################
   if (plot) {
     message("Saving plots ...")
-
     save_plots_cv(metrics, geneset, folds, data, modname, outdir_path)
   }
 
