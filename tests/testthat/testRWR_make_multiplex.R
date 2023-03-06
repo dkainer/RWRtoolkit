@@ -392,12 +392,49 @@ describe("make_heterogeneous_multiplex", {
   })
 })
 
-describe("RWR_make_multiplex.R:", {
+describe("Read Flist", {
+  file_list <- c("../testNetworks/abc_layer1.tsv", "../testNetworks/abc_layer2.tsv", "../testNetworks/abc_layer3.tsv")
+  layer_list <- c("layer1", "layer2", "layer3")
+  group_list <- c(1, 1, 1)
+  
   it("throws an error if flist is empty", {
     flist <- ""
 
-    expect_error(RWRtoolkit::RWR_make_multiplex(flist))
+    expect_error(read_flist(flist))
   })
+
+  it("reads an flist with only 2 columns, adding in a group", {
+    flist <- "../testFlists/test_flist_2cols.tsv"
+
+    actual_output <- read_flist(flist)
+
+    expected_output <- data.table::data.table(
+      nwfile = file_list,
+      nwname = layer_list,
+      nwgroup = group_list
+    )
+
+    expect_equal(actual_output, expected_output)
+  })
+
+
+  it("reads an flist with 5 columns and pares down last two columns", {
+    flist <- "../testFlists/test_flist_5cols.tsv"
+
+    actual_output <- read_flist(flist)
+
+    expected_output <- data.table::data.table(
+      nwfile = file_list,
+      nwname = layer_list,
+      nwgroup = group_list
+    )
+
+    expect_equal(actual_output, expected_output)
+  })
+
+})
+
+describe("RWR_make_multiplex.R:", {
 
   it("throws an error if flist elements contain bad paths", {
     bad_flist <- "../testFlists/testFlist_badPaths.txt"

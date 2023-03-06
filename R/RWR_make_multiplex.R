@@ -123,6 +123,35 @@ make_heterogeneous_multiplex <- function(nw.groups, delta, lambda, out, verbose)
   message(paste("File path: ", out))
 }
 
+read_flist <- function(flist) {
+  flist_table <- tryCatch(
+      {
+        data.table::fread(flist, header = F)
+      },
+      error = function(cond) {
+        # TODO: Depending on verbosity, update error message?
+        cat("Error in reading in file list:\n", cond$message)
+        stop(cond)
+      }
+    )
+
+    if (ncol(flist_table) < 2 ) {
+      stop("flist files must have at least a file path and a layer name.")
+    }
+
+    # add extra column if only 2 supplied. 
+    if (ncol(flist_table) == 2) {
+      flist_table$V3 <- 1
+    }
+
+    # Extract only the first threee columns
+    col_sliced_flist <- flist_table[ , c('V1', 'V2', 'V3')]
+    colnames(col_sliced_flist) <- c("nwfile", "nwname", "nwgroup")
+
+    return(col_sliced_flist)
+
+}
+
 ########################################################################
 # Main Function
 ########################################################################
@@ -187,35 +216,13 @@ make_heterogeneous_multiplex <- function(nw.groups, delta, lambda, out, verbose)
 #' system("rm example.flist")
 #'
 #' @export
-RWR_make_multiplex <- function(flist = "", delta = 0.5, lambda = 0.5, output = "network.Rdata", test = FALSE, verbose = FALSE) {
-  if (test == FALSE && flist == "") {
+RWR_make_multiplex <- function(flist = "", delta = 0.5, lambda = 0.5, output = "network.Rdata",  verbose = FALSE) {
+  if (flist == "") {
     stop("Please provide a path to your flist, or pass test=TRUE to view an example")
   }
 
-  if (test == TRUE) {
-    # Dynamically create flist file with full path
-    basePath <- paste(.libPaths()[1], "/RWRtoolkit/scripts/example_data/toy_example/", sep = "")
-    outputFilePath <- paste(basePath, "testFlist_dynamic.txt", sep = "")
-    tmp <- paste(basePath, "m1.txt m1 1\n", basePath, "m2.txt m2 1", sep = "")
-    write(tmp, outputFilePath)
-
-    # Set opts
-    flist <- paste(basePath, "testFlist_dynamic.txt", sep = "")
-    out <- "testing.rdata"
-    verbose <- T
-  }
-
   # Read flist into datatable, fails on file read err
-  inDF <- tryCatch(
-    {
-      data.table::fread(flist, header = F, col.names = c("nwfile", "nwname", "nwgroup"), select = 1:3)
-    },
-    error = function(cond) {
-      # TODO: Depending on verbosity, update error message?
-      cat("Error in reading in file list:\n", cond$message)
-      stop(cond)
-    }
-  )
+  inDF <- read_flist(flist)
 
   # Split dataframe into groups
   nw.groups <- inDF %>% dplyr::group_split(nwgroup)
