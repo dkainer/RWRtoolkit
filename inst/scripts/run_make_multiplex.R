@@ -69,12 +69,6 @@ parse_arguments <- function() {
 
 ## Processing arguments
 opt <- parse_arguments()
-print(opt)
-
-## Check whether all necessary args have been set by the user
-if (opt$test) {
-  opt$flist <- ""
-}
 
 if (is.null(opt$flist)) {
   stop("Error. \n - Input file \"flist\" parameter not included.\n", file = stderr())
@@ -86,12 +80,13 @@ if (opt$verbose) {
   cat(opt$flist)
 }
 
+print("Running RWR Make Multiplex with options: ")
+print(opt)
 
 RWRtoolkit::RWR_make_multiplex(
     flist = opt$flist,
     delta = opt$delta,
     lambda = opt$lambda,
     output = opt$out,
-    test = opt$test,
     verbose = opt$verbose
   )
