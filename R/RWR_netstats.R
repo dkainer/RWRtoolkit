@@ -170,7 +170,7 @@ make_dummy_multiplex <- function(
 #'
 #' @export
 merged_with_all_edges <- function(mpo, verbose=FALSE) {
-    message(sprintf("merging %d network layers ...", mpo$Number_of_Layers))
+    message(sprintf("merging %d network layers ...\n", mpo$Number_of_Layers))
     nl        <- mpo$Number_of_Layers
     nw_dflist <- lapply(mpo[1:nl], igraph::as_data_frame)
     nw_df     <- dplyr::bind_rows(nw_dflist)
@@ -182,7 +182,7 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
 
     nw_merged <- igraph::graph_from_data_frame(nw_df, directed = FALSE)
     message("merging network layers DONE.")
-    message(sprintf("Merged network has %d edges and %d rows.",
+    message(sprintf("Merged network has %d edges and %d rows.\n",
             igraph::ecount(nw_merged), igraph::vcount(nw_merged)
     ))
 
@@ -323,7 +323,7 @@ calculate_basic_statistics <- function(
     if (is.null(name)) {
         name <-  get_name(g, default = "<G>")
     }
-    title <- sprintf("Network stats for network %s", name)
+    title <- sprintf("Network stats for network %s\n", name)
     hrule <- paste0(rep("=", nchar(title)))
     vertex_count <- igraph::vcount(g)
     edge_count <- igraph::ecount(g)
@@ -336,9 +336,9 @@ calculate_basic_statistics <- function(
     if (verbose) {
         message(title)
         message(hrule)
-        message(sprintf("Number of nodes : %d",   vertex_count))
-        message(sprintf("Number of edges : %d",   edge_count))
-        message(sprintf("Diameter        : %.2f", network_diameter))
+        message(sprintf("Number of nodes : %d\n",   vertex_count))
+        message(sprintf("Number of edges : %d\n",   edge_count))
+        message(sprintf("Diameter        : %.2f\n", network_diameter))
     }
 
     return(data.frame(list(
@@ -420,7 +420,7 @@ jaccard_score_edges <- function(g, h, verbose=FALSE) {
     u <- igraph::graph.union(g, h)
     score <- igraph::ecount(i) / igraph::ecount(u)
     if (verbose) {
-        message(sprintf("Jaccard score for edges (%s vs %s): %.2f",
+        message(sprintf("Jaccard score for edges (%s vs %s): %.2f\n",
                 get_name(g, default = "<G>"),
                 get_name(h, default = "<H>"),
                 score))
@@ -455,7 +455,7 @@ overlap_score <- function(g, h, verbose=FALSE) {
     h_n_edges <- igraph::ecount(h)
     score <- sum_of_i_edge_weights / h_n_edges
     if (verbose) {
-        message(sprintf("Overlap score (%s vs %s): %.2f",
+        message(sprintf("Overlap score (%s vs %s): %.2f\n",
         get_name(g, default = "<G>"),
         get_name(h, default = "<H>"),
         score))
@@ -479,7 +479,7 @@ compare_networks <- function(g, h, metric="overlap", verbose=FALSE) {
     } else if (metric == "jaccard") {
         score <- jaccard_score_edges(g, h, verbose = verbose)
     } else {
-        message(sprintf("Unknown metric: %s", metric))
+        message(sprintf("Unknown metric: %s\n", metric))
         score <- NULL
     }
 
@@ -528,7 +528,7 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     for (i in seq(1, n)) {
         for (j in seq(1, n)) {
             if (verbose > 0) {
-                message(sprintf("%s vs %s ...", names(mpo)[i], names(mpo)[j]))
+                message(sprintf("%s vs %s ...\n", names(mpo)[i], names(mpo)[j]))
             }
 
             network_a <- mpo[[i]]
@@ -610,7 +610,7 @@ calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
 
     if (verbose & !is.null(tau)) {
         message(sprintf(
-            "Tau vector: %s",
+            "Tau vector: %s\n",
             paste(
                 round(tau, digits = 3),
                 collapse = ", ")))

@@ -65,20 +65,20 @@ load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
 
     # Warn user if some genes in the seed geneset are not in the multiplex
     if (nrow(geneset) < ngenes) {
-      message(sprintf("%s genes from geneset (%s) are present in the multiplex", nrow(geneset), path))
+      message(sprintf("%s genes from geneset (%s) are present in the multiplex \n", nrow(geneset), path))
       extras <- geneset_orig %>% dplyr::slice(which(!geneset_orig$gene %in% nw.mpo$Pool_of_Nodes))
-      warning(sprintf("WARNING:: %s genes from geneset (%s) were not found in multiplex: %s", nrow(extras), path, list(extras)))
-      warning(sprintf("Please ensure your geneset files are formated: [ setids | genes | weights (if weights exist) ]"))
+      warning(sprintf("WARNING:: %s genes from geneset (%s) were not found in multiplex: %s\n ", nrow(extras), path, list(extras)))
+      warning(sprintf("Please ensure your geneset files are formated: [ setids | genes | weights (if weights exist) ]\n"))
     } else {
-      message(sprintf("All %s genes in the geneset (%s) are present in the multiplex", nrow(geneset), path))
+      message(sprintf("All %s genes in the geneset (%s) are present in the multiplex\n", nrow(geneset), path))
     }
     # print(head(geneset))
   } else {
-    message(sprintf("Geneset %s was not filtered (nw.mpo not passed to load_geneset utility function)", path))
+    message(sprintf("Geneset %s was not filtered (nw.mpo not passed to load_geneset utility function)\n", path))
   }
 
   if (verbose) {
-    message(sprintf("Loaded gene set (%s genes):", nrow(geneset)))
+    message(sprintf("Loaded gene set (%s genes):\n", nrow(geneset)))
     print(head(geneset))
   }
 
@@ -93,7 +93,7 @@ get_or_set_tau <- function(nw.mpo, optTau) {
   if (sum(tau) != nw.mpo$Number_of_Layers || length(tau) != nw.mpo$Number_of_Layers) {
     tau <- rep(1, nw.mpo$Number_of_Layers)
     warning(sprintf(
-      "WARNING:: Your comma-delimited tau parameter values (%s) has the incorrect length or does not add up to the number of network layers (%s).  Automatically re-set tau to: %s",
+      "WARNING:: Your comma-delimited tau parameter values (%s) has the incorrect length or does not add up to the number of network layers (%s).  Automatically re-set tau to: %s \n",
       optTau, nw.mpo$Number_of_Layers, list(tau)
     ))
   }
@@ -102,7 +102,7 @@ get_or_set_tau <- function(nw.mpo, optTau) {
 
 chunk <- function(x, n) {
   if (length(x) <= n) {
-    warning(sprintf("Geneset Length:(%s) exceded by number of folds:(%s).", length(x), n))
+    warning(sprintf("Geneset Length:(%s) exceded by number of folds:(%s).\n", length(x), n))
   }
   split(x, cut(seq_along(x), n, labels = FALSE))
 }
@@ -230,7 +230,7 @@ area_under_curve <- function(x, y, from = min(x, na.rm = TRUE), to = max(x, na.r
 
 write_table <- function(table, path, row_names = F, verbose = FALSE) {
   if (length(table) == 0 || any(is.na(table))) {
-    warning(sprintf("Table to be saved at %s is empty", path))
+    warning(sprintf("Table to be saved at %s is empty\n", path))
   }
   # Create out_dir if it doesn't exist (avoid warning message if out_dir exists).
   out_dir <- dirname(path)
@@ -246,7 +246,7 @@ write_table <- function(table, path, row_names = F, verbose = FALSE) {
     row.names = row_names
   )
   if (verbose) {
-    message(sprintf("Saved data to file: %s", path))
+    message(sprintf("Saved data to file: %s\n", path))
   }
 }
 
@@ -280,7 +280,7 @@ dump_layers <- function(mpo, outdir = NULL) {
       name <- df$type[[1]]
       file_path <- get_file_path(name, outdir = outdir)
       write_table(df, file_path)
-      message(sprintf("Saved network layer: %s", file_path))
+      message(sprintf("Saved network layer: %s\n", file_path))
     }
   }
 }
@@ -297,7 +297,7 @@ dump_nodes <- function(mpo, outdir = NULL) {
   print("actualdf")
   print(df)
   write_table(df, file_path)
-  message(sprintf("Saved pool of nodes: %s", file_path))
+  message(sprintf("Saved pool of nodes: %s\n", file_path))
 }
 
 generate_randomset <- function(mpo, n = 10, name = "RAND", outdir = NULL) {
@@ -308,7 +308,7 @@ generate_randomset <- function(mpo, n = 10, name = "RAND", outdir = NULL) {
               file_path,
               col.names = F,
               row.names = F, quote = F, sep = "\t")
-  message(sprintf("Saved random ganeset: %s", file_path))
+  message(sprintf("Saved random ganeset: %s\n", file_path))
   random_nodes
 }
 

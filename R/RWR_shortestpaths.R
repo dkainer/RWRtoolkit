@@ -55,7 +55,7 @@ get_shortest_paths <- function(nw_merged,
   wt <- 1 - igraph::E(nw_merged)$weightnorm
 
   message(sprintf(
-    "Calculating Shortest paths for %d x %d = %d gene pairs",
+    "Calculating Shortest paths for %d x %d = %d gene pairs\n",
     nrow(source_geneset),
     length(targets),
     nrow(source_geneset) * length(targets)
@@ -143,7 +143,7 @@ save_results <- function(rwr_result,
       dir.create(dirname(out_path), recursive = TRUE)
     }
     write_table(rwr_result, out_path)
-    message(sprintf("Saved results to file:\n  %s", out_path))
+    message(sprintf("Saved results to file:\n  %s\n", out_path))
   }
 }
 

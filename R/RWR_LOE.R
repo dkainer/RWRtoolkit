@@ -49,7 +49,7 @@ calc_metrics_loe <- function(res, seed_geneset, query_geneset) {
   )
 
   if (nrow(dupes) > 0) {
-    warning(sprintf("WARNING: %i genes in the query geneset are also found in the seed geneset. They will be removed from the query geneset before running eval", length(dupes)), appendLF = T) # nolint
+    warning(sprintf("WARNING: %i genes in the query geneset are also found in the seed geneset. They will be removed from the query geneset before running eval\n", length(dupes)), appendLF = T) # nolint
     res <- rbind(
       data.frame(
         NodeNames = dupes$gene,
@@ -237,7 +237,7 @@ save_plots_loe <- function(metrics,
     ggplot2::xlab("FPR") +
     ggplot2::ylab("TPR")
 
-
+ 
   # plot ranking distribution of hits in bins of 100 for each fold
   p4 <- ggplot2::ggplot(
     metrics$results %>% dplyr::filter(InQueryGeneset == 1)
