@@ -91,7 +91,7 @@ parse_arguments <- function() {
   if (opt$verbose) {
     message("You passed the following arguments:")
     for (name in names(opt)) {
-      message(sprintf("%s = %s", name, opt[[name]]))
+      message(sprintf("%s = %s \n", name, opt[[name]]))
     }
   }
 

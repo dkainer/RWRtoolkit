@@ -299,7 +299,8 @@ save_plots_loe <- function(metrics,
 #' @param outdir Full path to the output file directory
 #' @param numranked Proprtion of ranked genes to return \[0,1\].  e.g. 0.1 will
 #'                  return the top 10%. Default 1.0
-#' @param eval Output PNG plot of ROC and PRC (Default False)
+#' @param plot Output PNG plot of ROC and PRC of the query geneset with respect the
+#'              seed geneset. 
 #' @param modname String to include in output file name. Default "default"
 #' @param cyto Specify a number N > 0 if you wish to see a network of the seeds
 #'             and top N ranked genes (cytoscape must already be running)
@@ -347,7 +348,7 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
                     tau = "1.0",
                     outdir = "./",
                     numranked = 1.0,
-                    eval = FALSE,
+                    plot = FALSE,
                     modname = "default",
                     cyto = 0,
                     verbose = FALSE) {
@@ -475,7 +476,7 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
   write_table(result_table, out_path, verbose = TRUE)
 
   # If evaluation mode is turned on and both a query and seed geneset are present, plot ROC and PRC.
-  if (!is.null(query_geneset) & eval) {
+  if (!is.null(query_geneset) & plot) {
     message("evaluating metrics for finding query genes from seeds")
     metrics <- calc_metrics_loe(
       results$RWRM_Results,
@@ -494,8 +495,8 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
     write_table(metrics$summary, out_path)
     message(paste("Saved metrics summary to file:", out_path))
     save_plots_loe(metrics, seed_geneset, query_geneset, outdir, modname)
-  } else if (is.null(query_geneset) & eval) {
-    warning(sprintf("Eval mode is turned ON but there is no query geneset, evaluation will not occur.")) # nolint message
+  } else if (is.null(query_geneset) & plot) {
+    warning(sprintf("Plot mode is turned ON but there is no query geneset, evaluation will not occur.\n")) # nolint message
   }
 
   # If cytoscape mode is turned on, open an interactive cytoscape session.
