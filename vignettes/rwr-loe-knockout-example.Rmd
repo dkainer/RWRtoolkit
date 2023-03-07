@@ -44,7 +44,7 @@ Network variables will be:
 - `nw.adj`:     The supra-adjacency matrix
 - `nw.adjnorm`: The normalized supra-adjacency matrix
 
-```{r}
+```{r Read Multiplex from URL}
 regulationNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Expression_Regulation_AT_d0.5_v01.RData?raw=true"
 regulationNetworkPathURL <- url(regulationNetworkPath)
 load(regulationNetworkPathURL)
@@ -60,10 +60,10 @@ Next, we can generate our gene lists to act as seeds for our separate LOE runs, 
 | FAD2  | AT3G12120 |
 | ROD1  | AT3G15820 |
 
-```{r}
+```{r Create Gene Lists}
 write_genelist_to_file <- function(genelist, setlist, filename) {
   df <- data.frame(setlist, genelist)
-  write.table(df, filename, sep = "\t", row.names = FALSE, quote = FALSE)
+  write.table(df, filename, sep = "\t", row.names = FALSE, quote = FALSE, col.names = FALSE)
 }
 
 ## FAE1 FAD2
@@ -86,17 +86,17 @@ To implement differential ranking, we must run RWR_LOE twice:
 - once with the `fae1rod1GenesetPath`. 
 By doing so, we will obtain the genes most highly ranked for each. 
 
-```{r}
+```{r Run LOE}
 fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
   data = regulationNetworkPath,
   seed_geneset = fea1fad2GenesetPath,
-  outdir = "./fae1fad2",
+  outdir = "./fae1fad2"
 )
 
 fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(
   data = regulationNetworkPath,
   seed_geneset = fae1rod1GenesetPath,
-  outdir = "./fae1rod1",
+  outdir = "./fae1rod1"
 )
 
 ## Extract Ranked Genes from the Results:
@@ -109,7 +109,7 @@ fae1rod1RankedGenes <- fae1rod1_loeOutput$RWRM_Results
 Now that we have our ranked genes for each experiment, we can begin to explore which genes are most differentially ranked. This method follows the hypothesis that genes which are ranked similarly (within some differential rank threshold) affect the phenotypes similarly, whereas the genes which have a high degree of differential ranking likely have some effects with respect to the phenotypes exhibited within the knockouts. 
 
 In order to obtain genes of interest, we need to calculate the ranking differential for each gene: 
-```{r}
+```{r Calculate Differential Rankings}
 calculateDifferentialRankings <- function(rankedGenesA, rankedGenesB) {
   calculateDifferentialRank <- function(nodeName, rankA) {
     rankB <- rankedGenesB[rankedGenesB$NodeNames == nodeName, ]$rank
@@ -155,7 +155,7 @@ Consider 2 genes, X and Y. If gene X has a rank of 5 in run A and and a rank of 
 ## GO Enrichments
 Thus we can parse out all genes below an arbitrarily defined threshold to see potentially functionally related genes. Once those genes are extracted, we can then them through GO enrichments: 
 
-```{r}
+```{r Extract GO Enrichments}
 rankThreshold <- 500
 
 fae1fad2GeneDifferences <- outpair$differenceA
@@ -214,7 +214,7 @@ With the newly created cytoscape networks, three separate sub-networks can then 
 Conversely, we can do the same experiment via code by taking the differences and intersection of the output ranked gene sets. 
 
 ### Setup
-```{r}
+```{r Set Differential}
 # Read output files from corresponding directories
 fae1fad2RankDF <- read.table("./fae1fad2/RWR-LOE_set1_default.ranks.tsv", header = TRUE)
 fae1rod1RankDF <- read.table("./fae1rod1/RWR-LOE_set2_default.ranks.tsv", header = TRUE)

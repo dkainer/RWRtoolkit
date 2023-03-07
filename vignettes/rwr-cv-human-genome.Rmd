@@ -74,7 +74,7 @@ seedGeneDF <- data.frame("set" = seedGeneSets, "seed" = GABAergicSeedGenes)
 
 # Write File
 filenameGoldset <- "./goldset_gaba.tsv"
-write.table(seedGeneDF, filenameGoldset, sep = "\t", row.names = FALSE, quote = FALSE)
+write.table(seedGeneDF, filenameGoldset, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
 ### Building a "Bronze Set"
@@ -100,7 +100,7 @@ randomSample <- sample(gene_pool, replace = FALSE, size = newlySampleGeneCount)
 seedGeneDF$seed[1:length(randomSample)] <- randomSample
 
 filenameRandomSample <- "./partially_random_sample_seeds.tsv"
-write.table(seedGeneDF, filenameRandomSample, row.names = FALSE, quote = FALSE)
+write.table(seedGeneDF, filenameRandomSample, row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
 We now have two sets of genes: one in which there exists known connections between all genes within the set, and another with known connections between only $\frac{1}{3}$ of the genes. Running RWR_CV for both our gold set and our bronze set, we can then compare the outputs. 
