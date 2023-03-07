@@ -643,13 +643,17 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
             
 
         # ranking distribution of hits in bins of 100 
-        in_valset_data <- metrics$res_combined %>% dplyr::filter(InValset==1)
+   # ranking distribution of hits in bins of 100 for median of folds
+        p4 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
+            ggplot2::geom_histogram(ggplot2::aes(x=rank), binwidth=100, fill="darkred") + 
+            ggplot2::xlab("CV Mean Rank (binwidth=100)") + 
+            ggplot2::ylab("Geneset genes in bin")
 
-        p7 <- ggplot2::ggplot(in_valset_data) + 
-          ggplot2::geom_density(ggplot2::aes(x=rank, group=fold),col="grey", alpha=0.5)
-        plotcomp <- ggplot2::ggplot_build(p7)
-        meandensity <- plotcomp$data[[1]] %>% dplyr::group_by(x) %>% dplyr::summarise(hit_density = mean(ymax))
-        p7 <- p7 +  ggplot2::geom_line(data = meandensity, ggplot2::aes(x = x, y = hit_density), col="darkorange")
+        # p7 <- ggplot2::ggplot(in_valset_data) + 
+        #   ggplot2::geom_density(ggplot2::aes(x=rank, group=fold),col="grey", alpha=0.5)
+        # plotcomp <- ggplot2::ggplot_build(p7)
+        # meandensity <- plotcomp$data[[1]] %>% dplyr::group_by(x) %>% dplyr::summarise(hit_density = mean(ymax))
+        # p7 <- p7 +  ggplot2::geom_line(data = meandensity, ggplot2::aes(x = x, y = hit_density), col="darkorange")
         
         fname <- paste("RWR-CV", metrics$res_combined$geneset[1], get_base_name(dataPath), modname, sep = "_")
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
@@ -664,7 +668,7 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         
         print(p1, vp = vplayout(1, 1))  # Top left
         print(p2, vp = vplayout(1, 2))  # Top right 
-        print(p7, vp = vplayout(2, 2))  # Bottom Right
+        print(p4, vp = vplayout(2, 1:2))  # Bottom 
         dev.off()
         message(paste('File saved:', out_path))
        
