@@ -237,14 +237,6 @@ save_plots_loe <- function(metrics,
     ggplot2::xlab("FPR") +
     ggplot2::ylab("TPR")
 
-  # plot NDCG for top N ranks
-  p3 <- ggplot2::ggplot(
-    metrics$results %>% dplyr::filter(
-      rank %in% c(5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500)
-    )
-  ) +
-    ggplot2::geom_path(ggplot2::aes(x = rank, y = ndcg), alpha = 0.5) +
-    ggplot2::theme_light()
 
   # plot ranking distribution of hits in bins of 100 for each fold
   p4 <- ggplot2::ggplot(
@@ -268,8 +260,7 @@ save_plots_loe <- function(metrics,
   grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
   print(p1, vp = vplayout(1, 1)) # Top left
   print(p2, vp = vplayout(1, 2)) # Top right
-  print(p3, vp = vplayout(2, 1)) # Bottom Left
-  print(p4, vp = vplayout(2, 2)) # Bottom Right
+  print(p4, vp = vplayout(2, 1:2)) # Bottom Right
   dev.off()
   message(paste("File saved:", out_path))
 }
