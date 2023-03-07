@@ -801,7 +801,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'                   code was run.
 #'                   Default NULL
 #' @param modname String to include in output file name.  Default "default"
-#' @param plot Output plots of ROC, PRC, and NDCG etc. to file. Default FALSE
+#' @param plot Output plots of ROC, PRC, etc. to file. Default FALSE
 #' @param out_full_ranks Specify the full path for the full results. Ignores
 #'                     outdir_path and modName, using this path instead.
 #'                     Default NULL
@@ -874,7 +874,7 @@ RWR_CV <- function(data = NULL,
        !is.null(out_full_ranks) |
        !is.null(out_median_ranks)
        ) & write_to_file == FALSE) {
-    warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE.")) #nolint warning
+    warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE.\n")) #nolint warning
     write_to_file <- TRUE
   }
 

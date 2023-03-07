@@ -84,7 +84,7 @@ parse_arguments <- function() {
     make_option(c("-p", "--plot"),
       action = "store_true",
       default = FALSE,
-      help = "Output plots of ROC, PRC, NDCG etc.
+      help = "Output plots of ROC, PRC,  etc.
                     [default %default]"
     ),
     make_option(c("--out-fullranks"),
