@@ -33,7 +33,7 @@ parse_arguments <- function() {
                     by RWR_make_MHobject.R"
         ),
         make_option(
-            c("-o", "--outdir"),
+            c("-o", "--outdir_path"),
             action = "store",
             default = "netstats",
             type = "character",
@@ -44,74 +44,79 @@ parse_arguments <- function() {
             action = "store",
             default = NULL,
             type = "character",
-            help = "Reference network to use for calculating Tau."
+            help = "A path to an edgelist. Used for basic statistics, overlap_sim_multiplex_layer, overlap_pair, and calculate tau"
         ),
         make_option(
             c("--network_2"),
             action = "store",
             default = NULL,
             type = "character",
-            help = "network_2"
+            help = "A path to an edgelist. Used for basic statistics and overlap_pair."
         ),
         make_option(
             c("--basic_statistics"),
             action = "store_true",
             default = FALSE,
-            help = "basic_statistics"
+            help = "A flag denoting a return for basic statistics concerning supplied networks, or flists."
         ),
         make_option(
-            c("--overlap_sim_multiplex"),
+            c("--overlap_sim_multiplex_jaccard"),
             action = "store_true",
             default = FALSE,
-            help = "overlap_sim_multiplex"
+            help = "A flag denoting a return of jaccard similarity metrics for the supplied multiplex"
         ),
         make_option(
             c("--overlap_sim_multiplex_layer"),
             action = "store_true",
             default = FALSE,
-            help = "overlap_sim_multiplex_layer"
+            help = "A flag denoting a return of the calculated edge weight overlap between a multiplex network and a reference network (supplied as 'network_1')"
+        ),
+        make_option(
+            c("--overlap_sim_multiplex_layer_jaccard"),
+            action = "store_true",
+            default = FALSE,
+            help = "A flad denoting a return of the calculated overlap scores between the  multiplex network and the reference  network denoted by network_1."
         ),
         make_option(
             c("--overlap_sim_layer_layer"),
             action = "store_true",
             default = FALSE,
-            help = "overlap_sim_layer_layer"
+            help = "A boolean denoting a return of jaccard and edge weight overlap between two supplied networks (network_1 and network_2)"
         ),
         make_option(
             c("--overlap_score"),
             action = "store_true",
             default = FALSE,
-            help = "overlapScore"
+            help = "A boolean denoting a return of a matrix of overlap scores between all layers of the multiplex."
         ),
         make_option(
-            c("--calculate_tau"),
+            c("--calculate_tau_for_mpo"),
             action = "store_true",
             default = FALSE,
-            help = "getTau"
+            help = "A boolean denoting a return of the distribution of 'tau', with respect to the network layers,  calculated via edge overlap weight / total edgeweight multipled by the total number of layers"
         ),
         make_option(
             c("--merged_with_all_edges"),
             action = "store_true",
             default = FALSE,
-            help = "merged_with_all_edges"
+            help = "A boolean denoting a return of a merged down multiplex network along with  network edge counts and vertex counts."
         ),
         make_option(
             c("--merged_with_edgecounts"),
             action = "store_true",
             default = FALSE,
-            help = "merged_with_edgecounts"
+            help = "A boolean denoting a return of a merged down multiplex, but simplified with edge weights denoting the total number of layers in which that edge existed."
         ),
         make_option(
-            c("--exclusivity"),
+            c("--calculate_exclusivity_for_mpo"),
             action = "store_true",
             default = FALSE,
-            help = "exclusivity"
+            help = "A boolean denoting a return of total percentage of edges that exist within all n layers of the multiplex."
         ),
         make_option(
             c("-v", "--verbose"),
             action = "store_true",
-            default = TRUE,
-            help = "Print extra output [default]"
+            help = "A boolean denoting the verbosity of output."
         )
     )
 
@@ -171,23 +176,26 @@ parse_arguments <- function() {
 
 main <- function() {
     # Get args.
+    
     opt <- parse_arguments()
-
+    print("RUNNING NETSTATS WITH ")
+    print(opt)
     RWRtoolkit::RWR_netstats(
         data = opt$data,
         flist = opt$flist,
         network_1 = opt$network_1,
         network_2 = opt$network_2,
+        outdir_path = opt$outdir_path,
         basic_statistics = opt$basic_statistics,
-        overlap_sim_multiplex = opt$overlap_sim_multiplex,
+        overlap_sim_multiplex_jaccard = opt$overlap_sim_multiplex_jaccard,
         overlap_sim_multiplex_layer = opt$overlap_sim_multiplex_layer,
+        overlap_sim_multiplex_layer_jaccard = opt$overlap_sim_multiplex_layer_jaccard,
         overlap_sim_layer_layer = opt$overlap_sim_layer_layer,
+        calculate_tau_for_mpo = opt$calculate_tau_for_mpo,
         overlap_score = opt$overlap_score,
-        calculate_tau = opt$calculate_tau,
-        merged_with_all_edges = opt$merged_with_all_edges,
         merged_with_edgecounts = opt$merged_with_edgecounts,
-        calculate_exclusivity_for_mpo = opt$exclusivity,
-        outdir_path = opt$outdir,
+        merged_with_all_edges = opt$merged_with_all_edges,
+        calculate_exclusivity_for_mpo = opt$calculate_exclusivity_for_mpo,
         verbose = opt$verbose
     )
 }

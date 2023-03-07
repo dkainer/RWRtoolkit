@@ -1,15 +1,4 @@
 ########################################################################
-# [DONE] Split this script into:
-#   1. R/RWR_netstats.R
-#   2. inst/scripts/run_netstats.R
-# [TODO] I stripped out a lot of the verbosity from the original script.
-#        Need to add that back in.
-# [TODO] What is the expected output? Print to stdout? Write tables of
-#        metrics to file(s)?
-# [DONE] Docstrings.
-########################################################################
-
-########################################################################
 # Helper functions.
 ########################################################################
 ## Template Roxygen documentation:
@@ -224,7 +213,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     unioned_networks <- NULL
     for (i in 1:mpo$Number_of_Layers) {
-        E(mpo[[i]])$weight <- 1
+        igraph::E(mpo[[i]])$weight <- 1
         unioned_networks <-  igraph::union(mpo[[i]], unioned_networks)
     }
 
@@ -774,16 +763,22 @@ write_networks_to_file_if_fp <- function(
 #'                                      overlap_pair, and calculate tau
 #' @param network_2                     A path to an edgelist. Used for basic
 #'                                      statistics and overlap_pair.
+#' @param outdir_path                   If a directory is supplied, all output
+#'                                      data are saved to tsv within that dir.
 #' @param basic_statistics              A boolean denoting a return for basic
 #'                                      statistics concerning supplied networks,
 #'                                      or flists.
-#' @param overlap_sim_multiplex         A boolean denoting a return of jaccard
+#' @param overlap_sim_multiplex_jaccard sA boolean denoting a return of jaccard
 #'                                      similarity metrics for the supplied
 #'                                      multiplex
 #' @param overlap_sim_multiplex_layer   A boolean denoting a return of the
 #'                                      calculated edge weight overlap between
 #'                                      a multiplex network and a reference
 #'                                      network (supplied as "network_1")
+#' @param overlap_sim_multiplex_layer_jaccard A boolean denoting a return of the
+#'                                      calculated overlap scores between the 
+#'                                      multiplex network and the reference 
+#'                                      network denoted by network_1.
 #' @param overlap_sim_layer_layer       A boolean denoting a return of jaccard
 #'                                      and edge weight overlap between two
 #'                                      supplied networks (network_1 and
@@ -800,7 +795,7 @@ write_networks_to_file_if_fp <- function(
 #'                                      down multiplex network along with 
 #'                                      network edge counts and vertex counts.
 #' @param merged_with_edgecounts        A boolean denoting a return of a merged
-#'                                      down multiplex, but simplified with 
+#'                                      down multiplex, but simplified with
 #'                                      edge weights denoting the total number
 #'                                      of layers in which that edge existed.
 #' @param exclusivity                   A boolean denoting a return of total
@@ -844,6 +839,7 @@ RWR_netstats <- function(
     flist  = NULL,
     network_1 = NULL,
     network_2 = NULL,
+    outdir_path = NULL,
     basic_statistics = F,
     overlap_sim_multiplex_jaccard = F,
     overlap_sim_multiplex_layer = F,
@@ -854,8 +850,6 @@ RWR_netstats <- function(
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
     calculate_exclusivity_for_mpo = F,
-    exclusivity = F,
-    outdir_path = NULL,
     verbose = F) {
 
     netstat_output <- list()
@@ -936,11 +930,11 @@ RWR_netstats <- function(
         )
 
         write_stats_to_file_if_fp(
-                outdir_path,
-                "base_stats.tsv",
-                filestats,
-                F,
-                verbose)
+                outdir_path = outdir_path,
+                filename = "base_stats.tsv",
+                netstats = filestats,
+                write_rows = F,
+                verbose = verbose)
     }
 
     if (overlap_sim_multiplex_jaccard &&
@@ -954,11 +948,11 @@ RWR_netstats <- function(
                                             metric = "jaccard",
                                             verbose = verbose)
         write_stats_to_file_if_fp(
-            outdir_path,
-            "overlap_sim_multiplex_jaccard.tsv",
-            netstat_output$overlap_sim_multiplex_jaccard,
-            T,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "overlap_sim_multiplex_jaccard.tsv",
+            netstats = netstat_output$overlap_sim_multiplex_jaccard,
+            write_rows = T,
+            verbose = verbose)
     }
 
     if (overlap_sim_multiplex_layer &&
@@ -980,11 +974,11 @@ RWR_netstats <- function(
         )
 
         write_stats_to_file_if_fp(
-            outdir_path,
-            "overlap_sim_multiplex_layer.tsv",
-            netstat_output$overlap_sim_multiplex_layer,
-            T,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "overlap_sim_multiplex_layer.tsv",
+            netstats = netstat_output$overlap_sim_multiplex_layer,
+            write_rows = T,
+            verbose = verbose)
     }
 
     if (overlap_sim_multiplex_layer_jaccard &&
@@ -1006,11 +1000,11 @@ RWR_netstats <- function(
         )
 
         write_stats_to_file_if_fp(
-            outdir_path,
-            "overlap_sim_multiplex_layer_jaccard.tsv",
-            netstat_output$overlap_sim_multiplex_layer_jaccard,
-            T,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "overlap_sim_multiplex_layer_jaccard.tsv",
+            netstats = netstat_output$overlap_sim_multiplex_layer_jaccard,
+            write_rows = T,
+            verbose = verbose)
 
 
     }
@@ -1041,11 +1035,11 @@ RWR_netstats <- function(
 
 
         write_stats_to_file_if_fp(
-            outdir_path,
-            "overlap_sim_layer_layer.tsv",
-            netstat_output$overlap_sim_layer_layer,
-            F,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "overlap_sim_layer_layer.tsv",
+            netstats = netstat_output$overlap_sim_layer_layer,
+            write_rows = F,
+            verbose = verbose)
 
     }
 
@@ -1079,11 +1073,11 @@ RWR_netstats <- function(
                                                 verbose = verbose)
 
         write_stats_to_file_if_fp(
-            outdir_path,
-            "calculated_tau.tsv",
-            netstat_output$calculated_tau,
-            T,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "calculated_tau.tsv",
+            netstats = netstat_output$calculated_tau,
+            write_rows = T,
+            verbose = verbose)
     }
 
     if (merged_with_all_edges &&
@@ -1129,11 +1123,11 @@ RWR_netstats <- function(
 
 
         write_stats_to_file_if_fp(
-            outdir_path,
-            "exclusivity.tsv",
-            netstat_output$exclusivity,
-            F,
-            verbose)
+            outdir_path = outdir_path,
+            filename = "exclusivity.tsv",
+            netstats = netstat_output$exclusivity,
+            write_rows = F,
+            verbose = verbose)
     }
     
 
