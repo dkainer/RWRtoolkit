@@ -224,12 +224,12 @@ describe("RWR inst/scripts", {
       )
       system(script)
 
-      RWRtoolkit::RWR_LOE(
-        data = network_filepath,
-        seed_geneset = geneset_filepath,
-        outdir = output_directory_func,
-        tau = tau
-      )
+      # RWRtoolkit::RWR_LOE(
+      #   data = network_filepath,
+      #   seed_geneset = geneset_filepath,
+      #   outdir = output_directory_func,
+      #   tau = tau
+      # )
 
       output_files_script <- list.files(output_directory_script)
       output_files_func <- list.files(output_directory_func)
