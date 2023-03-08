@@ -159,12 +159,12 @@ describe("RWR_LOE parameter tests", {
       ))
   })
 
-  it("if eval mode is turned on, metrics are computed and saved", {
+  it("if plot mode is turned on, metrics are computed and saved", {
     test_data <- "../testNetworks/network_m1m2.rdata"
     test_seed_geneset <- "../testGenesets/testGeneset1.tsv"
     test_query_geneset <- "../testGenesets/testGeneset2.tsv"
     test_tau <- "1,1"
-    test_eval <- TRUE
+    test_plot <- TRUE
 
     # stub functions
     stub_calc_metrics_loe <- mock()
@@ -174,16 +174,16 @@ describe("RWR_LOE parameter tests", {
     stub(RWRtoolkit::RWR_LOE, "save_plots_loe", stub_save_plots_loe)
     stub(RWRtoolkit::RWR_LOE, "write_table", stub_write_table)
 
-    invisible(RWRtoolkit::RWR_LOE(data = test_data, seed_geneset = test_seed_geneset, query_geneset = test_query_geneset, tau = test_tau, eval = test_eval))
+    invisible(RWRtoolkit::RWR_LOE(data = test_data, seed_geneset = test_seed_geneset, query_geneset = test_query_geneset, tau = test_tau, plot = test_plot))
     expect_called(stub_calc_metrics_loe, 1)
     expect_called(stub_save_plots_loe, 1)
   })
 
-  it("if eval mode is turned on but there is no query set, metrics are NOT computed and saved and a warning message is displayed", {
+  it("if plot mode is turned on but there is no query set, metrics are NOT computed and saved and a warning message is displayed", {
     test_data <- "../testNetworks/network_m1m2.rdata"
     test_seed_geneset <- "../testGenesets/testGeneset1.tsv"
     test_tau <- "1,1"
-    test_eval <- TRUE
+    test_plot <- TRUE
 
     # stub functions
     stub_calc_metrics <- mock()
@@ -191,7 +191,7 @@ describe("RWR_LOE parameter tests", {
     stub(RWRtoolkit::RWR_LOE, "calc_metrics", stub_calc_metrics)
     stub(RWRtoolkit::RWR_LOE, "save_plots2", stub_save_plots2)
 
-    expect_warning(RWRtoolkit::RWR_LOE(data = test_data, seed_geneset = test_seed_geneset, tau = test_tau, eval = test_eval))
+    expect_warning(RWRtoolkit::RWR_LOE(data = test_data, seed_geneset = test_seed_geneset, tau = test_tau, plot = test_plot))
     expect_called(stub_calc_metrics, 0)
     expect_called(stub_save_plots2, 0)
   })
