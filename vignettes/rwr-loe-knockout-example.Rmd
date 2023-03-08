@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 # Background
-`CITE` et al. have demonstrated phenotypic differences though two double knockout experiments: {FAE1, FAD2} and {FAE1, ROD1}. The {FAE1, FAD2} knockout experiment obtained a 90% accumulation of oleic acid, however, overall seed yield was reduced and growth stunted. Conversely, the {FAE1, ROD1} experiment saw a 60% accumulation of oleic acid but did not see stunted growth or reduction of seed yeild.  
+Jarvis et al. have demonstrated phenotypic differences though two double knockout experiments: {FAE1, FAD2} and {FAE1, ROD1} (Jarvis et al. 2021). The {FAE1, FAD2} knockout experiment obtained a 90% accumulation of oleic acid, however, overall seed yield was reduced and growth stunted. Conversely, the {FAE1, ROD1} experiment saw a 60% accumulation of oleic acid but did not see stunted growth or reduction of seed yeild.  
 
 Though both knockout experiments result in a greater accumulation of oleic acid, the authors noted that there was not immediately apparent explanation as to what could have caused the drastic difference in phenotypes.  `<<CITE THIS>>`
 
@@ -267,3 +267,6 @@ And we can see that our intersection (i.e. FAE1 and other shared genes within th
 ```{r}
 head(gostres_intersection$result[gostres_intersection$result["significant"] == TRUE, ][, c("p_value", "term_name")])
 ```
+
+## References
+Jarvis, Brice & Romsdahl, Trevor & McGinn, Michaela & Nazarenus, Tara & Cahoon, Edgar & Chapman, Kent & Sedbrook, John. (2021). CRISPR/Cas9-Induced fad2 and rod1 Mutations Stacked With fae1 Confer High Oleic Acid Seed Oil in Pennycress (Thlaspi arvense L.). Frontiers in Plant Science. 12. 652319. 10.3389/fpls.2021.652319. 
