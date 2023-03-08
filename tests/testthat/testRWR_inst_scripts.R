@@ -205,11 +205,8 @@ describe("RWR inst/scripts", {
       network_filepath <- "../testSTRINGDB/string_interactions.Rdata"
       geneset_filepath <- "../testSTRINGDB/geneset1.tsv"
       output_directory_script <- "./rwr_loe_output_script/"
-      output_directory_func <- "./rwr_loe_output_func/"
       output_file_base <- "RWR-LOE_setA1_default"
-
       tau <- "1,1,1,1,1,1,1,1,1"
-
       script <- paste(
         "Rscript",
         run_loe_filepath,
@@ -222,42 +219,14 @@ describe("RWR inst/scripts", {
         "--tau",
         tau
       )
+
       system(script)
 
-      # RWRtoolkit::RWR_LOE(
-      #   data = network_filepath,
-      #   seed_geneset = geneset_filepath,
-      #   outdir = output_directory_func,
-      #   tau = tau
-      # )
+      actual_output_files <- list.files(output_directory_script)
 
-      output_files_script <- list.files(output_directory_script)
-      output_files_func <- list.files(output_directory_func)
+      expected_output <- paste(output_file_base,'ranks.tsv', sep='.')
 
-
-
-      actual_loe_ranks_script <- nrow(
-        read.table(
-          paste(output_directory_script,
-            output_files_script[1],
-            sep = ""
-          )
-        )
-      )
-
-
-      actual_loe_ranks_func <- nrow(
-        read.table(
-          paste(output_directory_func,
-            output_files_func[1],
-            sep = ""
-          )
-        )
-      )
-
-      expect_equal(length(output_files_script), length(output_files_func))
-      expect_equal(actual_loe_ranks_script, actual_loe_ranks_func)
-
+      expect_equal(actual_output_files, expected_output)
     })
 
      teardown({
