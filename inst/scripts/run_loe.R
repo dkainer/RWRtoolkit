@@ -24,7 +24,7 @@ parse_arguments <- function() {
                    numeric scale (they will be normalised) but should
                    all be > 0"
     ),
-    make_option(c("-p", "--query_geneset"),
+    make_option(c("-q", "--query_geneset"),
       action = "store",
       default = NULL,
       type = "character",
@@ -66,7 +66,7 @@ parse_arguments <- function() {
       help = "proportion of ranked genes to return. e.g. 0.1
                    will return the top 10%. default [default %default]"
     ),
-    make_option(c("-e", "--eval"),
+    make_option(c("-p", "--plot"),
       action = "store_true",
       default = FALSE,
       help = "include this parameter if you want to output a
@@ -117,4 +117,16 @@ opt <- parse_arguments()
 print(opt)
 
 ## Call to LOE
-RWRtoolkit::RWR_LOE(data = opt$data, seed_geneset = opt$seed_geneset, query_geneset = opt$query_geneset, restart = opt$restart, tau = opt$tau, outdir = opt$outdir, numranked = opt$numranked, eval = opt$eval, modname = opt$modname, cyto = opt$cyto, verbose = opt$verbose)
+RWRtoolkit::RWR_LOE(
+  data = opt$data,
+  seed_geneset = opt$seed_geneset,
+  query_geneset = opt$query_geneset,
+  restart = opt$restart,
+  tau = opt$tau,
+  outdir = opt$outdir,
+  numranked = opt$numranked,
+  plot = opt$eval,
+  modname = opt$modname,
+  cyto = opt$cyto,
+  verbose = opt$verbose
+)
