@@ -18,6 +18,12 @@ nw_tibble_bad_path <- tibble::tibble(
   "nwgroup" = c(1, 1)
 )
 
+nw_tibble_partial_weighted <- tibble::tibble(
+  "nwfile" = c("../testNetworks/m1_noweights.txt", "../testNetworks/m2.txt"),
+  "nwname" = c("m1", "m2"),
+  "nwgroup" = c(1, 1)
+)
+
 nw_groups <- list_of(nw_tibble)
 
 # Heterogeneous Network Tibble
@@ -102,6 +108,7 @@ describe("make_multiplex", {
     nw_groups <- list_of(nw_tibble_bad_path)
     expect_error(make_multiplex(nw_groups[[1]]))
   })
+
 
   it("also makes a multiplex", {
     # expected output as multiplex object:
