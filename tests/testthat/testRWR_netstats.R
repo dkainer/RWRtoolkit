@@ -353,11 +353,11 @@ describe("RWR_netstats", {
                                     verbose = T))
 
       expected_messages <- c(
-        "Network stats for network TREE\n",
-        "==============================\n",
-        "Number of nodes : 10\n",
-        "Number of edges : 9\n",
-        "Diameter        : 3.00\n"
+        "Network stats for network TREE\n\n",
+        "===============================\n",
+        "Number of nodes : 10\n\n",
+        "Number of edges : 9\n\n",
+        "Diameter        : 3.00\n\n"
       )
 
       expect_equal(actual_messages, expected_messages)
