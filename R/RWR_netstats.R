@@ -772,8 +772,9 @@ write_networks_to_file_if_fp <- function(
 #'                                      "overlap" or "both" to describe. 
 #'                                      Default is "jaccard". 
 #' @param pairwise_between_mpo_layer    A boolean denoting a return of the 
-#'                                      pairwise similarity score between
-#'                                      each layer of the supplied
+#'                                      pairwise score (defined by 
+#'                                      `scoring_metric` between each 
+#'                                      layer of the supplied
 #'                                      multiplex. Default False
 #' @param multiplex_layers_to_refnet    A boolean denoting a return of the
 #'                                      calculated score (defined by 
