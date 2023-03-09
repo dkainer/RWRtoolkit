@@ -755,10 +755,7 @@ describe("RWR_netstats", {
                             n_layers = seq(1:3),
                             pct_found = pct_rows)
                           )
-      print("Actual")
-      print(actual_output)
-      print("Expected")
-      print(expected_output)
+   
       expect_equal(actual_output, expected_output, tolerance = 1e-3)
     })
   })

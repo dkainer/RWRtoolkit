@@ -913,9 +913,6 @@ describe("Post Processing", {
 
       output <- calculate_average_rank_across_folds_cv(res_combined_loo)
 
-  print("EXPECTED EQUAL?")
-  print(expected_output)
-  print(output)
       expect_equal(output, expected_output)
     })
   })

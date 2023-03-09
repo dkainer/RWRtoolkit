@@ -62,8 +62,7 @@ describe("load_geneset", {
       "extras" = expected_extras)
 
      output <- load_geneset(file_path)
-    print("OUTPUT IS")
-    print(output)
+
      expect_equal(output, expected_output)
   })
   
@@ -428,7 +427,6 @@ describe("dump_nodes", {
 
 
     dump_nodes(nw.mpo1)
-    print(expected_dataframe)
     expect_called(get_filepath_stub, expected_num_calls)
     expect_called(write_table_stub, expected_num_calls)
     expect_args(write_table_stub, 1, expected_dataframe, fakefile_path)

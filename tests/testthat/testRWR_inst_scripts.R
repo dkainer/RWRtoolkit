@@ -343,7 +343,7 @@ describe("RWR inst/scripts", {
         "--calculate_exclusivity_for_mpo",
         "--verbose"
         )
-      print("\n\n\n\n****CALLING SCRIPT**``*****")
+
       system(script)
       actual_output_files <- list.files(outdir_path)
 
