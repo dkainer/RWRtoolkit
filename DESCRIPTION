@@ -49,10 +49,10 @@ Imports:
     dplyr,
     RandomWalkRestartMH,
     IRkernel,
-    RCy3,
     stringr,
     Matrix
 Suggests: 
+    RCy3,
     testthat,
     mockery,
     gprofiler2,
