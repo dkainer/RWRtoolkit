@@ -19,6 +19,8 @@
 # RWRtoolkit. If not, see <https://www.gnu.org/licenses/>.
 ########################################################################
 
+
+
 load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
   if (is.null(path)) {
     return(NULL)
@@ -35,7 +37,6 @@ load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
     if (ncol(geneset) < 2) {
       stop("Your geneset file is incorrectly formatted. Please see documentation.") #nolint message
     }
-1
     # Check if seed weights are included by user or not.
     numericV3 <- suppressWarnings(as.numeric(geneset$V3))
     if (!is.null(geneset$V3) && all(!is.null(numericV3)) && all(!is.na(numericV3))) {
