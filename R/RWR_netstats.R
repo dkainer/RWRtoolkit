@@ -767,40 +767,44 @@ write_networks_to_file_if_fp <- function(
 #'                                      data are saved to tsv within that dir.
 #' @param basic_statistics              A boolean denoting a return for basic
 #'                                      statistics concerning supplied networks,
-#'                                      or flists.
-#' @param overlap_sim_multiplex_jaccard sA boolean denoting a return of jaccard
-#'                                      similarity metrics for the supplied
-#'                                      multiplex
-#' @param overlap_sim_multiplex_layer   A boolean denoting a return of the
-#'                                      calculated edge weight overlap between
-#'                                      a multiplex network and a reference
-#'                                      network (supplied as "network_1")
-#' @param overlap_sim_multiplex_layer_jaccard A boolean denoting a return of the
-#'                                      calculated overlap scores between the 
-#'                                      multiplex network and the reference 
-#'                                      network denoted by network_1.
-#' @param overlap_sim_layer_layer       A boolean denoting a return of jaccard
-#'                                      and edge weight overlap between two
+#'                                      or flists. Default True.
+#' @param scoring_metric                A string denoting either "jaccard", 
+#'                                      "overlap" or "both" to describe. 
+#'                                      Default is "jaccard". 
+#' @param pairwise_between_mpo_layer    A boolean denoting a return of the 
+#'                                      pairwise similarity score between
+#'                                      each layer of the supplied
+#'                                      multiplex. Default False
+#' @param multiplex_layers_to_refnet    A boolean denoting a return of the
+#'                                      calculated score (defined by 
+#'                                      `scoring_metric`: default jaccard) 
+#'                                      between a multiplex network and a 
+#'                                      reference network (supplied as 
+#'                                      "network_1"). Default False
+#' @param net_to_net_similarity         A boolean denoting a scoring between two
 #'                                      supplied networks (network_1 and
-#'                                      network_2)
-#' @param overlap_score                 A boolean denoting a return of a matrix
-#'                                      of overlap scores between all layers
-#'                                      of the multiplex.
+#'                                      network_2) (scoring defined by 
+#'                                      `scoring_metric`: default jaccard). 
+#'                                      Default False
 #' @param calculate_tau                 A boolean denoting a return of the
 #'                                      distribution of "tau", with respect
 #'                                      to the network layers,  calculated via
 #'                                      edge overlap weight / total edgeweight
 #'                                      multipled by the total number of layers
+#'                                      Default False
 #' @param merged_with_all_edges         A boolean denoting a return of a merged
 #'                                      down multiplex network along with 
 #'                                      network edge counts and vertex counts.
+#'                                      Default False
 #' @param merged_with_edgecounts        A boolean denoting a return of a merged
 #'                                      down multiplex, but simplified with
 #'                                      edge weights denoting the total number
 #'                                      of layers in which that edge existed.
-#' @param exclusivity                   A boolean denoting a return of total
+#'                                      Default False
+#' @param calculate_exclusivity_for_mpo A boolean denoting a return of total
 #'                                      percentage of edges that exist within
 #'                                      all n layers of the multiplex.
+#'                                      Default False
 #' @param verbose                       A boolean denoting the verbosity of
 #'                                      output
 #' @return A list of data frames, igraph networks, and vectors denoting various
@@ -840,19 +844,25 @@ RWR_netstats <- function(
     network_1 = NULL,
     network_2 = NULL,
     outdir_path = NULL,
-    basic_statistics = F,
-    overlap_sim_multiplex_jaccard = F,
-    overlap_sim_multiplex_layer = F,
-    overlap_sim_multiplex_layer_jaccard = F,
-    overlap_sim_layer_layer = F,
-    overlap_score = F,
+    basic_statistics = T,
+    scoring_metric = "jaccard",
+    pairwise_between_mpo_layer = F,
+    multiplex_layers_to_refnet = F,
+    net_to_net_similarity = F,
     calculate_tau_for_mpo = F,
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
     calculate_exclusivity_for_mpo = F,
     verbose = F) {
-
     netstat_output <- list()
+
+
+
+    `%notin%` <- Negate(`%in%`)
+    if (scoring_metric %notin% c("jaccard", "overlap", "both")){
+        stop("Incorrect usage: scoring_metric must be one of the following: ['jaccard', 'overlap', 'both']") #nolint
+    }
+
 
 
     # Load the multiplex.
@@ -866,6 +876,9 @@ RWR_netstats <- function(
         nw_mpo <- NULL
     }
 
+
+
+
     # Load reference networks(s).
     if (!is.null(network_1)) {
         network_1 <- load_network(
@@ -876,6 +889,7 @@ RWR_netstats <- function(
     } else {
         network_1 <- NULL
     }
+
 
     if (!is.null(network_2)) {
         network_2 <- load_network(
@@ -937,129 +951,122 @@ RWR_netstats <- function(
                 verbose = verbose)
     }
 
-    if (overlap_sim_multiplex_jaccard &&
+
+    if (pairwise_between_mpo_layer &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
-            function_name = "overlap_sim_multiplex_jaccard")
+            function_name = "pairwise_between_mpo_layer")
         ) {
-        netstat_output$overlap_sim_multiplex_jaccard <- overlap_many_pairwise(
-                                            nw_mpo,
-                                            metric = "jaccard",
-                                            verbose = verbose)
-        write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
-            filename = "overlap_sim_multiplex_jaccard.tsv",
-            netstats = netstat_output$overlap_sim_multiplex_jaccard,
-            write_rows = T,
-            verbose = verbose)
+        
+        if (scoring_metric == "both" || scoring_metric == "jaccard"){
+            netstat_output$pairwise_between_mpo_layer_jaccard <- overlap_many_pairwise(
+                                                nw_mpo,
+                                                metric = "jaccard",
+                                                verbose = verbose)
+            write_stats_to_file_if_fp(
+                outdir_path = outdir_path,
+                filename = "pairwise_between_mpo_layer_jaccard.tsv",
+                netstats = netstat_output$pairwise_between_mpo_layer_jaccard,
+                write_rows = T,
+                verbose = verbose)
+        }
+        if (scoring_metric == "both" || scoring_metric == "overlap"){
+            netstat_output$pairwise_between_mpo_layer_overlap <- overlap_many_pairwise(
+                                                nw_mpo,
+                                                metric = "overlap",
+                                                verbose = verbose)
+            write_stats_to_file_if_fp(
+                outdir_path = outdir_path,
+                filename = "pairwise_between_mpo_layer_overlap.tsv",
+                netstats = netstat_output$pairwise_between_mpo_layer_overlap,
+                write_rows = T,
+                verbose = verbose)
+        }
     }
 
-    if (overlap_sim_multiplex_layer &&
+    if (multiplex_layers_to_refnet &&
         parameters_exist(
             mpo = nw_mpo,
             required_net = "mpo",
-            function_name = "overlap_sim_multiplex_layer") &&
+            function_name = "multiplex_layers_to_refnet") &&
         parameters_exist(
             network_1 = network_1,
             required_net = "network_1",
-            function_name = "overlap_sim_multiplex_layer")
+            function_name = "multiplex_layers_to_refnet")
         ) {
+        
+        if (scoring_metric == "both" || scoring_metric == "jaccard"){
+            netstat_output$multiplex_layers_to_refnet_jaccard <- overlap_many_vs_reference(
+                nw_mpo,
+                network_1,
+                metric = "overlap",
+                verbose = verbose
+            )
 
-        netstat_output$overlap_sim_multiplex_layer <- overlap_many_vs_reference(
-            nw_mpo,
-            network_1,
-            metric = "overlap",
-            verbose = verbose
-        )
+            write_stats_to_file_if_fp(
+                outdir_path = outdir_path,
+                filename = "multiplex_layers_to_refnet_jaccard.tsv",
+                netstats = netstat_output$multiplex_layers_to_refnet_jaccard,
+                write_rows = T,
+                verbose = verbose)
+        }
+        
+        if (scoring_metric == "both" || scoring_metric == "overlap"){
+            netstat_output$multiplex_layers_to_refnet_overlap <- overlap_many_vs_reference(
+                nw_mpo,
+                network_1,
+                metric = "overlap",
+                verbose = verbose
+            )
 
-        write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
-            filename = "overlap_sim_multiplex_layer.tsv",
-            netstats = netstat_output$overlap_sim_multiplex_layer,
-            write_rows = T,
-            verbose = verbose)
+            write_stats_to_file_if_fp(
+                outdir_path = outdir_path,
+                filename = "multiplex_layers_to_refnet_overlap.tsv",
+                netstats = netstat_output$multiplex_layers_to_refnet_overlap,
+                write_rows = T,
+                verbose = verbose)
+        }
     }
 
-    if (overlap_sim_multiplex_layer_jaccard &&
-        parameters_exist(
-            mpo = nw_mpo,
-            required_net = "mpo",
-            function_name = "overlap_sim_multiplex_layer_jaccard") &&
+    if (net_to_net_similarity &&
         parameters_exist(
             network_1 = network_1,
             required_net = "network_1",
-            function_name = "overlap_sim_multiplex_layer_jaccard")
-        ) {
-
-        netstat_output$overlap_sim_multiplex_layer_jaccard <- overlap_many_vs_reference(
-            nw_mpo,
-            network_1,
-            metric = "jaccard",
-            verbose = verbose
-        )
-
-        write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
-            filename = "overlap_sim_multiplex_layer_jaccard.tsv",
-            netstats = netstat_output$overlap_sim_multiplex_layer_jaccard,
-            write_rows = T,
-            verbose = verbose)
-
-
-    }
-
-    if (overlap_sim_layer_layer &&
-        parameters_exist(
-            network_1 = network_1,
-            required_net = "network_1",
-            function_name = "overlap_sim_layer_layer")
+            function_name = "net_to_net_similarity")
         && parameters_exist(
             network_2 = network_2,
             required_net = "network_2",
-            function_name = "overlap_sim_layer_layer")
+            function_name = "net_to_net_similarity")
         ) {
-        overlap_pair_overlap_weight <- overlap_pair(network_1,
-                     network_2,
-                     metric = "overlap",
-                     verbose = verbose)
-        overlap_pair_jaccard <- overlap_pair(network_1,
-                     network_2,
-                     metric = "jaccard",
-                     verbose = verbose)
 
-        netstat_output$overlap_sim_layer_layer <- data.frame(list(
-            overlap = overlap_pair_overlap_weight,
-            jaccard = overlap_pair_jaccard
-        ))
+        measure_list <- list()
+        if (scoring_metric == "both" || scoring_metric == "jaccard"){
+            overlap_pair_jaccard <- overlap_pair(network_1,
+                        network_2,
+                        metric = "jaccard",
+                        verbose = verbose)
+            measure_list$jaccard = overlap_pair_jaccard
+
+        }
+        if (scoring_metric == "both" || scoring_metric == "overlap"){
+            overlap_pair_overlap <- overlap_pair(network_1,
+                        network_2,
+                        metric = "overlap",
+                        verbose = verbose)
+            measure_list$overlap = overlap_pair_overlap
+        }
+
+        netstat_output$net_to_net_similarity <- data.frame(measure_list)
 
 
         write_stats_to_file_if_fp(
             outdir_path = outdir_path,
-            filename = "overlap_sim_layer_layer.tsv",
-            netstats = netstat_output$overlap_sim_layer_layer,
+            filename = "net_to_net_similarity.tsv",
+            netstats = netstat_output$net_to_net_similarity,
             write_rows = F,
             verbose = verbose)
 
-    }
-
-    if (overlap_score &&
-        parameters_exist(
-            mpo = nw_mpo,
-            required_net = "mpo",
-            function_name = "mpo_overlap_score")) {
-        netstat_output$mpo_overlap_score <- overlap_many_pairwise(
-                                                        nw_mpo,
-                                                        metric = "overlap",
-                                                        verbose = verbose)
-
-
-        write_stats_to_file_if_fp(
-            outdir_path,
-            "mpo_overlap_score.tsv",
-            netstat_output$mpo_overlap_score,
-            T,
-            verbose)
     }
 
     if (calculate_tau_for_mpo &&
