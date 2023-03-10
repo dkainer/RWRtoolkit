@@ -825,7 +825,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'                                   "/string_interactions.Rdata",
 #'                                   sep = "")
 #' geneset_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
-#' outdir <- paste(extdata.dir, "/out/rwr_cv", sep = "")
+#' outdir <- "./rwr_cv"
 #'
 #'
 #' cv_examples <- RWR_CV(

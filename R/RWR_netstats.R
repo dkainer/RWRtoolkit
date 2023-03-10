@@ -812,16 +812,15 @@ write_networks_to_file_if_fp <- function(
 #'      network_1 = gold,
 #'      network_2 = test,
 #'      basic_statistics = T,
-#'      overlap_sim_multiplex = T,
-#'      overlap_sim_multiplex_layer = T,
-#'      overlap_sim_multiplex_layer_jaccard = T,
-#'      overlap_sim_layer_layer = T,
-#'      overlap_score = T,
+#'      scoring_metric = "jaccard",
+#'      pairwise_between_mpo_layer = T,
+#'      multiplex_layers_to_refnet = T,
+#'      net_to_net_similarity = T,
 #'      calculate_tau_for_mpo = T,
 #'      merged_with_all_edges = T,
 #'      merged_with_edgecounts = T,
 #'      calculate_exclusivity_for_mpo = T,
-#'      outdir_path = "./",
+#'      outdir_path = "./rwr_netstats/",
 #'      verbose = T
 #' )
 #' 

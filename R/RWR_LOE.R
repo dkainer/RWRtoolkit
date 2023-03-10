@@ -320,7 +320,7 @@ save_plots_loe <- function(metrics,
 #' )
 #' geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 #' geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
-#' outdir <- paste(extdata.dir, "/out/rwr_loe", sep = "")
+#' outdir <- "./rwr_loe"
 #'
 #' # for all other genes in the network
 #' loe_gene_seed_list <- RWR_LOE(
@@ -476,7 +476,7 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
   write_table(result_table, out_path, verbose = TRUE)
 
   # If evaluation mode is turned on and both a query and seed geneset are present, plot ROC and PRC.
-  if (!is.null(query_geneset) & plot) {
+  if (!is.null(query_geneset) && plot) {
     message("evaluating metrics for finding query genes from seeds")
     metrics <- calc_metrics_loe(
       results$RWRM_Results,
@@ -495,7 +495,7 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
     write_table(metrics$summary, out_path)
     message(paste("Saved metrics summary to file:", out_path))
     save_plots_loe(metrics, seed_geneset, query_geneset, outdir, modname)
-  } else if (is.null(query_geneset) & plot) {
+  } else if (is.null(query_geneset) && plot) {
     warning(sprintf("Plot mode is turned ON but there is no query geneset, evaluation will not occur.\n")) # nolint message
   }
 
