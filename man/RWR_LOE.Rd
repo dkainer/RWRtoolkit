@@ -12,7 +12,7 @@ RWR_LOE(
   tau = "1.0",
   outdir = "./",
   numranked = 1,
-  eval = FALSE,
+  plot = FALSE,
   modname = "default",
   cyto = 0,
   verbose = FALSE
@@ -48,7 +48,8 @@ Default 1.0}
 \item{numranked}{Proprtion of ranked genes to return [0,1].  e.g. 0.1 will
 return the top 10\%. Default 1.0}
 
-\item{eval}{Output PNG plot of ROC and PRC (Default False)}
+\item{plot}{Output PNG plot of ROC and PRC of the query geneset with respect the
+seed geneset.}
 
 \item{modname}{String to include in output file name. Default "default"}
 
@@ -82,7 +83,7 @@ multiplex_object_filepath <- paste(
 )
 geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
-outdir <- paste(extdata.dir, "/out/rwr_loe", sep = "")
+outdir <- "./rwr_loe"
 
 # for all other genes in the network
 loe_gene_seed_list <- RWR_LOE(

@@ -9,12 +9,12 @@ RWR_netstats(
   flist = NULL,
   network_1 = NULL,
   network_2 = NULL,
-  basic_statistics = F,
-  overlap_sim_multiplex = F,
-  overlap_sim_multiplex_layer = F,
-  overlap_sim_multiplex_layer_jaccard = F,
-  overlap_sim_layer_layer = F,
-  overlap_score = F,
+  outdir_path = NULL,
+  basic_statistics = T,
+  scoring_metric = "jaccard",
+  pairwise_between_mpo_layer = F,
+  multiplex_layers_to_refnet = F,
+  net_to_net_similarity = F,
   calculate_tau_for_mpo = F,
   merged_with_all_edges = F,
   merged_with_edgecounts = F,
@@ -36,36 +36,51 @@ overlap_pair, and calculate tau}
 \item{network_2}{A path to an edgelist. Used for basic
 statistics and overlap_pair.}
 
+\item{outdir_path}{If a directory is supplied, all output
+data are saved to tsv within that dir.}
+
 \item{basic_statistics}{A boolean denoting a return for basic
 statistics concerning supplied networks,
-or flists.}
+or flists. Default True.}
 
-\item{overlap_sim_multiplex}{A boolean denoting a return of jaccard
-similarity metrics for the supplied
-multiplex}
+\item{scoring_metric}{A string denoting either "jaccard",
+"overlap" or "both" to describe.
+Default is "jaccard".}
 
-\item{overlap_sim_multiplex_layer}{A boolean denoting a return of the
-calculated edge weight overlap between
-a multiplex network and a reference
-network (supplied as "network_1")}
+\item{pairwise_between_mpo_layer}{A boolean denoting a return of the
+pairwise score (defined by
+\code{scoring_metric}) between each
+layer of the supplied
+multiplex. Default False}
 
-\item{overlap_sim_layer_layer}{A boolean denoting a return of jaccard
-and edge weight overlap between two
+\item{multiplex_layers_to_refnet}{A boolean denoting a return of the
+calculated score (defined by
+\code{scoring_metric}: default jaccard)
+between a multiplex network and a
+reference network (supplied as
+"network_1"). Default False}
+
+\item{net_to_net_similarity}{A boolean denoting a scoring between two
 supplied networks (network_1 and
-network_2)}
-
-\item{overlap_score}{A boolean denoting a return of a matrix
-of overlap scores between all layers
-of the multiplex.}
+network_2) (scoring defined by
+\code{scoring_metric}: default jaccard).
+Default False}
 
 \item{merged_with_all_edges}{A boolean denoting a return of a merged
 down multiplex network along with
-network edge counts and vertex counts.}
+network edge counts and vertex counts.
+Default False}
 
 \item{merged_with_edgecounts}{A boolean denoting a return of a merged
 down multiplex, but simplified with
 edge weights denoting the total number
-of layers in which that edge existed.}
+of layers in which that edge existed.
+Default False}
+
+\item{calculate_exclusivity_for_mpo}{A boolean denoting a return of total
+percentage of edges that exist within
+all n layers of the multiplex.
+Default False}
 
 \item{verbose}{A boolean denoting the verbosity of
 output}
@@ -74,11 +89,8 @@ output}
 distribution of "tau", with respect
 to the network layers,  calculated via
 edge overlap weight / total edgeweight
-multipled by the total number of layers}
-
-\item{exclusivity}{A boolean denoting a return of total
-percentage of edges that exist within
-all n layers of the multiplex.}
+multipled by the total number of layers
+Default False}
 }
 \value{
 A list of data frames, igraph networks, and vectors denoting various
@@ -86,4 +98,32 @@ parameter defined statistics.
 }
 \description{
 Command-line interface for RWR_netstats.R
+}
+\examples{
+
+# An example of running netstats with all statistics: 
+extdata.dir <- system.file("example_data", package="RWRtoolkit")
+mpo_path <- paste(extdata.dir, "string_interactions.Rdata", sep = "/")
+gold <- paste(extdata.dir, "netstat/combined_score-random-gold.tsv", sep="/")
+test <- paste(extdata.dir, "netstat/combined_score-random-test.tsv", sep="/")
+
+output_nstats <- RWR_netstats(
+     data = mpo_path,
+     network_1 = gold,
+     network_2 = test,
+     basic_statistics = T,
+     scoring_metric = "jaccard",
+     pairwise_between_mpo_layer = T,
+     multiplex_layers_to_refnet = T,
+     net_to_net_similarity = T,
+     calculate_tau_for_mpo = T,
+     merged_with_all_edges = T,
+     merged_with_edgecounts = T,
+     calculate_exclusivity_for_mpo = T,
+     outdir_path = "./rwr_netstats/",
+     verbose = T
+)
+
+print(output_nstats)
+
 }

@@ -23,7 +23,7 @@ RWR_CV(
 )
 }
 \arguments{
-\item{data}{The path to the .Rdata file for your combo of underlying
+\item{data}{The path to the .Rdata file containing your multiplexed
 functional networks. This file is produced by
 RWR_make_multiplex. Default NULL}
 
@@ -33,7 +33,7 @@ tab-delimited:
 {<}setid{>} {<}gene{>} {<}weight{>}.   Default NULL}
 
 \item{method}{Cross-validation method. Choice of: 'kfold', 'loo', or
-'singletons' Default 'kfold'}
+'singletons'. Default 'kfold'}
 
 \item{folds}{Number (k) of folds to use in k-fold CV. Default 5}
 
@@ -61,7 +61,7 @@ Default NULL}
 
 \item{modname}{String to include in output file name.  Default "default"}
 
-\item{plot}{Output plots of ROC, PRC, and NDCG etc. to file. Default FALSE}
+\item{plot}{Output plots of ROC, PRC, etc. to file. Default FALSE}
 
 \item{out_full_ranks}{Specify the full path for the full results. Ignores
 outdir_path and modName, using this path instead.
@@ -101,7 +101,7 @@ multiplex_object_filepath <- paste(extdata.dir,
                                   "/string_interactions.Rdata",
                                   sep = "")
 geneset_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
-outdir <- paste(extdata.dir, "/out/rwr_cv", sep = "")
+outdir <- "./rwr_cv"
 
 
 cv_examples <- RWR_CV(

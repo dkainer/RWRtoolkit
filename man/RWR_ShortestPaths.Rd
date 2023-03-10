@@ -72,7 +72,7 @@ multiplex_object_filepath <- paste(extdata.dir,
 )
 geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
-outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
+outdir <- "./rwr_shortestpath"
 
 rwr_shortest_path_output <- RWR_ShortestPaths(
   data = multiplex_object_filepath,

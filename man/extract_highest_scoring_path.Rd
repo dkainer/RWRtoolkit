@@ -22,18 +22,21 @@ existing path within the shorest_paths_df).}
 \item{weight_type}{A string determining the weight used to determine
 the highest weighted path. Options:
 "weightnorm" (Default)  uses normalized edges by
-edgeweight_i / N_vertices_in_layer\preformatted{                     "weight" uses edge weight alone.
-}}
+edgeweight_i / N_vertices_in_layer
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{                     "weight" uses edge weight alone.
+}\if{html}{\out{</div>}}}
 }
 \value{
 Returns a data frame following the path with the highest edge weights
 }
 \description{
 \code{extract_highest_scoring_path}  parses through the dataframe output of
-RWR_ShortestPaths and extracts the highest valued edge per layer of a
+RWR_ShortestPaths and extracts the highest weighted edge per layer of a
 user defined path. The method with which these edges are extracted can
 be either by the normalized weight (default) or by the non-normalized
-weight.
+weight. If the edges are unweighted, this will not yield any meaningful
+results
 }
 \examples{
 
@@ -46,7 +49,7 @@ multiplex_object_filepath <- paste(extdata.dir,
 )
 geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
-outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
+outdir <- "./rwr_shortestpath"
 
 rwr_shortest_path_output <- RWR_ShortestPaths(
   data = multiplex_object_filepath,

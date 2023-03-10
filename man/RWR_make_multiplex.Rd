@@ -9,7 +9,6 @@ RWR_make_multiplex(
   delta = 0.5,
   lambda = 0.5,
   output = "network.Rdata",
-  test = FALSE,
   verbose = FALSE
 )
 }
@@ -30,9 +29,9 @@ with a bipartite link.  Default is 0.5.}
 
 \item{output}{Output file name (default "network.Rdata")}
 
-\item{test}{Runs an example. Default FALSE}
-
 \item{verbose}{Verbose mode. Default FALSE}
+
+\item{test}{Runs an example. Default FALSE}
 }
 \value{
 Mutliplex object is saved to a file (.rdata) to load into subsequent functions.
@@ -44,7 +43,7 @@ Mutliplex object is saved to a file (.rdata) to load into subsequent functions.
 #
 # An example of a default RWR Make Multiplex with an output "network.Rdata"
 extdata.dir <- system.file("example_data", package = "RWRtoolkit")
-outdir <- paste(extdata.dir, "/out/rwr_make_multiplex", sep = "")
+outdir <- "./rwr_make_multiplex"
 
 layers.path <- paste(extdata.dir, "/layers/", sep = "")
 layers <- list.files(layers.path)
