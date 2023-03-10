@@ -1,17 +1,6 @@
 ########################################################################
 # Helper functions.
 ########################################################################
-## Template Roxygen documentation:
-# Get the number of edges in a network.
-#
-# Get the number of edges in a network.
-#
-# @param type The edge type.
-# @param verbose Print progress to console.
-#
-# @return An igraph network object.
-#
-# @export
 
 #' Load Network
 #'
@@ -857,14 +846,10 @@ RWR_netstats <- function(
     verbose = F) {
     netstat_output <- list()
 
-
-
     `%notin%` <- Negate(`%in%`)
     if (scoring_metric %notin% c("jaccard", "overlap", "both")){
         stop("Incorrect usage: scoring_metric must be one of the following: ['jaccard', 'overlap', 'both']") #nolint
     }
-
-
 
     # Load the multiplex.
     if ( !is.null(data) ) {
@@ -1137,7 +1122,6 @@ RWR_netstats <- function(
             write_rows = F,
             verbose = verbose)
     }
-    
 
     return(netstat_output)
 }
