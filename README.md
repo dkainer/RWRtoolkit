@@ -13,24 +13,39 @@ R package. Also provided are scripts for use as command line tools.
 
 ## Installation
 
-##### Dependencies
+#### Dependencies
 
-Installation of this R package requires R and r-devtools. If you use
-prefer the use of conda you can create the base environment with
-`conda create --name r-RWRtoolkit -c conda-forge r-base r-devtools r-irkernel`.
-You can also install devtools from within a base R environment with
-`install.packages("devtools")`.
+Installation of this R package requires R &gt;= 4.1.0 and r-devtools. If
+you use prefer the use of conda you can create the base environment with
+`conda create --name r-RWRtoolkit -c conda-forge "r>=4.1" "r-base>=4.1" r-devtools`
+(`r-irkernel` is optional). You can also install devtools from within a
+base R environment with `install.packages("devtools")`.
 
-**Note**: Depending on how your packages were installed, you may run
-into an SSL issue when attempting to install devtools. This is due to
-the installation of `gert`, which requires an installation of `libgit2`
-(installable via the [binaries](https://libgit2.org/),
+##### Installation Issues
+
+It is possible you may run into issues installing `r-devtools` via conda
+or `devtools` via R’s `install.packages()` function.
+
+**textshaping** This might be due to a failure in the installation of
+`textshaping`. `textshaping` requires the libraries `harfbuzz` and
+`fribidi` libraries, yet uses the `pkg-config` command, which may be
+external to your environment. There are multiple options for fixing
+(linux/MacOS installation recommendations taken from R install.packages
+ANTICONF): - Anaconda: conda install -c conda-forge pkg-config harfbuzz
+fribidi - deb: libharfbuzz-dev libfribidi-dev (Debian, Ubuntu, etc) -
+rpm: harfbuzz-devel fribidi-devel (Fedora, EPEL) - csw: libharfbuzz\_dev
+libfribidi\_dev (Solaris) - brew: harfbuzz fribidi (OSX)
+
+**libgit2** libgit2: Depending on how your packages were installed, you
+may run into an SSL issue when attempting to install devtools. This is
+due to the installation of `gert`, which requires an installation of
+`libgit2` (installable via the [binaries](https://libgit2.org/),
 [conda](https://anaconda.org/conda-forge/libgit2),
 [homebrew](https://formulae.brew.sh/formula/libgit2),
 [yum](https://yum-info.contradodigital.com/view-package/epel/libgit2/),
 or package manager of your choice).
 
-##### Primary Method
+#### Package Installation
 
 You may clone this repo and install directly. This is particularly
 useful to use the CLI scripts or for development purposes.
@@ -42,7 +57,7 @@ useful to use the CLI scripts or for development purposes.
 
 From a clean environment this may take a while (\~20 min).
 
-##### Secondary Method (install as an R package directly)
+#### Secondary Method (install as an R package directly)
 
 You can install the released version of RWRtoolkit from
 [GitHub](https://github.com/dkainer/RWRtoolkit/) with:
@@ -53,7 +68,7 @@ devtools::install_github("dkainer/RWRtoolkit")
 
 ## Running RWRtoolkit
 
-### Loading RWRtoolkit:
+#### Loading RWRtoolkit:
 
 RWRtoolkit can be run as either an R package or a command line tool
 depending on your preferences.
@@ -66,12 +81,12 @@ depending on your preferences.
     ```
 
 -   **Command Line Tool:**  
-    If you have downloaded the code via GitHub, you can access the
+    **If you have downloaded the code** via GitHub, you can access the
     command line script code by navigating to the
     `RWRtoolkit/inst/scripts` directory.
 
-    If you have downloaded the code via `devtools::install_github` open
-    an R session and type:
+    **If you have downloaded the code** via `devtools::install_github`
+    open an R session and type:
 
     ``` r
     library(RWRtoolkit)
@@ -103,17 +118,13 @@ depending on your preferences.
       -o                ./outdir
     ```
 
-### General:
+#### Running
 
-RWRtoolkit enables RandomWalk with Restart (RWR) on both homogenous and
-heterogeneous multiplex networks. A heterogeneous network is used when
-integrating multiple network sources; for example in building a
-multiplex network with a gene-to-gene network and a disease-to-disease
-networks and combining them by defining a gene-to-disease network which
-serves as the bi-partite edges. RWRtoolkit provides functions for both
-creating the muliplex networks and running RWR.
+RWRtoolkit enables RandomWalk with Restart (RWR) on homogenous multiplex
+networks. RWRtoolkit provides functions for both creating the muliplex
+networks and running RWR.
 
-### Usage Options:
+##### Usage Options:
 
 The tools provided by RWRtoolkit can be used either directly in R or by
 use of command line scripts. The R functions follow the convention of
@@ -125,24 +136,20 @@ view the help. You can use these scripts from any location, but remember
 to either use complete paths or paths local to where you are running
 when applicable.
 
-### Initial Step:
+##### Initial Step:
 
 The first step in RWRtoolkit is to build the RData object that
 represents the multiplex network using `RWR_make_multiplex`. This
 function requires an `flist` (a **f**ile **list**) input file which
 represents the set of networks to create the multiplex object. Each row
-in the flist is a triple defining the network: {file_path, name, group}.
-In a homogeneous network the group is all `1`. In a heterogeneous
-network, one set of networks will use `1` (e.g. gene-to-gene), the other
-will use `2` (e.g. disease-to-disease), and `3` for the connecting
-network (e.g. gene-to-disease). An example flist for a homogeneous
-networks looks like (separated by any of the following delimiters
-`,\t |;`):
+in the flist is a triple defining the network: {file\_path, name,
+group}. An example flist for a homogeneous networks looks like
+(separated by any of the following delimiters `,\t |;`):
 
-|   **file_path**    | **name**  | **group** |
-|:------------------:|:---------:|:---------:|
-| /path/to/file1.txt |    PPI    |     1     |
-| /path/to/file2.txt | Co-Domain |     1     |
+|   **file\_path**   | **name**  |
+|:------------------:|:---------:|
+| /path/to/file1.txt |    PPI    |
+| /path/to/file2.txt | Co-Domain |
 
 At this stage you also define values for delta and lambda. **Delta**
 sets the probability to change between layers at the next step. If delta
@@ -169,7 +176,7 @@ adjacency matrix) to file to be used in subsequent functions.
 When using the CLI script, remember to use complete paths or paths local
 to where you run `scripts/run_make_multiplex.R` in your `flist`.
 
-Examples
+## RWRToolkit Examples
 
 -   **Running in R** The below code assumes an R session was initialized
     from within the `inst` directory of RWRtoolkit. Output will be
@@ -181,7 +188,7 @@ Examples
       flist="./example_data/flist.tsv",
       delta=0.25,
       lambda=0.75, 
-      output="./outdir/myExampleNetwork.Rdata"
+      output="./RWRtoolkit_MPO_Output/myExampleNetwork.Rdata"
     )
     ```
 
@@ -196,8 +203,7 @@ Examples
     Rscript scripts/run_make_multiplex.R \
       --flist example_data/flist.tsv \
       --delta 0.25 \
-      --lambda 0.75 \
-      --out ~/RWRtoolkitOutput/myExampleNetwork.Rdata
+      --out ./RWRtoolkit_MPO_Output/myExampleNetwork.Rdata
     ```
 
 ### Next Steps:
@@ -205,7 +211,7 @@ Examples
 The choice of the next script depends on the type of analysis desired.
 RWRtoolkit provides several different workflows outlined below.
 
-#### RWR_CV.R
+#### RWR\_CV.R
 
 *RWR Cross Validation* performs K-fold cross validation on a single gene
 set, finding the RWR rank of the left-out genes. Can choose between
@@ -230,7 +236,7 @@ Examples
 
     string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
     geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
-    outdir.path <- '~/RWRtoolkitOutput/'
+    outdir.path <- './RWRtoolkit_CV_Output/'
 
     RWRtoolkit::RWR_CV(
       data = string.interactions.fp ,
@@ -249,10 +255,10 @@ Examples
     Rscript ./scripts/run_cv.R \
       --data ./example_data/string_interactions.Rdata \
       --geneset ./example_data/geneset1.tsv \
-      -o ./outdircli
+      -o ./RWRtoolkit_CV_Output/
     ```
 
-#### RWR_LOE.R
+#### RWR\_LOE.R
 
 *RWR Lines of Evidence* has two possible functions. Given one geneset of
 seeds, rankings for all other genes in the network will be returned.
@@ -277,7 +283,7 @@ Examples
 
     string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
     geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
-    outdir.path <- '~/RWRtoolkitOutput/'
+    outdir.path <- './RWRtoolkitOutput_LOE/'
 
     RWRtoolkit::RWR_LOE(
       data= string.interactions.fp,
@@ -293,20 +299,23 @@ Examples
       --data            ./example_data/string_interactions.Rdata \
       --seed_geneset    ./example_data/geneset1.tsv \
       --tau             "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0" \
-      -o                ./outdir
+      -o                ./RWRtoolkitOutput_LOE
     ```
 
-#### RWR_netscore.R
+#### RWR\_netstats.R
 
-*RWR Net Score* performs a network intersect between an input network
-(`network`) and a gold truth network (`gold`), e.g. the GO network. It
-will score the strength of the intersect with multiple metrics.
+*RWR Net Stats* performs offers a series of statistical methods for
+extracting metrics for networks and multiplex layers. There are multiple
+options within netstats:
 
 -   **Input:**
-    -   A gold standard network as reference.
-    -   Another network to compare to the gold standard.
--   **Output:** A table containing multiple metrics including the edge
-    intersect between the input network and the gold standard network.
+    -   A multiplex object (from RWR\_make\_multiplex) or an flist.
+    -   A reference network: Optional (Depending on methods chosen)
+    -   A network of interest: Optional (Depending on methods chosen)
+    -   Network Scoring Metric: (“jaccard”, “overlap”, or “both”)
+-   **Output:** In R: a list containing tables of metrics flagged from
+    input parameters. Files for each table can be saved by supplying an
+    `output_dir`
 
 Examples
 
@@ -316,26 +325,50 @@ Examples
     # Can be run from anywhere so long as RWRtoolkit is installed. 
     extdata.dir <- system.file("example_data", package="RWRtoolkit")
 
-    gold.fp <- paste(extdata.dir, "netscore/combined_score-random-gold.tsv", sep='/')
-    network.fp <- paste(extdata.dir, "netscore/combined_score-random-test.tsv", sep='/')
+    mpo_path <- paste(extdata.dir, "string_interactions.Rdata", sep = "/") 
+    gold.fp <- paste(extdata.dir, "netstat/combined_score-random-gold.tsv", sep='/')
+    network.fp <- paste(extdata.dir, "netstat/combined_score-random-test.tsv", sep='/')
     outdir.path <- "~/RWRtoolkitOutput/"
 
-    RWRtoolkit::RWR_netscore(
-      gold = gold.fp,
-      network = network.fp,
-      outdir = outdir.path)
+    RWRtoolkit::RWR_netstats(
+          data = mpo_path,
+          network_1 = gold.fp,
+          network_2 = network.fp,
+          basic_statistics = T,
+          scoring_metric = "both",
+          pairwise_between_mpo_layer = T,
+          multiplex_layers_to_refnet = T,
+          net_to_net_similarity = T,
+          calculate_tau_for_mpo = T,
+          merged_with_all_edges = T,
+          merged_with_edgecounts = T,
+          calculate_exclusivity_for_mpo = T,
+          outdir_path = "./",
+          verbose = T
+     )
     ```
 
 -   **Running CLI**
 
     ``` bash
-    Rscript scripts/run_netscore.R \
-      --gold    ./example_data/netscore/combined_score-random-gold.tsv \
-      --network ./example_data/netscore/combined_score-random-test.tsv \
-      --outdir  ./outdir
+    Rscript scripts/run_netstats.R \
+      --data ./example_data/string_interactions.Rdata  \
+      --network_1 ./example_data/netstat/combined_score-random-gold.tsv \
+      --network_2 ./example_data/netstat/combined_score-random-test.tsv \
+      --scoring_metric both \
+      --outdir_path ./RWRtoolkitOutput_Netstats \
+      --basic_statistics  \
+      --pairwise_between_mpo_layer  \
+      --multiplex_layers_to_refnet  \
+      --net_to_net_similarity  \
+      --calculate_tau_for_mpo  \
+      --merged_with_all_edges  \
+      --merged_with_edgecounts  \
+      --calculate_exclusivity_for_mpo  \
+      --verbose 
     ```
 
-#### RWR_shortestpaths.R
+#### RWR\_shortestpaths.R
 
 Find shortest paths between genes in gene sets. Given a single gene set,
 find the shortest paths between the genes in that gene set. Given two
@@ -362,7 +395,7 @@ Examples
     string.interactions.fp <- paste(extdata.dir, "string_interactions.Rdata", sep='/')
     source.geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
     target.geneset.path <- paste(extdata.dir, 'geneset1.tsv', sep='/')
-    outdir.path <- '~/RWRtoolkitOutput/'
+    outdir.path <- './RWRtoolkitOutput_SP/'
 
 
 
@@ -379,7 +412,7 @@ Examples
     ``` bash
     Rscript scripts/run_shortestpaths.R \
         --data ./example_data/string_interactions.Rdata \
-        --source-geneset ./example_data/geneset1.tsv \
-        --target-geneset ./example_data/geneset2.tsv \
-        -o ./outdir
+        --source_geneset ./example_data/geneset1.tsv \
+        --target_geneset ./example_data/geneset2.tsv \
+        -o ./RWRtoolkitOutput_SP/
     ```
