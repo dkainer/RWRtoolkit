@@ -309,11 +309,10 @@ describe("RWR inst/scripts", {
       network1_filepath <- "../testSTRINGDB/netstat/combined_score-random-gold.tsv"
       network2_filepath <- "../testSTRINGDB/netstat/combined_score-random-test.tsv"
       basic_statistics = T
-      overlap_sim_multiplex_jaccard = T
-      overlap_sim_multiplex_layer = T
-      overlap_sim_multiplex_layer_jaccard = T
-      overlap_sim_layer_layer = T
-      overlap_score = T
+      scoring_metric = "both"
+      pairwise_between_mpo_layer = T
+      multiplex_layers_to_refnet = T
+      net_to_net_similarity = T
       calculate_tau_for_mpo = T
       merged_with_all_edges = T
       merged_with_edgecounts = T
@@ -332,11 +331,11 @@ describe("RWR inst/scripts", {
         "--outdir",
         outdir_path,
         "--basic_statistics",
-        "--overlap_sim_multiplex_jaccard",
-        "--overlap_sim_multiplex_layer",
-        "--overlap_sim_multiplex_layer_jaccard",
-        "--overlap_sim_layer_layer",
-        "--overlap_score",
+        "--scoring_metric",
+        scoring_metric,
+        "--pairwise_between_mpo_layer",
+        "--multiplex_layers_to_refnet",
+        "--net_to_net_similarity",
         "--calculate_tau_for_mpo",
         "--merged_with_edgecounts",
         "--merged_with_all_edges",
@@ -349,11 +348,11 @@ describe("RWR inst/scripts", {
 
       expected_output_files <- c(
         "base_stats.tsv",
-        "overlap_sim_multiplex_jaccard.tsv",
-        "overlap_sim_multiplex_layer.tsv",
-        "overlap_sim_multiplex_layer_jaccard.tsv",
-        "overlap_sim_layer_layer.tsv",
-        "mpo_overlap_score.tsv",
+        "pairwise_between_mpo_layer_jaccard.tsv",
+        "pairwise_between_mpo_layer_overlap.tsv",
+        "multiplex_layers_to_refnet_jaccard.tsv",
+        "multiplex_layers_to_refnet_overlap.tsv",
+        "net_to_net_similarity.tsv",
         "calculated_tau.tsv",
         "merged_with_all_edges.tsv",
         "merged_with_edgecounts.tsv",
