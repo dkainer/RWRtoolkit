@@ -142,19 +142,16 @@ stats::heatmap(as.matrix(sorted_adj)[nrow(as.matrix(sorted_adj)):1, ], Colv = NA
 We now have all three of our layers, we need to create a file that describes: 
 - Where our layers live
 - What our layers are called
-- What types of layers these are  (this defines whether or not the network is heterogeneous).
 
-
-| **File Path** | **Short Name**  | **Group**  |
-|:----------------|:----------------|:----------------|
-| path_to_file1 | layer1_name | layer_group |
-| path_to_file2 | layer2_name | layer_group |
-| path_to_file3 | layer3_name | layer_group |
+| **File Path** | **Short Name**  |
+|:----------------|:----------------|
+| path_to_file1 | layer1_name |
+| path_to_file2 | layer2_name |
+| path_to_file3 | layer3_name |
 
 ```{r}
-filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
+filepaths <- c("./layer1.tsv", "./layer2.tsv", "./layer3.tsv")
 layernames <- c("layer1", "layer2", "layer3")
-groups <- c(1, 1, 1)
 flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames, groups = groups))
 
 flist_filename <- "multiplex_flist.tsv"
