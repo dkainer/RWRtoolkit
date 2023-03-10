@@ -205,7 +205,7 @@ describe("RWR_netstats", {
      #    └─►B◄─┴───C◄──┘
      #       ▲      │
      #       └──►A◄─┘
-    mpo_filepath <- "../testMultiplex/abc_multiplex.rdata"
+    mpo_filepath <- "../testMultiplex/abc_multiplex.Rdata"
     load(mpo_filepath)
 
     expected_edges <- c(
