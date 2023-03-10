@@ -178,7 +178,7 @@ netstats <- RWRtoolkit::RWR_netstats(
   network_1 = refnet_path,
   network_2 = interest_net_path, 
   net_to_net_similarity = T,
-  scoring_parameter = "both",
+  scoring_metric = "both"
 )
 
 netstats
