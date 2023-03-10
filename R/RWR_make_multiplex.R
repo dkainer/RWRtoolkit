@@ -168,9 +168,6 @@ read_flist <- function(flist) {
 #' @param delta Probability to change between layers at the next step \[0,1\]. If delta = 0, the particle will always
 #' remain in the same layer after a non-restart iteration.  If delta = 1, the particle will always change between
 #' layers, therefore not following the specific edges of each layer. Default is 0.5.
-#' @param lambda For heterogeneous networks only.  Probability \[0,1\] the walker can jump between layer groups when it is
-#' at a node with a bipartite link. If lambda=1 then walker will oscillate between groups every time it is at a node
-#' with a bipartite link.  Default is 0.5.
 #' @param output Output file name (default "network.Rdata")
 #' @param test Runs an example. Default FALSE
 #' @param verbose Verbose mode. Default FALSE
@@ -204,19 +201,18 @@ read_flist <- function(flist) {
 #'
 #'
 #' # An example of an RWR Make Multiplex with a non-default delta and
-#' # lambda with a specified output filename.
+#' # with a specified output filename.
 #' outfile <- paste(outdir, "/multiplex_d25_l75.Rdata", sep = "")
 #' RWR_make_multiplex(
 #'   flist = "example.flist",
 #'   delta = 0.25,
-#'   lambda = 0.75,
 #'   output = outfile
 #' )
 #'
 #' system("rm example.flist")
 #'
 #' @export
-RWR_make_multiplex <- function(flist = "", delta = 0.5, lambda = 0.5, output = "network.Rdata",  verbose = FALSE) {
+RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata",  verbose = FALSE) {
   if (flist == "") {
     stop("Please provide a path to your flist, or pass test=TRUE to view an example")
   }
@@ -231,6 +227,12 @@ RWR_make_multiplex <- function(flist = "", delta = 0.5, lambda = 0.5, output = "
   if (length(nw.groups) == 1 && all(nw.groups[[1]]$nwgroup == 1)) {
     make_homogenous_network(nw.groups, delta, output, verbose)
   } else if (length(nw.groups) == 3 && nw.groups[[1]]$nwgroup == 1 && nw.groups[[2]]$nwgroup == 2 && nw.groups[[3]]$nwgroup == 3) {
+    warning(
+      paste("Hetergeneous Multiplexes are capable of being made",
+      " however, the reaminder of the methods in RWRtoolkit have yet",
+      "to be validated with respect to the networks.",
+      "\n\nThis is planned for V2 of RWRtoolkit.")
+    lambda = 0.5
     make_heterogeneous_multiplex(nw.groups, delta, lambda, output, verbose)
   } else {
     # TODO: Add example of flist for homogenous and heterogeneous networks
