@@ -7,7 +7,6 @@
 RWR_make_multiplex(
   flist = "",
   delta = 0.5,
-  lambda = 0.5,
   output = "network.Rdata",
   verbose = FALSE
 )
@@ -22,10 +21,6 @@ at least one 3 to join them up.  Can be delimited by comma, tab, space, pipe, or
 \item{delta}{Probability to change between layers at the next step [0,1]. If delta = 0, the particle will always
 remain in the same layer after a non-restart iteration.  If delta = 1, the particle will always change between
 layers, therefore not following the specific edges of each layer. Default is 0.5.}
-
-\item{lambda}{For heterogeneous networks only.  Probability [0,1] the walker can jump between layer groups when it is
-at a node with a bipartite link. If lambda=1 then walker will oscillate between groups every time it is at a node
-with a bipartite link.  Default is 0.5.}
 
 \item{output}{Output file name (default "network.Rdata")}
 
@@ -68,12 +63,11 @@ RWR_make_multiplex(
 
 
 # An example of an RWR Make Multiplex with a non-default delta and
-# lambda with a specified output filename.
+# with a specified output filename.
 outfile <- paste(outdir, "/multiplex_d25_l75.Rdata", sep = "")
 RWR_make_multiplex(
   flist = "example.flist",
   delta = 0.25,
-  lambda = 0.75,
   output = outfile
 )
 
