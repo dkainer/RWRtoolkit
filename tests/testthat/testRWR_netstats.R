@@ -576,7 +576,7 @@ describe("RWR_netstats", {
   })
 
   describe("Overlap w/ mpo objects", {
-    mpo_filepath <- "../testMultiplex/abc_multiplex.rdata"
+    mpo_filepath <- "../testMultiplex/abc_multiplex.Rdata"
     load(mpo_filepath)
 
     describe("overlap_many_pairwise", {
@@ -727,7 +727,7 @@ describe("RWR_netstats", {
 
   describe("exclusivity", {
     it("calls exclusivity and returns a message for each layer", {
-      mpo_filepath <- "../testMultiplex/abc_multiplex.rdata"
+      mpo_filepath <- "../testMultiplex/abc_multiplex.Rdata"
       load(mpo_filepath)
       
       # 1           2
@@ -759,7 +759,7 @@ describe("RWR_netstats", {
   })
 
   describe("RWR_netstats", {
-    mpo_filepath <- "../testMultiplex/abc_multiplex.rdata"
+    mpo_filepath <- "../testMultiplex/abc_multiplex.Rdata"
     load(mpo_filepath)
     flist_file_path <- "../testFlists/abc_flist.txt"
     net1_file_path <- "../testNetworks/abc_layer1.tsv"
