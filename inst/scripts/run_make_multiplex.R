@@ -31,17 +31,6 @@ parse_arguments <- function() {
             be greater than 0 and less than or equal to 1."
     ),
     make_option(
-      c("-l", "--lambda"),
-      action = "store",
-      default = 0.5,
-      type = "numeric",
-      help = "When building a heterogeneous network (i.e. multiple layer
-            groups connected with bipartite links), the walker can jump between
-            layer groups with probability = lambda when it is at a node with a
-            bipartite link. If lambda=1 then walker will oscillate between groups
-            every time it is at a node with a bipartite link.  Default is 0.5."
-    ),
-    make_option(
       c("-t", "--test"),
       action = "store_true",
       default = FALSE,
@@ -86,7 +75,6 @@ print(opt)
 RWRtoolkit::RWR_make_multiplex(
     flist = opt$flist,
     delta = opt$delta,
-    lambda = opt$lambda,
     output = opt$out,
     verbose = opt$verbose
   )
