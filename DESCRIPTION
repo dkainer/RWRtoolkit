@@ -34,7 +34,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Depends: 
-    R (>= 4.0.2),
+    R (>= 4.1.0),
 Imports:
     igraph (>= 1.2.5),
     tidyverse,
