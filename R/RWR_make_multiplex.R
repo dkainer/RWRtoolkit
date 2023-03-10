@@ -231,7 +231,7 @@ RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata"
       paste("Hetergeneous Multiplexes are capable of being made",
       " however, the reaminder of the methods in RWRtoolkit have yet",
       "to be validated with respect to the networks.",
-      "\n\nThis is planned for V2 of RWRtoolkit.")
+      "\n\nThis is planned for V2 of RWRtoolkit."))
     lambda = 0.5
     make_heterogeneous_multiplex(nw.groups, delta, lambda, output, verbose)
   } else {

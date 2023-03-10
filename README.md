@@ -151,23 +151,14 @@ group}. An example flist for a homogeneous networks looks like
 | /path/to/file1.txt |    PPI    |
 | /path/to/file2.txt | Co-Domain |
 
-At this stage you also define values for delta and lambda. **Delta**
-sets the probability to change between layers at the next step. If delta
-= 0, the particle will always remain in the same layer after a
-non-restart iteration. On the other hand, if delta = 1, the particle
-will always change between layers, therefore not following the specific
-edges of each layer. The default is 0.5. Note delta must be greater than
-0 and less than or equal to 1.
-
-**Lambda** is for heterogeneous networks only. When building a
-heterogeneous network (i.e. multiple layer groups connected with
-bipartite links), the walker can jump between layer groups with
-probability = lambda when it is at a node with a bipartite link. If
-lambda=1 then walker will oscillate between groups every time it is at a
-node with a bipartite link. Default is 0.5.
-
-Please note that for large networks or a large number of networks this
-function may take a long time.
+At this stage you also define values for delta. **Delta** sets the
+probability to change between layers at the next step. If delta = 0, the
+particle will always remain in the same layer after a non-restart
+iteration. On the other hand, if delta = 1, the particle will always
+change between layers, therefore not following the specific edges of
+each layer. The default is 0.5. Note delta must be greater than 0 and
+less than or equal to 1. Please note that for large networks or a large
+number of networks this function may take a long time.
 
 This function will not return anything, it will save the relevant
 objects (the multiplex object *mpo*, adjacency matrix, and normalized
@@ -186,8 +177,7 @@ to where you run `scripts/run_make_multiplex.R` in your `flist`.
     ``` r
     RWRtoolkit::RWR_make_multiplex(
       flist="./example_data/flist.tsv",
-      delta=0.25,
-      lambda=0.75, 
+      delta=0.5,
       output="./RWRtoolkit_MPO_Output/myExampleNetwork.Rdata"
     )
     ```
