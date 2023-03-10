@@ -59,35 +59,30 @@ parse_arguments <- function() {
             default = FALSE,
             help = "A flag denoting a return for basic statistics concerning supplied networks, or flists."
         ),
-        make_option(
-            c("--overlap_sim_multiplex_jaccard"),
-            action = "store_true",
-            default = FALSE,
-            help = "A flag denoting a return of jaccard similarity metrics for the supplied multiplex"
+          make_option(
+            c("-s", "--scoring_metric"),
+            action = "store",
+            default = "jaccard",
+            type = "character",
+            help = "A metric used for scoring \"jaccard\" similarity, edge weight \"overlap\" or \"both\". Default \"jaccard\"."
         ),
         make_option(
-            c("--overlap_sim_multiplex_layer"),
+            c("--pairwise_between_mpo_layer"),
             action = "store_true",
             default = FALSE,
-            help = "A flag denoting a return of the calculated edge weight overlap between a multiplex network and a reference network (supplied as 'network_1')"
+            help = "A boolean denoting a return of the pairwise score (defined by `scoring_metric`) between each layer of the suppliedmultiplex. Default False"
         ),
         make_option(
-            c("--overlap_sim_multiplex_layer_jaccard"),
+            c("--multiplex_layers_to_refnet"),
             action = "store_true",
             default = FALSE,
-            help = "A flad denoting a return of the calculated overlap scores between the  multiplex network and the reference  network denoted by network_1."
+            help = " A boolean denoting a return of the calculated score (defined by `scoring_metric`: default jaccard) between a multiplex network and a reference network (supplied as \"network_1\"). Default False"
         ),
         make_option(
-            c("--overlap_sim_layer_layer"),
+            c("--net_to_net_similarity"),
             action = "store_true",
             default = FALSE,
-            help = "A boolean denoting a return of jaccard and edge weight overlap between two supplied networks (network_1 and network_2)"
-        ),
-        make_option(
-            c("--overlap_score"),
-            action = "store_true",
-            default = FALSE,
-            help = "A boolean denoting a return of a matrix of overlap scores between all layers of the multiplex."
+            help = "A boolean denoting a scoring between two supplied networks (network_1 and network_2) (scoring defined by `scoring_metric`: default jaccard). Default False"
         ),
         make_option(
             c("--calculate_tau_for_mpo"),
@@ -187,12 +182,11 @@ main <- function() {
         network_2 = opt$network_2,
         outdir_path = opt$outdir_path,
         basic_statistics = opt$basic_statistics,
-        overlap_sim_multiplex_jaccard = opt$overlap_sim_multiplex_jaccard,
-        overlap_sim_multiplex_layer = opt$overlap_sim_multiplex_layer,
-        overlap_sim_multiplex_layer_jaccard = opt$overlap_sim_multiplex_layer_jaccard,
-        overlap_sim_layer_layer = opt$overlap_sim_layer_layer,
+        scoring_metric = opt$scoring_metric,
+        pairwise_between_mpo_layer = opt$pairwise_between_mpo_layer,
+        multiplex_layers_to_refnet = opt$multiplex_layers_to_refnet,
+        net_to_net_similarity = opt$net_to_net_similarity,
         calculate_tau_for_mpo = opt$calculate_tau_for_mpo,
-        overlap_score = opt$overlap_score,
         merged_with_edgecounts = opt$merged_with_edgecounts,
         merged_with_all_edges = opt$merged_with_all_edges,
         calculate_exclusivity_for_mpo = opt$calculate_exclusivity_for_mpo,
