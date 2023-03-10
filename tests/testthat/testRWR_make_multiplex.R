@@ -554,7 +554,7 @@ describe("RWR_make_multiplex.R:", {
       make_heterogenous_stub
     )
 
-    invisible(RWRtoolkit::RWR_make_multiplex(flist_file_path))
+    expect_warning(RWRtoolkit::RWR_make_multiplex(flist_file_path))
 
     expect_called(make_homogenous_stub, 0)
     expect_called(make_heterogenous_stub, 1)
