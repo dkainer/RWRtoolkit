@@ -125,7 +125,7 @@ RWRtoolkit::RWR_LOE(
   tau = opt$tau,
   outdir = opt$outdir,
   numranked = opt$numranked,
-  plot = opt$eval,
+  plot = opt$plot,
   modname = opt$modname,
   cyto = opt$cyto,
   verbose = opt$verbose
