@@ -43,10 +43,11 @@ The current setup of RWR netstats takes a 4 posible input values to generate sta
  Edgelists are evaluated as: `<Source> <Target> <Weight>`. It should be noted that for the sake of computational speed, the `flist` method does not create an actual multiplex object, but only mimics the multiplex itself (i.e. it does not create the supraadjacency matrix, nor its normalized counterpart).
 
 
-In order to deomonstrate `RWR_netstats`, we will need to generate some networks. Let's generate 4 networks: 
+In order to deomonstrate `RWR_netstats`, we will need to generate some networks. Let's generate 5 networks: 
 
 1. 3 layers to act work together as a multiplex
 2. 1 layer to act as a "gold standard" network. 
+3. 1 layer to act as another network against which to test our gold standard.
 
 ### Network Layer Generation
 ```{r}
@@ -148,10 +149,10 @@ print("Multiplex Base Statistics:")
 print(netstats$base_stats_mpo)
 ```
 
-### Network Overlap
-With `RWR_netstats` we can compare networks by calculating jaccard similarity coefficient or overlap scores with respect to the shared edges within the networks.
+### Pairwise Layer Comparisons
+With `RWR_netstats` we can compare networks by calculating jaccard similarity coefficient or overlap scores with respect to the shared edges between the networks of interest. 
 
-When calculating the jaccard similarity coefficient between two networks A and B, we create sets of their edges: 
+When calculating the jaccard similarity coefficient between two layers (or two networks) A and B, we create sets of their edges: 
 
 $$
 jaccard(A,B) = \frac{E(A) \cap E(B)}{ E(A) \cup E(B) }
@@ -166,6 +167,7 @@ $$
     \end{cases}$
 $$
 
+The `scoring_metric` parameter defines whether `jaccard` or `overlap` are used for scoring, however both methods can be employed by supplying `both` to the parameter. For the remainder of this vignette, we'll use `both`. 
 #### Comparing Two Separate Networks
 To compare two individual networks, we'll use our `ref_layer` and our `interest_layer_edgelist`. 
 
@@ -175,47 +177,48 @@ interest_net_path <- "./interest_layer.tsv"
 netstats <- RWRtoolkit::RWR_netstats(
   network_1 = refnet_path,
   network_2 = interest_net_path, 
-  overlap_sim_layer_layer = T
+  net_to_net_similarity = T,
+  scoring_parameter = "both",
 )
 
 netstats
 ```
 
-#### Comparing All Layers of a Multiplex
-You'll likely wish to compare each of the layers within a multiplex network as well, this can be done using `overlap_score` flag to obtain the pairwise overlap scores OR the `overlap_sim_multiplex` to obtain the pairwise Jaccard similarity coefficients: 
+#### Comparing Pairwise Metrics for All Layers of a Multiplex
+You'll likely wish to compare each of the layers within a multiplex network as well, this can be done using `pairwise_between_mpo_layer` flag to obtain the pairwise overlap scores. : 
 
 
 ```{r}
 netstats <- RWRtoolkit::RWR_netstats(
   data = multiplex_filepath, 
-  overlap_sim_multiplex_jaccard = T,
-  overlap_score = T
+  pairwise_between_mpo_layer = T, 
+  scoring_metric = "both"
 )
 print("The pairwise Jaccard Similarity Coefficients:")
-netstats$overlap_sim_multiplex_jaccard
+netstats$pairwise_between_mpo_layer_jaccard
 
 print("The pairwise overlap scores are:")
-netstats$mpo_overlap_score
+netstats$pairwise_between_mpo_layer_overlap
 ```
 
 #### Comparing All Layers of a Multiplex against a Reference Network
-Just as you can compare a single layer to a reference network, it's also possible to compare all layers against a reference network: 
+Just as you can compare a single layer to a reference network, it's also possible to compare all layers against a reference network by supplying the reference network as `network_1`: 
 
 ```{r}
 netstats <- RWRtoolkit::RWR_netstats(
   data = multiplex_filepath, 
   network_1 = refnet_path,
-  overlap_sim_multiplex_layer_jaccard = T, 
-  overlap_sim_multiplex_layer = T
+  multiplex_layers_to_refnet = T, 
+  scoring_metric = "both"
 )
 
 print("The Jaccard Similarity Coefficients between the reference network and the multiplex are:")
-netstats$overlap_sim_multiplex_layer_jaccard
+netstats$multiplex_layers_to_refnet_jaccard
 ```
 ```{r}
 
 print("The pairwise overlap scores between the reference network and the multiplex are:")
-netstats$overlap_sim_multiplex_layer
+netstats$multiplex_layers_to_refnet_overlap
 ```
 
 ### Calculating Network Statistics
