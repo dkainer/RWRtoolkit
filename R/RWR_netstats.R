@@ -799,7 +799,7 @@ write_networks_to_file_if_fp <- function(
 #'                                      output
 #' @return A list of data frames, igraph networks, and vectors denoting various
 #'         parameter defined statistics.
-#' @example 
+#' @examples
 #' 
 #' # An example of running netstats with all statistics: 
 #' extdata.dir <- system.file("example_data", package="RWRtoolkit")
