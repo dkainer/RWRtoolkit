@@ -762,7 +762,7 @@ write_networks_to_file_if_fp <- function(
 #'                                      Default is "jaccard". 
 #' @param pairwise_between_mpo_layer    A boolean denoting a return of the 
 #'                                      pairwise score (defined by 
-#'                                      `scoring_metric` between each 
+#'                                      `scoring_metric`) between each 
 #'                                      layer of the supplied
 #'                                      multiplex. Default False
 #' @param multiplex_layers_to_refnet    A boolean denoting a return of the
@@ -847,6 +847,7 @@ RWR_netstats <- function(
     netstat_output <- list()
 
     `%notin%` <- Negate(`%in%`)
+    scoring_metric <- tolower(scoring_metric)
     if (scoring_metric %notin% c("jaccard", "overlap", "both")){
         stop("Incorrect usage: scoring_metric must be one of the following: ['jaccard', 'overlap', 'both']") #nolint
     }
