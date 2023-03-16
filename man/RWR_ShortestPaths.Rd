@@ -10,15 +10,16 @@ RWR_ShortestPaths(
   target_geneset = NULL,
   outdir = ".",
   out_path = NULL,
-  threads = parallel::detectCores - 1,
+  threads = 1,
   cyto = FALSE,
   verbose = FALSE,
   write_to_file = FALSE
 )
 }
 \arguments{
-\item{data}{Path to the .Rdata file for your combo of underlying functional
-networks. This file is produced by RWR_make_MHobject.R}
+\item{data}{Path to the .Rdata file for your combo of
+underlying functional networks. This file is produced by
+RWR_make_MHobject.R}
 
 \item{source_geneset}{Path to the gene set file. If given with
 --target_geneset, find shortest paths between genes in --source_geneset and
@@ -64,18 +65,21 @@ between genes in g and genes in p.
 
 # An example of Running RWR_ShortestPaths
 
-extdata.dir <- system.file("example_data", package="RWRtoolkit")
-multiplex_object_filepath <- paste(extdata.dir, '/string_interactions.Rdata', sep='')
-geneset1_filepath <- paste(extdata.dir, '/geneset1.tsv', sep='')
-geneset2_filepath <- paste(extdata.dir, '/geneset2.tsv', sep='')
-outdir <- paste(extdata.dir, '/out/rwr_shortestpath', sep='')
+extdata.dir <- system.file("example_data", package = "RWRtoolkit")
+multiplex_object_filepath <- paste(extdata.dir,
+  "/string_interactions.Rdata",
+  sep = ""
+)
+geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
+geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
+outdir <- "./rwr_shortestpath"
 
-rwr_shortest_path_output <- RWR_ShortestPaths(data=multiplex_object_filepath,
-                                                 source_geneset=geneset1_filepath,
-                                                 target_geneset=geneset2_filepath,
-                                                 write_to_file=TRUE,
-                                                 outdir=outdir)
-
-
+rwr_shortest_path_output <- RWR_ShortestPaths(
+  data = multiplex_object_filepath,
+  source_geneset = geneset1_filepath,
+  target_geneset = geneset2_filepath,
+  write_to_file = TRUE,
+  outdir = outdir
+)
 
 }

@@ -1,0 +1,11 @@
+node1	node2	weight
+B	A	1
+E	B	1
+C	B	1
+E	D	1
+F	E	1
+F	C	1
+G	E	1
+H	E	1
+H	F	1
+H	C	1

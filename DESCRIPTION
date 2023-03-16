@@ -32,9 +32,9 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Depends: 
-    R (>= 4.0.2),
+    R (>= 4.1.0),
 Imports:
     igraph (>= 1.2.5),
     tidyverse,
@@ -47,12 +47,19 @@ Imports:
     remotes,
     iterators,
     dplyr,
-    RandomWalkRestartMH ,
+    RandomWalkRestartMH,
     IRkernel,
-    RCy3
+    stringr,
+    Matrix
 Suggests: 
-    testthat, 
-    mockery
+    RCy3,
+    testthat,
+    mockery,
+    gprofiler2,
+    knitr,
+    rmarkdown,
+    RColorBrewer
 Remotes:
     github::dkainer/RandomWalkRestartMH, 
     bioc::RCy3
+VignetteBuilder: knitr
