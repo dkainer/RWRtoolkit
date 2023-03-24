@@ -20,19 +20,19 @@ describe("load_network", {
         actual_network <- load_network(path_to_edgelist)
 
         expected_network <- igraph::make_graph(expected_elements, directed = F)
-        igraph::E(expected_network)$weight <- 0.5
+        igraph::E(expected_network)$weight <- 1
 
         expect_setequal(
-          V(actual_network)$name,
-          V(expected_network)$name
+          igraph::V(actual_network)$name,
+          igraph::V(expected_network)$name
         )
         expect_setequal(
-          E(actual_network),
-          E(expected_network)
+          igraph::E(actual_network),
+          igraph::E(expected_network)
         )
         expect_setequal(
-          E(actual_network)$weight,
-          E(expected_network)$weight
+          igraph::E(actual_network)$weight,
+          igraph::E(expected_network)$weight
         )
         expect_true(!is.directed(actual_network))
       })
