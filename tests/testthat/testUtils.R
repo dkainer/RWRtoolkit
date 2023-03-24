@@ -4,6 +4,112 @@ library(vctrs)
 library(mockery)
 load("../testMultiplex/unitTestMultiplex.Rdata")
 
+describe("load_network", {
+    describe("load_network", {
+      expected_from <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
+      expected_to <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
+      expected_elements <- c()
+      for (i in seq(1, length(expected_from))) {
+        expected_elements <- append(expected_elements, expected_from[i])
+        expected_elements <- append(expected_elements, expected_to[i])
+      }
+
+      it("loads an igraph object from an edgelist", {
+        path_to_edgelist <- "../testNetworks/abc_layer1.tsv"
+
+        actual_network <- load_network(path_to_edgelist)
+
+        expected_network <- igraph::make_graph(expected_elements, directed = F)
+        igraph::E(expected_network)$weight <- 0.5
+
+        expect_setequal(
+          V(actual_network)$name,
+          V(expected_network)$name
+        )
+        expect_setequal(
+          E(actual_network),
+          E(expected_network)
+        )
+        expect_setequal(
+          E(actual_network)$weight,
+          E(expected_network)$weight
+        )
+        expect_true(!is.directed(actual_network))
+      })
+
+      it("loads a graph from an edgelist with no weights", {
+        path_to_edgelist <- "../testNetworks/abc_layer1_noweight.tsv"
+
+        actual_network <- load_network(path_to_edgelist)
+
+        expected_network <- igraph::make_graph(expected_elements, directed = F)
+
+        expect_setequal(
+          V(actual_network)$name,
+          V(expected_network)$name
+        )
+        expect_setequal(
+          E(actual_network),
+          E(expected_network)
+        )
+        expect_true(!is.directed(actual_network))
+      })
+
+      it("loads a graph from an edgelist with weights and additional cols", {
+        path_to_edgelist <- "../testNetworks/abc_layer1_extra_columns.tsv"
+
+        actual_network <- load_network(path_to_edgelist)
+
+        expected_network <- igraph::make_graph(expected_elements, directed = F)
+        igraph::E(expected_network)$weight <- 0.5
+
+
+        expect_setequal(
+          V(actual_network)$name,
+          V(expected_network)$name
+        )
+        expect_setequal(
+          E(actual_network),
+          E(expected_network)
+        )
+        expect_setequal(
+          E(actual_network)$weight,
+          E(expected_network)$weight
+        )
+        expect_true(!is.directed(actual_network))
+      })
+
+
+      it("loads a directed igraph object from an edgelist", {
+        path_to_edgelist <- "../testNetworks/abc_layer1.tsv"
+        directed <- TRUE
+        type <- "testnetwork"
+        name <- "TESTLAYER"
+
+        actual_network <- load_network(
+          path_to_edgelist = path_to_edgelist,
+          type = type,
+          name = name,
+          directed = directed
+        )
+
+        expected_name <- name
+        expected_network <- igraph::make_graph(expected_elements, directed = T)
+        expected_type <- rep(type, length(E(expected_network)))
+
+        ## established it reads graph, test if it sets attributes
+        expect_equal(
+          igraph::get.graph.attribute(actual_network)$name,
+          expected_name
+        )
+        expect_equal(E(actual_network)$type, expected_type)
+        expect_setequal(E(actual_network), E(expected_network))
+        expect_true(igraph::is.directed(actual_network))
+      })
+    })
+
+})
+
 describe("load_geneset", {
   it("loads genes with sharps within the names", {
     # TODO:
