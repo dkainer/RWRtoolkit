@@ -677,29 +677,29 @@ parameters_exist <- function(mpo = NULL,
 }
 
 write_stats_to_file_if_fp <- function(
-    outdir_path = NULL,
+    outdir = NULL,
     filename = NULL,
     netstats = NULL,
     write_rows = F,
     write_cols = T,
     verbose = FALSE ){
     
-    if(is.null(outdir_path)) return()
+    if(is.null(outdir)) return()
 
-    outfile_path <- paste(outdir_path, filename,  sep = "/")
+    outfile_path <- paste(outdir, filename,  sep = "/")
 
     write_table(netstats, outfile_path, write_rows, col_names = write_cols, verbose = verbose)
 }
 
 write_networks_to_file_if_fp <- function(
-    outdir_path = NULL,
+    outdir = NULL,
     filename = NULL,
     netstats_network = NULL,
     verbose = FALSE ){
     
-    if(is.null(outdir_path)) return()
+    if(is.null(outdir)) return()
 
-    outfile_path <- paste(outdir_path, filename,  sep = "/")
+    outfile_path <- paste(outdir, filename,  sep = "/")
 
     edgelist <- igraph::get.edgelist(netstats_network, names=T)
 
@@ -753,7 +753,7 @@ write_networks_to_file_if_fp <- function(
 #'                                      overlap_pair, and calculate tau
 #' @param network_2                     A path to an edgelist. Used for basic
 #'                                      statistics and overlap_pair.
-#' @param outdir_path                   If a directory is supplied, all output
+#' @param outdir                        If a directory is supplied, all output
 #'                                      data are saved to tsv within that dir.
 #' @param basic_statistics              A boolean denoting a return for basic
 #'                                      statistics concerning supplied networks,
@@ -821,7 +821,7 @@ write_networks_to_file_if_fp <- function(
 #'      merged_with_all_edges = T,
 #'      merged_with_edgecounts = T,
 #'      calculate_exclusivity_for_mpo = T,
-#'      outdir_path = "./rwr_netstats/",
+#'      outdir = "./rwr_netstats/",
 #'      verbose = T
 #' )
 #' 
@@ -833,7 +833,7 @@ RWR_netstats <- function(
     flist  = NULL,
     network_1 = NULL,
     network_2 = NULL,
-    outdir_path = NULL,
+    outdir = NULL,
     basic_statistics = F,
     scoring_metric = "jaccard",
     pairwise_between_mpo_layer = F,
@@ -931,7 +931,7 @@ RWR_netstats <- function(
         )
 
         write_stats_to_file_if_fp(
-                outdir_path = outdir_path,
+                outdir = outdir,
                 filename = "base_stats.tsv",
                 netstats = filestats,
                 write_rows = F,
@@ -952,7 +952,7 @@ RWR_netstats <- function(
                                                 metric = "jaccard",
                                                 verbose = verbose)
             write_stats_to_file_if_fp(
-                outdir_path = outdir_path,
+                outdir = outdir,
                 filename = "pairwise_between_mpo_layer_jaccard.tsv",
                 netstats = netstat_output$pairwise_between_mpo_layer_jaccard,
                 write_rows = T,
@@ -965,7 +965,7 @@ RWR_netstats <- function(
                                                 metric = "overlap",
                                                 verbose = verbose)
             write_stats_to_file_if_fp(
-                outdir_path = outdir_path,
+                outdir = outdir,
                 filename = "pairwise_between_mpo_layer_overlap.tsv",
                 netstats = netstat_output$pairwise_between_mpo_layer_overlap,
                 write_rows = T,
@@ -995,7 +995,7 @@ RWR_netstats <- function(
             out_df <- data.frame(netstat_output$multiplex_layers_to_refnet_jaccard)
             colnames(out_df) <- c('jaccard')
             write_stats_to_file_if_fp(
-                outdir_path = outdir_path,
+                outdir = outdir,
                 filename = "multiplex_layers_to_refnet_jaccard.tsv",
                 netstats = out_df,
                 write_rows = T,
@@ -1013,7 +1013,7 @@ RWR_netstats <- function(
             out_df <- data.frame(netstat_output$multiplex_layers_to_refnet_overlap)
             colnames(out_df) <- c('overlap')
             write_stats_to_file_if_fp(
-                outdir_path = outdir_path,
+                outdir = outdir,
                 filename = "multiplex_layers_to_refnet_overlap.tsv",
                 netstats = out_df,
                 write_rows = T,
@@ -1054,7 +1054,7 @@ RWR_netstats <- function(
 
 
         write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
+            outdir = outdir,
             filename = "net_to_net_similarity.tsv",
             netstats = netstat_output$net_to_net_similarity,
             write_rows = F,
@@ -1076,7 +1076,7 @@ RWR_netstats <- function(
         colnames(out_df) <- c('calculated_tau')
 
         write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
+            outdir = outdir,
             filename = "calculated_tau.tsv",
             netstats = out_df,
             write_rows = T,
@@ -1094,7 +1094,7 @@ RWR_netstats <- function(
                                                         verbose = verbose)
 
         write_networks_to_file_if_fp(
-            outdir_path,
+            outdir,
             "merged_with_all_edges.tsv",
             netstat_output$merged_with_all_edges$merged_network,
             verbose )
@@ -1110,7 +1110,7 @@ RWR_netstats <- function(
                                                 verbose = verbose)
 
         write_networks_to_file_if_fp(
-            outdir_path,
+            outdir,
             "merged_with_edgecounts.tsv",
             netstat_output$merged_with_edgecounts$merged_network,
             verbose )
@@ -1127,7 +1127,7 @@ RWR_netstats <- function(
 
 
         write_stats_to_file_if_fp(
-            outdir_path = outdir_path,
+            outdir = outdir,
             filename = "exclusivity.tsv",
             netstats = netstat_output$exclusivity,
             write_rows = F,
