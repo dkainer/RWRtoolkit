@@ -111,6 +111,7 @@ parse_arguments <- function() {
         make_option(
             c("-v", "--verbose"),
             action = "store_true",
+            default = FALSE,
             help = "A boolean denoting the verbosity of output."
         )
     )
