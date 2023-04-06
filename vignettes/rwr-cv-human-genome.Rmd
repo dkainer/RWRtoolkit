@@ -160,7 +160,7 @@ gold_cv_kfold_output <- RWRtoolkit::RWR_CV(
   method = "kfold",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = gold_path
+  outdir = gold_path
 )
 
 bronze_path <- "bronzeset_kfold_output"
@@ -170,7 +170,7 @@ bronze_cv_kfold_output <- RWRtoolkit::RWR_CV(
   method = "kfold",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = bronze_path)
+  outdir = bronze_path)
 
 
 ```
@@ -212,7 +212,7 @@ gold_cv_loo_output <- RWRtoolkit::RWR_CV(
   method = "loo",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = gold_path
+  outdir = gold_path
 )
 
 bronze_path <- "bronzeset_loo_output"
@@ -222,7 +222,7 @@ bronze_cv_loo_output <- RWRtoolkit::RWR_CV(
   method = "loo",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = bronze_path)
+  outdir = bronze_path)
 
 
 ```
@@ -263,7 +263,7 @@ gold_cv_singleton_output <- RWRtoolkit::RWR_CV(
   method = "singletons",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = gold_path
+  outdir = gold_path
 )
 
 bronze_path <- "bronzeset_singleton_output"
@@ -273,7 +273,7 @@ bronze_cv_singleton_output <- RWRtoolkit::RWR_CV(
   method = "singletons",
   write_to_file=TRUE,
   plot = TRUE,
-  outdir_path = bronze_path)
+  outdir = bronze_path)
 
 
 ```
