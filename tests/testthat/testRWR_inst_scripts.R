@@ -89,9 +89,10 @@ describe("RWR inst/scripts", {
         "--tau",
         tau
       )
+
       system(script)
 
-      # Run regular
+      #Run regular
       RWRtoolkit::RWR_CV(
         data = network_filepath,
         geneset_path = geneset_filepath,
@@ -133,11 +134,11 @@ describe("RWR inst/scripts", {
           )
         )
       )
-      actual_medianranks_nrow_script <- nrow(
+      actual_mean_ranks_nrow_script <- nrow(
         read.table(
           paste(output_directory_script,
             output_file_base,
-            "medianranks",
+            "meanranks",
             ".tsv",
             sep = ""
           )
@@ -174,23 +175,23 @@ describe("RWR inst/scripts", {
           )
         )
       )
-      actual_medianranks_nrow_rfunc <- nrow(
+      actual_meanranks_nrow_rfunc <- nrow(
         read.table(
           paste(output_directory_rfunc,
             output_file_base,
-            "medianranks",
+            "meanranks",
             ".tsv",
             sep = ""
           )
         )
       )
 
-    expect_equal(output_files_script, output_files_rfunc)
-    expect_equal(actual_file_count_script, actual_file_count_rfunc)
-    expect_equal(actual_metrics_nrow_script, actual_metrics_nrow_rfunc)
-    expect_equal(actual_summary_nrow_script, actual_summary_nrow_rfunc)
-    expect_equal(actual_fullranks_nrow_script, actual_fullranks_nrow_rfunc)
-    expect_equal(actual_medianranks_nrow_script, actual_medianranks_nrow_rfunc)
+      expect_equal(output_files_script, output_files_rfunc)
+      expect_equal(actual_file_count_script, actual_file_count_rfunc)
+      expect_equal(actual_metrics_nrow_script, actual_metrics_nrow_rfunc)
+      expect_equal(actual_summary_nrow_script, actual_summary_nrow_rfunc)
+      expect_equal(actual_fullranks_nrow_script, actual_fullranks_nrow_rfunc)
+      expect_equal(actual_mean_ranks_nrow_script, actual_meanranks_nrow_rfunc)
     })
 
      teardown({
@@ -339,9 +340,8 @@ describe("RWR inst/scripts", {
         "--calculate_tau_for_mpo",
         "--merged_with_edgecounts",
         "--merged_with_all_edges",
-        "--calculate_exclusivity_for_mpo",
-        "--verbose"
-        )
+        "--calculate_exclusivity_for_mpo"
+                )
 
       system(script)
       actual_output_files <- list.files(outdir_path)
