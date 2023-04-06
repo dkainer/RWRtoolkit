@@ -681,13 +681,14 @@ write_stats_to_file_if_fp <- function(
     filename = NULL,
     netstats = NULL,
     write_rows = F,
+    write_cols = T,
     verbose = FALSE ){
     
     if(is.null(outdir_path)) return()
 
     outfile_path <- paste(outdir_path, filename,  sep = "/")
 
-    write_table(netstats, outfile_path, write_rows, verbose = verbose)
+    write_table(netstats, outfile_path, write_rows, col_names = write_cols, verbose = verbose)
 }
 
 write_networks_to_file_if_fp <- function(
@@ -756,7 +757,7 @@ write_networks_to_file_if_fp <- function(
 #'                                      data are saved to tsv within that dir.
 #' @param basic_statistics              A boolean denoting a return for basic
 #'                                      statistics concerning supplied networks,
-#'                                      or flists. Default True.
+#'                                      or flists. Default False.
 #' @param scoring_metric                A string denoting either "jaccard", 
 #'                                      "overlap" or "both" to describe. 
 #'                                      Default is "jaccard". 
@@ -833,7 +834,7 @@ RWR_netstats <- function(
     network_1 = NULL,
     network_2 = NULL,
     outdir_path = NULL,
-    basic_statistics = T,
+    basic_statistics = F,
     scoring_metric = "jaccard",
     pairwise_between_mpo_layer = F,
     multiplex_layers_to_refnet = F,
@@ -955,6 +956,7 @@ RWR_netstats <- function(
                 filename = "pairwise_between_mpo_layer_jaccard.tsv",
                 netstats = netstat_output$pairwise_between_mpo_layer_jaccard,
                 write_rows = T,
+                write_cols = NA,
                 verbose = verbose)
         }
         if (scoring_metric == "both" || scoring_metric == "overlap"){
@@ -967,6 +969,7 @@ RWR_netstats <- function(
                 filename = "pairwise_between_mpo_layer_overlap.tsv",
                 netstats = netstat_output$pairwise_between_mpo_layer_overlap,
                 write_rows = T,
+                write_cols = NA,
                 verbose = verbose)
         }
     }
@@ -989,12 +992,14 @@ RWR_netstats <- function(
                 metric = "overlap",
                 verbose = verbose
             )
-
+            out_df <- data.frame(netstat_output$multiplex_layers_to_refnet_jaccard)
+            colnames(out_df) <- c('jaccard')
             write_stats_to_file_if_fp(
                 outdir_path = outdir_path,
                 filename = "multiplex_layers_to_refnet_jaccard.tsv",
-                netstats = netstat_output$multiplex_layers_to_refnet_jaccard,
+                netstats = out_df,
                 write_rows = T,
+                write_cols = NA,
                 verbose = verbose)
         }
         
@@ -1005,12 +1010,14 @@ RWR_netstats <- function(
                 metric = "overlap",
                 verbose = verbose
             )
-
+            out_df <- data.frame(netstat_output$multiplex_layers_to_refnet_overlap)
+            colnames(out_df) <- c('overlap')
             write_stats_to_file_if_fp(
                 outdir_path = outdir_path,
                 filename = "multiplex_layers_to_refnet_overlap.tsv",
-                netstats = netstat_output$multiplex_layers_to_refnet_overlap,
+                netstats = out_df,
                 write_rows = T,
+                write_cols = NA,
                 verbose = verbose)
         }
     }
@@ -1064,12 +1071,16 @@ RWR_netstats <- function(
                                                 nw_mpo,
                                                 network_1,
                                                 verbose = verbose)
+        
+        out_df <- data.frame(netstat_output$calculated_tau)
+        colnames(out_df) <- c('calculated_tau')
 
         write_stats_to_file_if_fp(
             outdir_path = outdir_path,
             filename = "calculated_tau.tsv",
-            netstats = netstat_output$calculated_tau,
+            netstats = out_df,
             write_rows = T,
+            write_cols = NA,
             verbose = verbose)
     }
 
