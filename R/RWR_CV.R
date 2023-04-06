@@ -745,7 +745,6 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
     res_avg <- res_combined %>%
         dplyr::group_by(NodeNames) %>%
         dplyr::summarise(meanrank = mean(rank), 
-                         medrank = median(rank), 
                          InValset = dplyr::first(InValset), 
                          geneset=dplyr::first(geneset),
                          num_in_network=dplyr::first(num_in_network)) %>%
