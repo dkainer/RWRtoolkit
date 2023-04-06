@@ -333,7 +333,7 @@ Examples
           merged_with_all_edges = T,
           merged_with_edgecounts = T,
           calculate_exclusivity_for_mpo = T,
-          outdir_path = "./",
+          outdir = "./",
           verbose = T
      )
     ```
@@ -346,7 +346,7 @@ Examples
       --network_1 ./example_data/netstat/combined_score-random-gold.tsv \
       --network_2 ./example_data/netstat/combined_score-random-test.tsv \
       --scoring_metric both \
-      --outdir_path ./RWRtoolkitOutput_Netstats \
+      --outdir ./RWRtoolkitOutput_Netstats \
       --basic_statistics  \
       --pairwise_between_mpo_layer  \
       --multiplex_layers_to_refnet  \
