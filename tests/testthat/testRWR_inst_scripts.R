@@ -98,7 +98,7 @@ describe("RWR inst/scripts", {
         geneset_path = geneset_filepath,
         method = method,
         folds = folds,
-        outdir_path = output_directory_rfunc,
+        outdir = output_directory_rfunc,
         tau = tau,
         write_to_file = T
       )
