@@ -134,9 +134,9 @@ parse_arguments <- function() {
     }
 
     # Require that the user provided at least one input.
-    if (is.null(opt$data) &
-        is.null(opt$flist) &
-        is.null(opt$network_1) &
+    if (is.null(opt$data) &&
+        is.null(opt$flist) &&
+        is.null(opt$network_1) &&
         is.null(opt$network_2)
         ) {
 
