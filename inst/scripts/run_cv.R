@@ -189,7 +189,7 @@ main <- function(opt) {
     restart = opt$restart,
     tau = opt$tau,
     numranked = opt$numranked,
-    outdir_path = opt$outdir,
+    outdir = opt$outdir,
     modname = opt$modname,
     plot = opt$plot,
     out_full_ranks = opt$out_fullranks,
