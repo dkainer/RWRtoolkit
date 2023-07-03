@@ -27,32 +27,29 @@
 ########################################################################
 # Internal Functions
 ########################################################################
-
 make_multiplex <- function(nwdf) {
   # Make_multiplex is a wrapper around iGraph and RandomWalkRestartMH
 
   # Preparing data for create.multiplex function call
-  # For each network, read as a datatable, convert to igraph, attribute edges with nwnames
+  # For each network, read as a datatable, convert to igraph, attribute 
+  # edges with nwnames
   nwlist <- foreach::foreach(d = iterators::iter(nwdf, by = "row")) %do% {
-    nw <- data.table::fread(d$nwfile, col.names = c("from", "to", "weight"), select = 1:3)
-    nw.g <- igraph::graph_from_data_frame(nw, directed = F)
-    igraph::edge_attr(nw.g, "type") <- d$nwname
-    nw.g
-  }
-  names(nwlist) <- nwdf$nwname
+    nw_g <- load_network(
+      d$nwfile,
+      col_names = c("from", "to", "weight"),
+      select = 1:3
+    )
 
-  # Calculate the pairwise intersection of edges between each network layer
-  # This is useful to understand if any layers seem redundant or not
-  # overlaps <- combn(nwlist, 2, simplify=T, FUN = function(x) {
-  #       ig <- igraph::graph.intersection(x[[1]],x[[2]],keep.all.vertices=F)
-  #       ug <- igraph::union(x[[1]],x[[2]])
-  #
-  #       return(100*ecount(ig)/ecount(ug))
-  # })
+    igraph::edge_attr(nw_g, "type") <- d$nwname
+
+    nw_g
+  }
+
+  names(nwlist) <- nwdf$nwname
 
   # Make the multiplex network object (return as mpo)
   print("constructing a multiplex network...be patient if there are lots of layers or layers are big")
-  mpo <- suppressWarnings(RandomWalkRestartMH::create.multiplex(LayersList = nwlist))
+  mpo <-  RandomWalkRestartMH::create.multiplex(LayersList = nwlist)
   print("constructing a multiplex network...DONE")
   return(mpo)
 }

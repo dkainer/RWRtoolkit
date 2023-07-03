@@ -2,49 +2,6 @@
 # Helper functions.
 ########################################################################
 
-#' Load Network
-#'
-#' Loads an igraph network from a filepath to an edge list.
-#'
-#' @param path_to_edgelist A path to a network file in edgelist format. Must
-#' have three columns: 'from', 'to', and 'weight'.
-#' @param type The edge type.
-#' @param name The name of the network.
-#' @param col.names The column names to use for the edgelist.
-#' @param select The columns to select from the edgelist.
-#' @param directed Whether the network is directed.
-#' @param verbose Print progress to console.
-#'
-#' @return An igraph network object.
-load_network <- function(
-    path_to_edgelist,
-    type = NULL,
-    name = NULL,
-    col.names = c("from", "to", "weight"),
-    select = 1:3,
-    header = "auto",
-    directed = FALSE,
-    verbose = FALSE
-) {
-    edgelist <- data.table::fread(
-        path_to_edgelist,
-        col.names = col.names,
-        select = select,
-        header = header)
-
-    g <- igraph::graph_from_data_frame(edgelist, directed = directed)
-
-    if (!is.null(name)) {
-        igraph::graph_attr(g, "name") <- name
-    }
-
-    if (!is.null(type)) {
-        igraph::edge_attr(g, "type") <- type
-    }
-
-    return(g)
-}
-
 #' Load flist
 #'
 #' `load_flist` loads an flist file from a given path.
@@ -113,7 +70,7 @@ make_dummy_multiplex <- function(
             row_$nwfile,
             type = row_$nwname,
             name = row_$nwname
-            # col.names = col.names, # TODO: ask @izaakm how these
+            # col_names = col_names, # TODO: ask @izaakm how these
             # select = select,       #       were intended to work
             # header = header,
             # directed = directed,
