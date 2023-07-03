@@ -20,6 +20,55 @@
 ########################################################################
 
 
+#' Load Network
+#'
+#' Loads an igraph network from a filepath to an edge list.
+#'
+#' @param path_to_edgelist A path to a network file in edgelist format.
+#' Expected to have two columns: 'from', 'to', and 'weight'.
+#' @param type The edge type.
+#' @param name The name of the network.
+#' @param col_names The column names to use for the edgelist.
+#' @param select The columns to select from the edgelist.
+#' @param directed Whether the network is directed.
+#' @param verbose Print progress to console.
+#'
+#' @return An igraph network object.
+load_network <- function(path_to_edgelist,
+                         type = NULL,
+                         name = NULL,
+                         col_names = c("from", "to", "weight"),
+                         select = 1:3,
+                         header = "auto",
+                         directed = FALSE,
+                         verbose = FALSE) {
+  edgelist <- data.table::fread(
+    path_to_edgelist,
+    header = header
+  )
+
+  if (ncol(edgelist) == 2) {
+    edgelist$weight <- 1
+  } else if (ncol(edgelist) > 3) {
+    edgelist <- edgelist[, select]
+  }
+
+  colnames(edgelist) <- col_names
+
+  g <- igraph::graph_from_data_frame(edgelist, directed = directed)
+
+  if (!is.null(name)) {
+    igraph::graph_attr(g, "name") <- name
+  }
+
+  if (!is.null(type)) {
+    igraph::edge_attr(g, "type") <- type
+  }
+
+  return(g)
+}
+
+
 
 load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
   if (is.null(path)) {

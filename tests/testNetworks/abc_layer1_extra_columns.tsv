@@ -1,0 +1,11 @@
+node1	node2	weight	data	additional_data
+B	A	0.5	data	additional_data
+E	B	0.5	data	additional_data
+C	B	0.5	data	additional_data
+E	D	0.5	data	additional_data
+F	E	0.5	data	additional_data
+F	C	0.5	data	additional_data
+G	E	0.5	data	additional_data
+H	E	0.5	data	additional_data
+H	F	0.5	data	additional_data
+H	C	0.5	data	additional_data

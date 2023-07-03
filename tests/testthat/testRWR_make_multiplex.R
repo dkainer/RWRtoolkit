@@ -18,7 +18,6 @@ nw_tibble_bad_path <- tibble::tibble(
   "nwgroup" = c(1, 1)
 )
 
-
 nw_groups <- list_of(nw_tibble)
 
 # Heterogeneous Network Tibble
@@ -126,25 +125,26 @@ describe("make_multiplex", {
 
     invisible(
       capture.output(
-        output <- make_multiplex(nw_groups[[1]])
+        actual_output <- make_multiplex(nw_groups[[1]])
       )
     )
 
-    expect_equal(output$Number_of_Layers, expected_num_layers)
-    expect_equal(output$Number_of_Nodes_Multiplex, expected_num_nodes)
+    expect_equal(actual_output$Number_of_Layers, expected_num_layers)
+    expect_equal(actual_output$Number_of_Nodes_Multiplex, expected_num_nodes)
     # Issues with sorted nature of vertices and edges.
     # Check node equality for each layer:
-    expect_setequal(V(output$m1)$name, V(graph1)$name)
-    expect_setequal(V(output$m2)$name, V(graph2)$name)
+    expect_setequal(V(actual_output$m1)$name, V(graph1)$name)
+    expect_setequal(V(actual_output$m2)$name, V(graph2)$name)
     # Check edge equality for each layer:
-    expect_setequal(E(output$m1), E(graph1))
-    expect_setequal(E(output$m2), E(graph2))
+    expect_setequal(E(actual_output$m1), E(graph1))
+    expect_setequal(E(actual_output$m2), E(graph2))
     # Check edge weight equality for each layer:
-    expect_equal(E(output$m1)$weight, E(graph1)$weight)
-    expect_equal(E(output$m2)$weight, E(graph2)$weight)
+
+    expect_equal(E(actual_output$m1)$weight, E(graph1)$weight)
+    expect_equal(E(actual_output$m2)$weight, E(graph2)$weight)
     # Check Layer descriptions for each layer:
-    expect_equal(E(output$m1)$type, E(graph1)$type)
-    expect_equal(E(output$m2)$type, E(graph2)$type)
+    expect_equal(E(actual_output$m1)$type, E(graph1)$type)
+    expect_equal(E(actual_output$m2)$type, E(graph2)$type)
   })
 })
 
