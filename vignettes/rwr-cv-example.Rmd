@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 # RWR CV
 ## 1. Introduction
-This document descibes the usage of RWR_CV and the parsing of RWR_CV's output. Using RWR_CV we can test the predictive ability of a particular multiplex network with respect to a set of genes. To run this algorithm, we will need a multiplex object and a geneset. 
+This document descibes the usage of RWR_CV and the parsing of RWR_CV's output. Using RWR_CV we can test the predictive ability of a particular multiplex network with respect to a known set of genes. To run this algorithm, we will need a multiplex object and a geneset. 
 
 ## 2. Setup
 In order to run `RWR_CV`, we will need an `mpo` object. These are derived from the `RWRtoolkit::RWR_make_multiplex` function.  For this vignette, we will use previously defined multiplex objects. 
@@ -27,19 +27,33 @@ In order to run `RWR_CV`, we will need an `mpo` object. These are derived from t
 ```{r Setup}
 library(RWRtoolkit)
 ```
-From Sullivan et al. 2022, we can obtain a pre-generated [multiplex consisting of 10 layers](https://www.medrxiv.org/content/10.1101/2022.04.20.22273895v2.full-text#sec-15):  
+We'll select an A. thaliana multiplex consisting of 10 layers (for further description of each layer, please click the associated link): 
+
+
+| Network                                                      | Nodes  | Edges   |
+| ------------------------------------------------------------ | ------ | ------- |
+| [CoEvolution-DUO (DU) version 0.1](https://github.com/dkainer/RWRtoolkit-data#coevolution-duo-network) | 2,283  | 13,514  |
+| [Coexpression Gene-Atlas (GA) version 0.3](https://github.com/dkainer/RWRtoolkit-data#coex-gene-atlas-network) | 7,683  | 84,959  |
+| [Knockout Similarity (KS) version 0.3](https://github.com/dkainer/RWRtoolkit-data#knockout-similarity-network) | 1,841  | 94,952  |
+| [PPI-6merged (PP) version 0.3](https://github.com/dkainer/RWRtoolkit-data#ppi-6merged-network) | 19,191 | 317,787 |
+| [PEN-Diversity (PX) version 0.1](https://github.com/dkainer/RWRtoolkit-data#pen-diversity-network) | 17,907 | 97,819  |
+| [Predictive CG Methylation (PY) version 0.1](https://github.com/dkainer/RWRtoolkit-data#predictive-cg-methylation-1001-epigenomes-network) | 13,314 | 76,027  |
+| [Regulation-ATRM (RE) version 0.3](https://github.com/dkainer/RWRtoolkit-data#regulation-atrm-network) | 789    | 1,359   |
+| [Regulation-Plantregmap (RP) version 0.3](https://github.com/dkainer/RWRtoolkit-data#regulation-plantregmap-network) | 16,014 | 167,851 |
+| [Metabolic-AraCyc (RX) version 0.3](https://github.com/dkainer/RWRtoolkit-data#metabolic-aracyc-network) | 2,857  | 21,524  |
+
 
 ```{r Loading}
-humanMultiplexURL <- "https://github.com/sullivanka/GRIN/blob/main/test/suicide_weighted_Multiplex_0.5Delta.RData?raw=true"
-humanMultiplexPath <- url(humanMultiplexURL)
+athal_multiplex_url <- "https://github.com/dkainer/RWRtoolkit-data/raw/main/Comprehensive_Network_AT_d0.5_v02.RData"
+athal_multiplex <- url(athal_multiplex_url)
 
-load(humanMultiplexPath)
+load(athal_multiplex)
 ```
 
 ### Building a "Gold Set"
-We will need a "gold set" of genes to test our network against. These "gold standard" genes are ones that are previously defined as being highly related in some fashion (e.g. genes with the same GO or Mapman description). 
+We will need a "gold set" of genes to test our multiplex network against. These "gold standard" genes are ones that are previously defined as being highly related in some fashion (e.g. genes with the same GO or Mapman description). 
 
-Sullivan et al. used genes with the [same GO description as a gold standard set](https://www.medrxiv.org/content/medrxiv/early/2022/04/27/2022.04.20.22273895/DC2/embed/media-2.xlsx?download=true) to act as a "gold set" of genes for their experiment, and we will do the same. For this example we will use GO genes with a GABAergic GO Description (defined in table S1). We will then need to annotate those genes with a "set", as goldset files follow the format (where the set name is some defining string and the gene ids are strings that match to node names within the multiplex): 
+For our "gold set" of genes, we will use the well described and highly conserved Jasmonte pathway genes defined by MapMan (Table S1). We will then need to annotate those genes with a "set", as goldset files follow the format (where the set name is some defining string and the gene ids are strings that match to node names within the multiplex): 
 
 
 | **Set Name** | **Gene ID** |
@@ -52,55 +66,49 @@ Sullivan et al. used genes with the [same GO description as a gold standard set]
 We can create our own gold set file with:
 ```{r Goldset Creation}
 # Define Genes
-GABAergicSeedGenes <- c(
-  "ENSG00000171132", "ENSG00000109189", "ENSG00000163485", "ENSG00000157103",
-  "ENSG00000120907", "ENSG00000169750", "ENSG00000171862", "ENSG00000188822",
-  "ENSG00000011677", "ENSG00000022355", "ENSG00000163812", "ENSG00000188603",
-  "ENSG00000102287", "ENSG00000133703", "ENSG00000109158", "ENSG00000169760",
-  "ENSG00000118432", "ENSG00000135312", "ENSG00000168748", "ENSG00000164129",
-  "ENSG00000169992", "ENSG00000115896", "ENSG00000163285", "ENSG00000146242",
-  "ENSG00000007516", "ENSG00000113327", "ENSG00000174576", "ENSG00000106462",
-  "ENSG00000136854", "ENSG00000109572", "ENSG00000182256", "ENSG00000170759",
-  "ENSG00000186297", "ENSG00000149295", "ENSG00000173805", "ENSG00000145864",
-  "ENSG00000151834", "ENSG00000214285", "ENSG00000160446", "ENSG00000010322",
-  "ENSG00000145863", "ENSG00000152910", "ENSG00000128271", "ENSG00000139182",
-  "ENSG00000154822", "ENSG00000122733", "ENSG00000006128", "ENSG00000185666",
-  "ENSG00000180914"
+jasmonate_seed_genes <- c(
+	"AT2G44810", "AT1G17420", "AT1G55020", "AT1G67560",
+	"AT1G72520", "AT3G22400", "AT3G45140", "AT5G42650",
+	"AT1G13280", "AT3G25760", "AT3G25770", "AT3G25780",
+	"AT1G09400", "AT1G17990", "AT1G18020", "AT1G76680",
+	"AT1G76690", "AT2G06050", "AT1G17380", "AT1G19180",
+	"AT1G48500", "AT1G70700", "AT1G72450", "AT1G74950",
+	"AT3G17860", "AT3G43440", "AT5G20900"
 )
-
 # Add annotations
-seedGeneSets <- rep("GABAergic_GO", length(GABAergicSeedGenes))
-seedGeneDF <- data.frame("set" = seedGeneSets, "seed" = GABAergicSeedGenes)
+seed_gene_setname <- rep("jasmonate_mm", length(jasmonate_seed_genes))
+seed_gene_df <- data.frame("set" = seed_gene_setname, "seed" = jasmonate_seed_genes)
 
 # Write File
-filenameGoldset <- "./goldset_gaba.tsv"
-write.table(seedGeneDF, filenameGoldset, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+goldset_filename <- "./goldset_jasomonate.tsv"
+write.table(seed_gene_df, goldset_filename, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
+
 ### Building a "Bronze Set"
-While the original intention of RWR_CV is to test the predictive capability of a particular network with respect to a known gold set, we can (for this case) generate a set that we will pretend is "known to be well connected" and call it the **bronze set**.
+For the sake of illustration, we will generate a set with partially connected, and partially randomly sampled genes, which we will refer to as the "bronze set".
 
 The general idea behind creating this bronze set is to illustrate how scoring works with respect to a set of genes that are not well connected within the supplied network. 
 
-We have built our gold set of GABAergic GO described genes above. We will now replace genes known to be related within the GABAergic description with others randomly sampled within the network: 
+We have built our gold set of Jasmonate MapMan described genes above. We will now replace genes known to be related within the Jasmonate description with others randomly sampled within the network: 
 
 ```{r Bronze Set Creation}
-# Replace 60% of GABAergic genes with randomly sampled genes
+# Replace 60% of Jasmonate genes with randomly sampled genes
 set.seed(42)
 `%notin%` <- Negate(`%in%`)
 
-newlySampleGenesPct <- 2 / 3
-newlySampleGeneCount <- floor(length(GABAergicSeedGenes) * newlySampleGenesPct)
+newly_sampled_percentage <- 2 / 3
+n_genes_for_sampling <- floor(length(jasmonate_seed_genes) * newly_sampled_percentage)
 
-gene_pool <- nw.mpo$Pool_of_Nodes[ nw.mpo$Pool_of_Nodes %notin% GABAergicSeedGenes ] 
+gene_pool <- nw.mpo$Pool_of_Nodes[ nw.mpo$Pool_of_Nodes %notin% jasmonate_seed_genes ] 
 
-randomSample <- sample(gene_pool, replace = FALSE, size = newlySampleGeneCount)
+random_sample <- sample(gene_pool, replace = FALSE, size = n_genes_for_sampling)
 
 ## Replace:
-seedGeneDF$seed[1:length(randomSample)] <- randomSample
+seed_gene_df$seed[1:length(random_sample)] <- random_sample
 
-filenameRandomSample <- "./partially_random_sample_seeds.tsv"
-write.table(seedGeneDF, filenameRandomSample, row.names = FALSE, col.names = FALSE, quote = FALSE)
+random_sample_filename <- "./partially_random_sample_seeds.tsv"
+write.table(seed_gene_df, random_sample_filename, row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
 We now have two sets of genes: one in which there exists known connections between all genes within the set, and another with known connections between only $\frac{1}{3}$ of the genes. Running RWR_CV for both our gold set and our bronze set, we can then compare the outputs. 
@@ -155,8 +163,8 @@ With our multiplex, gold and bronze set genes in place, we can run `RWR_CV`. Fir
 ```{r Running kFold}
 gold_path <- "goldset_kfold_output"
 gold_cv_kfold_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameGoldset,
+  data = athal_multiplex_url,
+  geneset_path = goldset_filename,
   method = "kfold",
   write_to_file=TRUE,
   plot = TRUE,
@@ -165,13 +173,12 @@ gold_cv_kfold_output <- RWRtoolkit::RWR_CV(
 
 bronze_path <- "bronzeset_kfold_output"
 bronze_cv_kfold_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameRandomSample,
+  data = athal_multiplex_url,
+  geneset_path = random_sample_filename,
   method = "kfold",
   write_to_file=TRUE,
   plot = TRUE,
   outdir = bronze_path)
-
 
 ```
 ### RWR_CV Kfold Output Analysis
@@ -183,7 +190,7 @@ head(gold_cv_kfold_output$metrics)
 In the gold set run, when initially viewing the head of the dataframe, we can see that the top ranked genes from our network are in the validation set of gene (resulting in true positive matches). Additionally, upon visual inspection of the plots, we can see that our ROC curve quickly ranks all genes within the network!
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(gold_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
@@ -195,20 +202,20 @@ head(bronze_cv_kfold_output$metrics)
 Notice that the Bronze Set , however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. That means that as the random walker traversed the network, it took quite a while to recall the other genes within the set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
 
 
 ### Leave One Out 
-Instead of randomly shuffling the gene set k times for a train/test split, we can remove only one gene from the gene set and see how quickly the random walker can recall that gene. This is doen for every gene within the genes set, so if there exist N genes, we will run a random walk N times: 
+Instead of randomly shuffling the gene set k times for a train/test split, we can remove only one gene from the gene set and see how quickly the random walker can recall that gene. This is done for every gene within the genes set, so if there exist N genes, we will run a random walk N times: 
 
 ```{r Running LOO}
 gold_path <- "goldset_loo_output"
 gold_cv_loo_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameGoldset,
+  data = athal_multiplex_url,
+  geneset_path = goldset_filename,
   method = "loo",
   write_to_file=TRUE,
   plot = TRUE,
@@ -217,8 +224,8 @@ gold_cv_loo_output <- RWRtoolkit::RWR_CV(
 
 bronze_path <- "bronzeset_loo_output"
 bronze_cv_loo_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameRandomSample,
+  data = athal_multiplex_url,
+  geneset_path = random_sample_filename,
   method = "loo",
   write_to_file=TRUE,
   plot = TRUE,
@@ -235,7 +242,7 @@ head(gold_cv_loo_output$metrics)
 Similarly to the above output for kfold, we can see that the top ranked genes in the goldset run from our network are in the validation set of genes, resulting in more true positives:  
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(gold_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
@@ -247,7 +254,7 @@ head(bronze_cv_loo_output$metrics)
 Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
@@ -258,8 +265,8 @@ With our method of separation being "singletons", we leave out all nodes except 
 ```{r Running Singletons}
 gold_path <- "goldset_singleton_output"
 gold_cv_singleton_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameGoldset,
+  data = athal_multiplex_url,
+  geneset_path = goldset_filename,
   method = "singletons",
   write_to_file=TRUE,
   plot = TRUE,
@@ -268,8 +275,8 @@ gold_cv_singleton_output <- RWRtoolkit::RWR_CV(
 
 bronze_path <- "bronzeset_singleton_output"
 bronze_cv_singleton_output <- RWRtoolkit::RWR_CV(
-  data = humanMultiplexURL,
-  geneset_path = filenameRandomSample,
+  data = athal_multiplex_url,
+  geneset_path = random_sample_filename,
   method = "singletons",
   write_to_file=TRUE,
   plot = TRUE,
@@ -287,7 +294,7 @@ In the gold set run, we can see that the top ranked genes from our network are i
 
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(gold_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(gold_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
@@ -299,12 +306,9 @@ head(bronze_cv_singleton_output$metrics)
 Notice that between on the other hand, however, our top ranked genes have no true positives. The bronze set has significantly fewer True Positive matches than does the Gold Set. Additionally this can be illustrated by the plot below:
 
 ```{r, echo=F, out.width="100%", fig.align="center"}
-image_path <- paste(bronze_path, "RWR-CV_GABAergic_GO_suicide_weighted_Multiplex_0.5Delta_default.plots.png", sep="/")
+image_path <- paste(bronze_path, "RWR-CV_jasmonate_mm_Comprehensive_Network_AT_d0.5_v02_default.plots.png", sep="/")
 
 knitr::include_graphics(image_path)
 ```
 
 
-## References
-Digging deeper into GWAS signal using GRIN implicates additional genes contributing to suicidal behavior
-Kyle A. Sullivan, Matthew Lane, Mikaela Cashman, J. Izaak Miller, Mirko Pavicic, Angelica M. Walker, Ashley Cliff, Jonathon Romero, Xuejun Qin, Jennifer Lindquist, Niamh Mullins, Anna Docherty, Hilary Coon, Douglas M. Ruderfer, International Suicide Genetics Consortium, VA Million Veteran Program, MVP Suicide Exemplar Workgroup, Michael R. Garvin, John P. Pestian, Allison E. Ashley-Koch, Jean C. Beckham, Benjamin McMahon, David W. Oslin, Nathan A. Kimbrel, Daniel A. Jacobson, David Kainer
