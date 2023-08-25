@@ -1,6 +1,6 @@
 ---
 title: "Using RWR Netstats"
-author: "Matt Lane"
+author: "Matthew Lane"
 date: "2022-12-13"
 output: rmarkdown::html_vignette
 vignette: >

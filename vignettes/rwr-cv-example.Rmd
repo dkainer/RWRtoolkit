@@ -1,7 +1,7 @@
 ---
 title: "Using RWR CV See Seed Set Connectivity"
-author: "Matt Lane"
-date: "2022-12-05"
+author: "Matthew Lane"
+date: "2023-8-24"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Using RWR CV See Seed Set Connectivity}

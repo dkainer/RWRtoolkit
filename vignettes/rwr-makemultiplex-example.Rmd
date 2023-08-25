@@ -1,6 +1,6 @@
 ---
 title: "Creating a Multiplex with RWR_Make_Multiplex"
-author: "Matt Lane"
+author: "Matthew Lane"
 date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
