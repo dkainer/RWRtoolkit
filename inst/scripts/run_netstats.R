@@ -33,7 +33,7 @@ parse_arguments <- function() {
                     by RWR_make_MHobject.R"
         ),
         make_option(
-            c("-o", "--outdir_path"),
+            c("-o", "--outdir"),
             action = "store",
             default = "netstats",
             type = "character",
@@ -111,6 +111,7 @@ parse_arguments <- function() {
         make_option(
             c("-v", "--verbose"),
             action = "store_true",
+            default = FALSE,
             help = "A boolean denoting the verbosity of output."
         )
     )
@@ -133,9 +134,9 @@ parse_arguments <- function() {
     }
 
     # Require that the user provided at least one input.
-    if (is.null(opt$data) &
-        is.null(opt$flist) &
-        is.null(opt$network_1) &
+    if (is.null(opt$data) &&
+        is.null(opt$flist) &&
+        is.null(opt$network_1) &&
         is.null(opt$network_2)
         ) {
 
@@ -180,7 +181,7 @@ main <- function() {
         flist = opt$flist,
         network_1 = opt$network_1,
         network_2 = opt$network_2,
-        outdir_path = opt$outdir_path,
+        outdir = opt$outdir,
         basic_statistics = opt$basic_statistics,
         scoring_metric = opt$scoring_metric,
         pairwise_between_mpo_layer = opt$pairwise_between_mpo_layer,

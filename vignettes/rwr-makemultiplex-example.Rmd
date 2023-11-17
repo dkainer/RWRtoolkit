@@ -1,6 +1,6 @@
 ---
 title: "Creating a Multiplex with RWR_Make_Multiplex"
-author: "Matt Lane"
+author: "Matthew Lane"
 date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
@@ -150,9 +150,9 @@ We now have all three of our layers, we need to create a file that describes:
 | path_to_file3 | layer3_name |
 
 ```{r}
-filepaths <- c("./layer1.tsv", "./layer2.tsv", "./layer3.tsv")
+filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
 layernames <- c("layer1", "layer2", "layer3")
-flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames, groups = groups))
+flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames))
 
 flist_filename <- "multiplex_flist.tsv"
 write.table(flist_df, file = flist_filename, quote = F, sep = "\t", row.names = F, col.names = F)

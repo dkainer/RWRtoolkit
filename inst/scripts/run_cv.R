@@ -71,15 +71,15 @@ parse_arguments <- function() {
       default = NULL,
       type = "character",
       help = "Path to the output directory. Both 'fullranks' and
-              'medianranks' will be saved here with auto-generated filenames.
-              (--out-fullranks and --out-medianranks override this.)"
+              'meanranks' will be saved here with auto-generated filenames.
+              (--out-fullranks and --out-meanranks override this.)"
     ),
     make_option(c("-m", "--modname"),
       action = "store",
       default = "default",
       type = "character",
       help = "String to include in output filename. (--out-fullranks
-                    and --out-medianranks override this.)"
+                    and --out-meanranks override this.)"
     ),
     make_option(c("-p", "--plot"),
       action = "store_true",
@@ -94,11 +94,11 @@ parse_arguments <- function() {
       help = "Specify the full path for full results.
                     Ignore --outdir and --modname and use this instead."
     ),
-    make_option(c("--out-medianranks"),
+    make_option(c("--out-meanranks"),
       action = "store",
       default = NULL,
       type = "character",
-      help = "Specify the full path for median results.
+      help = "Specify the full path for mean results.
                     Ignore --outdir and --modname and use this instead."
     ),
     make_option(c("-t", "--threads"),
@@ -131,8 +131,8 @@ parse_arguments <- function() {
     message("ERROR:: You must provide either --outdir or --out-fullranks.")
     errors <- errors + 1
   }
-  if (is.null(opt$outdir) & is.null(opt$out_medianranks)) {
-    message("ERROR:: You must provide either --outdir or --out-medianranks")
+  if (is.null(opt$outdir) & is.null(opt$out_meanranks)) {
+    message("ERROR:: You must provide either --outdir or --out-meanranks")
     errors <- errors + 1
   }
 
@@ -189,11 +189,11 @@ main <- function(opt) {
     restart = opt$restart,
     tau = opt$tau,
     numranked = opt$numranked,
-    outdir_path = opt$outdir,
+    outdir = opt$outdir,
     modname = opt$modname,
     plot = opt$plot,
     out_full_ranks = opt$out_fullranks,
-    out_median_ranks = opt$out_medianranks,
+    out_mean_ranks = opt$out_meanranks,
     threads = opt$threads,
     verbose = opt$verbose,
     write_to_file = TRUE

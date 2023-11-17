@@ -119,31 +119,31 @@ calc_metrics_loe <- function(res, seed_geneset, query_geneset) {
     )
   )
 
-  # 5. NDCG
-  output <- rbind(
-    output,
-    dplyr::filter(
-      res, rank == nrow(!!query_geneset)
-    ) %>%
-      dplyr::summarise(
-        value = ndcg,
-        measure = "NDCG@SizeQueryGeneSet"
-      )
-  )
+  # # 5. NDCG
+  # output <- rbind(
+  #   output,
+  #   dplyr::filter(
+  #     res, rank == nrow(!!query_geneset)
+  #   ) %>%
+  #     dplyr::summarise(
+  #       value = ndcg,
+  #       measure = "NDCG@SizeQueryGeneSet"
+  #     )
+  # )
 
-  output <- rbind(
-    output,
-    dplyr::summarise(
-      res,
-      value = area_under_curve(
-        REC,
-        ndcg,
-        method = "trapezoid",
-        ties = "max"
-      ),
-      measure = "AUNDCG"
-    )
-  )
+  # output <- rbind(
+  #   output,
+  #   dplyr::summarise(
+  #     res,
+  #     value = area_under_curve(
+  #       REC,
+  #       ndcg,
+  #       method = "trapezoid",
+  #       ties = "max"
+  #     ),
+  #     measure = "AUNDCG"
+  #   )
+  # )
 
   return(list(summary = output, results = res))
 }

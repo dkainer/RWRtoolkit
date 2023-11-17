@@ -747,7 +747,6 @@ describe("Post Processing", {
         NodeNames = c("0", "1", "2", "3"),
         meanrank = c(1, 2, 2.5, 3),
         rerank = c(1, 2, 3, 4),
-        medrank = c(1, 2, 2.5, 3),
         InValset = c(0, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA"),
         num_in_network = c(4, 4, 4, 4)
@@ -806,7 +805,6 @@ describe("Post Processing", {
         NodeNames = c("0", "1", "2", "3", "5", "6"),
         meanrank = c(1, 2, 2.5, 3, 4, 4),
         rerank = c(1, 2, 3, 4, 5, 5),
-        medrank = c(1, 2, 2.5, 3, 4, 4),
         InValset = c(0, 1, 1, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA", "setA", "setA"),
         num_in_network = c(4, 4, 4, 4, 4, 4)
@@ -905,7 +903,6 @@ describe("Post Processing", {
         meanrank = c(1.5, 2, 2, 7 / 3, 4, 4), 
         # Note: On tie of non-extra, count increases on rerank so we get 1, 2, 2, -> 4 (instead of 1,2,2,3)
         rerank = c(1, 2, 2, 4, 5, 5),
-        medrank = c(1.5, 2, 2, 3, 4, 4),
         InValset = c(0, 1, 1, 1, 1, 1),
         geneset = c("setA", "setA", "setA", "setA", "setA", "setA"),
         num_in_network = c(3, 3, 3, 3, 3, 3)

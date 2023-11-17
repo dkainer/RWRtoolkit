@@ -157,18 +157,26 @@ read_flist <- function(flist) {
 #'
 #' `RWR_make_multiplex` creates a multiplex network.
 #'
-#' @param flist Table describing network files to use.  File columns: {<}path to file{>} {<}short name of network{>} {<}group{>}.
-#' 'groups' are either 1, 2, or 3.  All 1's will form one multiplex network (e.g. gene-to-gene), All 2's will form a
-#' separate multiplex network (e.g. disease-to-disease), And all 3's will be used to join the 1's and 2's together
-#' (e.g. gene-to-disease) You don't have to have both 1's and 2's.  But if you do have 1's and 2's, you SHOULD have
-#' at least one 3 to join them up.  Can be delimited by comma, tab, space, pipe, or semicolon.
-#' @param delta Probability to change between layers at the next step \[0,1\]. If delta = 0, the particle will always
-#' remain in the same layer after a non-restart iteration.  If delta = 1, the particle will always change between
-#' layers, therefore not following the specific edges of each layer. Default is 0.5.
+#' @param flist  Table describing network files to use.  File columns:
+#'               {<}path to file{>} {<}short name of network{>}.  {<}group{>}.
+#'               'groups' are either 1, 2, or 3.  All 1's will form one
+#'               multiplex network (e.g. gene-to-gene), All 2's will form a
+#'               separate multiplex network (e.g. disease-to-disease), And all
+#'               3's will be used to join the 1's and 2's together (e.g.
+#'               gene-to-disease) You don't have to have both 1's and 2's.
+#'               But if you do have 1's and 2's, you SHOULD have at least one
+#'               3 to join them up.  Can be delimited by comma, tab, space,
+#'               pipe, or semicolon.
+#' @param delta  Probability to change between layers at the next step \[0,1\].
+#'               If delta = 0, the particle will always remain in the same layer
+#'               after a non-restart iteration.  If delta = 1, the particle will
+#'               always change between layers, therefore not following the
+#'               specific edges of each layer. Default is 0.5.
 #' @param output Output file name (default "network.Rdata")
-#' @param test Runs an example. Default FALSE
+#' @param test   Runs an example. Default FALSE
 #' @param verbose Verbose mode. Default FALSE
-#' @return Mutliplex object is saved to a file (.rdata) to load into subsequent functions.
+#' @return Mutliplex object is saved to a file (.rdata) to load into subsequent
+#'          functions.
 #' @examples
 #' #
 #' # An example of a default RWR Make Multiplex with an output "network.Rdata"
@@ -178,9 +186,12 @@ read_flist <- function(flist) {
 #' layers.path <- paste(extdata.dir, "/layers/", sep = "")
 #' layers <- list.files(layers.path)
 #' layer_with_paths <- paste(layers.path, layers, sep = "")
-#' layer_names <- sub(pattern = "(.*)\\..*$", replacement = "\\1", basename(layers))
+#' layer_names <- sub(pattern = "(.*)\\..*$",
+#'                    replacement = "\\1", basename(layers))
 #' groups <- rep(1, length(layer_names))
-#' flistdatatable <- data.table::data.table(layer_with_paths, layer_names, groups)
+#' flistdatatable <- data.table::data.table(layer_with_paths,
+#'                                          layer_names,
+#'                                          groups)
 #'
 #' outfile <- paste(outdir, "/multiplex.Rdata", sep = "")
 #' write.table(flistdatatable,

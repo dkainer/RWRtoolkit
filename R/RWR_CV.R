@@ -288,14 +288,14 @@ calc_metrics_cv <- function(res_combined, res_avg) {
 
         ### get metrics based on reranking of mean ranks
         res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
-        # 5. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
+        # 5. AvgPrec of mean ranks (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
                             dplyr::filter(TP==1) %>%
                             dplyr::summarise(fold="meanrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
-        # 6. AUPRC of median ranks
+        # 6. AUPRC of mean ranks
         output <- rbind(output, res_avg %>%
                             dplyr::summarise(fold="meanrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max") , measure="AUPRC") )
-        # 7. AUROC of median ranks
+        # 7. AUROC of mean ranks
         output <- rbind(output, res_avg %>%
                             dplyr::summarise(fold="meanrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
     }
@@ -318,14 +318,14 @@ calc_metrics_cv <- function(res_combined, res_avg) {
 
         ### get metrics based on mean ranks
         res_avg <- calc_ROCPRC(res_avg, scorescol = "rerank", labelscol = "InValset")
-        # 3. AvgPrec of median ranks (uses Average Precision, not interpolated avg precision)
+        # 3. AvgPrec of mean ranks (uses Average Precision, not interpolated avg precision)
         output <- rbind(output, res_avg %>%
                             dplyr::filter(TP==1) %>%
                             dplyr::summarise(fold="meanrank", value = sum(PREC)/sum(InValset), measure="AvgPrec") )
-        # 4. AUPRC of median ranks (uses trapezoid method)
+        # 4. AUPRC of mean ranks (uses trapezoid method)
         output <- rbind(output, res_avg %>%
                             dplyr::summarise(fold="meanrank", value = area_under_curve(REC, PREC, method="trapezoid", ties="max"), measure="AUPRC"))
-        # 5. AUROC of median ranks
+        # 5. AUROC of mean ranks
         output <- rbind(output, res_avg %>%
                             dplyr::summarise(fold="meanrank", value = sum(REC)/dplyr::n(), measure="AUROC") )
     }
@@ -509,11 +509,11 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         #     ggplot2::geom_line(data=metrics$res_combined %>% dplyr::filter(InValset==1) %>% dplyr::group_by(REC) %>% dplyr::summarise(PREC = mean(PREC)), 
         #               ggplot2::aes(x=REC, y=PREC, col="mean of folds")) + 
         #     ggplot2::geom_line(data=metrics$res_avg, 
-        #               ggplot2::aes(x=REC, y=PREC, col="median ranks")) + 
+        #               ggplot2::aes(x=REC, y=PREC, col="mean ranks")) + 
         #     ggplot2::geom_hline(yintercept = sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") + 
         #     ggplot2::scale_color_manual(name = "Precision / Recall",
-        #                        breaks = c("mean of folds", "median ranks"),
-        #                        values = c("mean of folds" = "darkorange", "median ranks" = "darkred") ) +
+        #                        breaks = c("mean of folds", "mean ranks"),
+        #                        values = c("mean of folds" = "darkorange", "mean ranks" = "darkred") ) +
         #     ggplot2::theme(legend.position="top", legend.box = "horizontal") +
         #     ggplot2::labs(title=paste0(metrics$res_combined$geneset[1]),caption = paste0("mean of folds AUPRC = ", thestats["AUPRC",], " | expected = ", thestats["ExpectedAUPRC",])) +
         #     ggplot2::expand_limits(x=c(0,1), y=c(0, 1))
@@ -630,20 +630,20 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         
         # precision / recall
         # p2 <- ggplot(metrics$res_avg) + 
-        #     geom_line(aes(x=REC, y=PREC , col="median ranks")) +
+        #     geom_line(aes(x=REC, y=PREC , col="mean ranks")) +
         #     xlab("TPR (Recall)") + 
         #     ylab("Precision") +
         #     geom_hline(yintercept = sum(metrics$res_avg$InValset)/nrow(metrics$res_avg), linetype="dotted") + 
         #     scale_color_manual(name = "Precision / Recall",
-        #                        breaks = c("median ranks"),
-        #                        values = c("median ranks" = "darkred") ) +
+        #                        breaks = c("mean ranks"),
+        #                        values = c("mean ranks" = "darkred") ) +
         #     theme(legend.position="top", legend.box = "horizontal") + 
         #     expand_limits(x=c(0,1), y=c(0, 1))
         
             
 
         # ranking distribution of hits in bins of 100 
-   # ranking distribution of hits in bins of 100 for median of folds
+   # ranking distribution of hits in bins of 100 for meanof folds
         p4 <- ggplot2::ggplot(metrics$res_combined %>% dplyr::filter(InValset==1)) + 
             ggplot2::geom_histogram(ggplot2::aes(x=rank), binwidth=100, fill="darkred") + 
             ggplot2::xlab("CV Mean Rank (binwidth=100)") + 
@@ -745,7 +745,6 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
     res_avg <- res_combined %>%
         dplyr::group_by(NodeNames) %>%
         dplyr::summarise(meanrank = mean(rank), 
-                         medrank = median(rank), 
                          InValset = dplyr::first(InValset), 
                          geneset=dplyr::first(geneset),
                          num_in_network=dplyr::first(num_in_network)) %>%
@@ -793,20 +792,20 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'            than layers B or C.  Default 1.0
 #' @param numranked Proportion of ranked genes to return \[0,1\].  e.g. 0.1 will
 #'                  return the top 10%. Default 1.0
-#' @param outdir_path Path to the output directory. Both 'fullranks' and 
+#' @param outdir Path to the output directory. Both 'fullranks' and 
 #'                   'medianranks' will be saved with auto-generated filenames.
 #'                   Can be overridden by specifically setting 'out_full_ranks'
-#'                   and 'out_median_ranks' parameters. No defined path will 
+#'                   and 'out_mean_ranks' parameters. No defined path will 
 #'                   output within the same directory from which the original
 #'                   code was run.
 #'                   Default NULL
 #' @param modname String to include in output file name.  Default "default"
 #' @param plot Output plots of ROC, PRC, etc. to file. Default FALSE
 #' @param out_full_ranks Specify the full path for the full results. Ignores
-#'                     outdir_path and modName, using this path instead.
+#'                     outdir and modName, using this path instead.
 #'                     Default NULL
-#' @param out_median_ranks Specify the full path for the median results. Ignores
-#'                       outdir_path and modName, using this path instead. 
+#' @param out_mean_ranks Specify the full path for the mean results. Ignores
+#'                       outdir and modName, using this path instead. 
 #'                       Default NULL 
 #' @param threads Specify the number of threads to use. Default for your system
 #'                is all cores - 1.
@@ -832,7 +831,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'   data = multiplex_object_filepath,
 #'   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
 #'   geneset_path = geneset_filepath,
-#'   outdir_path = outdir,
+#'   outdir = outdir,
 #'   method = "kfold",
 #'   folds = 3
 #' )
@@ -843,7 +842,7 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
 #'   data = multiplex_object_filepath,
 #'   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
 #'   geneset_path = geneset_filepath,
-#'   outdir_path = outdir,
+#'   outdir = outdir,
 #'   method = "singletons",
 #'   write_to_file = TRUE
 #' )
@@ -856,11 +855,11 @@ RWR_CV <- function(data = NULL,
                    restart = 0.7,
                    tau = 1.0,
                    numranked = 1.0,
-                   outdir_path = NULL,
+                   outdir = NULL,
                    modname = "default",
                    plot = FALSE,
                    out_full_ranks = NULL,
-                   out_median_ranks = NULL,
+                   out_mean_ranks = NULL,
                    threads = 1,
                    verbose = FALSE,
                    write_to_file = FALSE) {
@@ -869,17 +868,17 @@ RWR_CV <- function(data = NULL,
   data_list <- load_multiplex_data(data)
   nw_mpo <- data_list$nw.mpo
   nw_adjnorm <- data_list$nw.adjnorm
-
-  if ((!is.null(outdir_path) |
+  
+  if ((!is.null(outdir) |
        !is.null(out_full_ranks) |
-       !is.null(out_median_ranks)
+       !is.null(out_mean_ranks)
        ) & write_to_file == FALSE) {
     warning(sprintf("write_to_file was set to false, however, an output file path was set. write_to_file has been updated to TRUE.\n")) #nolint warning
     write_to_file <- TRUE
   }
 
-  if (is.null(outdir_path)){
-    outdir_path <- './'
+  if (is.null(outdir)){
+    outdir <- './'
   }
 
   tau <- get_or_set_tau(nw_mpo, tau)
@@ -924,15 +923,15 @@ RWR_CV <- function(data = NULL,
       res_combined$geneset[1],
       get_base_name(data),
       modname,
-      outdir = outdir_path,
+      outdir = outdir,
       ext = ".fullranks.tsv"
     )
   }
 
   if (write_to_file) {
-  if (!file.exists(outdir_path)) {
+  if (!file.exists(outdir)) {
     print("Creating directory")
-    dir.create(outdir_path, recursive = TRUE)
+    dir.create(outdir, recursive = TRUE)
   }
 
     combined <- res_combined %>%
@@ -943,16 +942,16 @@ RWR_CV <- function(data = NULL,
   }
 
   ############# Save averaged results  #######################################
-  # Save the summary table of median rank across CV folds/runs
-  if (!is.null(out_median_ranks)) {
-    out_path <- out_median_ranks
+  # Save the summary table of mean rank across CV folds/runs
+  if (!is.null(out_mean_ranks)) {
+    out_path <- out_mean_ranks
   } else {
     out_path <- get_file_path("RWR-CV_",
       res_avg$geneset[1],
       get_base_name(data),
       modname,
-      outdir = outdir_path,
-      ext = ".medianranks.tsv"
+      outdir = outdir,
+      ext = ".meanranks.tsv"
     )
   }
 
@@ -970,7 +969,7 @@ RWR_CV <- function(data = NULL,
     metrics$res_combined$geneset[1],
     get_base_name(data),
     modname,
-    outdir = outdir_path,
+    outdir = outdir,
     ext = ".metrics.tsv"
   )
   if (write_to_file) {
@@ -981,7 +980,7 @@ RWR_CV <- function(data = NULL,
     metrics$res_combined$geneset[1],
     get_base_name(data),
     modname,
-    outdir = outdir_path,
+    outdir = outdir,
     ext = ".summary.tsv"
   )
 
@@ -992,13 +991,13 @@ RWR_CV <- function(data = NULL,
   ############# Save plots  ##################################################
   if (plot) {
     message("Saving plots ...")
-    save_plots_cv(metrics, geneset, folds, data, modname, outdir_path)
+    save_plots_cv(metrics, geneset, folds, data, modname, outdir)
   }
 
 
   return(
     list("fullranks" = res_combined,
-         "medianranks" = res_avg,
+         "meanranks" = res_avg,
          "metrics" = metrics$res_avg,
          "summary" = metrics$summary)
       )

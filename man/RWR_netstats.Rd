@@ -9,8 +9,8 @@ RWR_netstats(
   flist = NULL,
   network_1 = NULL,
   network_2 = NULL,
-  outdir_path = NULL,
-  basic_statistics = T,
+  outdir = NULL,
+  basic_statistics = F,
   scoring_metric = "jaccard",
   pairwise_between_mpo_layer = F,
   multiplex_layers_to_refnet = F,
@@ -36,12 +36,12 @@ overlap_pair, and calculate tau}
 \item{network_2}{A path to an edgelist. Used for basic
 statistics and overlap_pair.}
 
-\item{outdir_path}{If a directory is supplied, all output
+\item{outdir}{If a directory is supplied, all output
 data are saved to tsv within that dir.}
 
 \item{basic_statistics}{A boolean denoting a return for basic
 statistics concerning supplied networks,
-or flists. Default True.}
+or flists. Default False.}
 
 \item{scoring_metric}{A string denoting either "jaccard",
 "overlap" or "both" to describe.
@@ -120,7 +120,7 @@ output_nstats <- RWR_netstats(
      merged_with_all_edges = T,
      merged_with_edgecounts = T,
      calculate_exclusivity_for_mpo = T,
-     outdir_path = "./rwr_netstats/",
+     outdir = "./rwr_netstats/",
      verbose = T
 )
 

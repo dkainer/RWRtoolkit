@@ -12,11 +12,11 @@ RWR_CV(
   restart = 0.7,
   tau = 1,
   numranked = 1,
-  outdir_path = NULL,
+  outdir = NULL,
   modname = "default",
   plot = FALSE,
   out_full_ranks = NULL,
-  out_median_ranks = NULL,
+  out_mean_ranks = NULL,
   threads = 1,
   verbose = FALSE,
   write_to_file = FALSE
@@ -51,10 +51,10 @@ than layers B or C.  Default 1.0}
 \item{numranked}{Proportion of ranked genes to return [0,1].  e.g. 0.1 will
 return the top 10\%. Default 1.0}
 
-\item{outdir_path}{Path to the output directory. Both 'fullranks' and
+\item{outdir}{Path to the output directory. Both 'fullranks' and
 'medianranks' will be saved with auto-generated filenames.
 Can be overridden by specifically setting 'out_full_ranks'
-and 'out_median_ranks' parameters. No defined path will
+and 'out_mean_ranks' parameters. No defined path will
 output within the same directory from which the original
 code was run.
 Default NULL}
@@ -64,11 +64,11 @@ Default NULL}
 \item{plot}{Output plots of ROC, PRC, etc. to file. Default FALSE}
 
 \item{out_full_ranks}{Specify the full path for the full results. Ignores
-outdir_path and modName, using this path instead.
+outdir and modName, using this path instead.
 Default NULL}
 
-\item{out_median_ranks}{Specify the full path for the median results. Ignores
-outdir_path and modName, using this path instead.
+\item{out_mean_ranks}{Specify the full path for the mean results. Ignores
+outdir and modName, using this path instead.
 Default NULL}
 
 \item{threads}{Specify the number of threads to use. Default for your system
@@ -108,7 +108,7 @@ cv_examples <- RWR_CV(
   data = multiplex_object_filepath,
   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
   geneset_path = geneset_filepath,
-  outdir_path = outdir,
+  outdir = outdir,
   method = "kfold",
   folds = 3
 )
@@ -119,7 +119,7 @@ cv_examples <- RWR_CV(
   data = multiplex_object_filepath,
   tau = "1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0",
   geneset_path = geneset_filepath,
-  outdir_path = outdir,
+  outdir = outdir,
   method = "singletons",
   write_to_file = TRUE
 )

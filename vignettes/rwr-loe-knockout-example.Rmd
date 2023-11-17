@@ -1,7 +1,7 @@
 ---
 title: "Using RWR-LOE To Explore Knockout Pairs"
-author: "Matt Lane"
-date: "2022-12-05"
+author: "Matthew Lane"
+date: "2023-8-25"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Using RWR-LOE To Explore Knockout Pairs}
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 # Background
 Jarvis et al. have demonstrated phenotypic differences though two double knockout experiments: {FAE1, FAD2} and {FAE1, ROD1} (Jarvis et al. 2021). The {FAE1, FAD2} knockout experiment obtained a 90% accumulation of oleic acid, however, overall seed yield was reduced and growth stunted. Conversely, the {FAE1, ROD1} experiment saw a 60% accumulation of oleic acid but did not see stunted growth or reduction of seed yeild.  
 
-Though both knockout experiments result in a greater accumulation of oleic acid, the authors noted that there was not immediately apparent explanation as to what could have caused the drastic difference in phenotypes.  `<<CITE THIS>>`
+Though both knockout experiments result in a greater accumulation of oleic acid, the authors noted that there was not immediately apparent explanation as to what could have caused the drastic difference in phenotypes.  `(Jarvis, 2021)`
 
 # Setup
 ```{r setup}

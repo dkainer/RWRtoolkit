@@ -1,6 +1,6 @@
 ---
 title: "Using RWR Shortest Paths to Explore Connectivity"
-author: "Matt Lane"
+author: "Matthew Lane"
 date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
