@@ -2,7 +2,7 @@
 ## been installed.
 ## ANY UPDATES to the code require a fresh installation for these
 ## to take affect. 
-
+library(mockery)
 
 describe("RWR inst/scripts", {
   describe("rwr_make_multiplex", {
@@ -102,6 +102,10 @@ describe("RWR inst/scripts", {
         tau = tau,
         write_to_file = T
       )
+
+      print("LISTING DIRECTORIES")
+      system("ls runCVOutput_script")
+      system("ls runCVOutput_rfunc")
 
       output_files_script <- list.files(output_directory_script)
       actual_file_count_script <- length(output_files_script)

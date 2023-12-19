@@ -1,3 +1,5 @@
+library(mockery)
+
 describe("RWR_netstats", {
 
   describe("load_flist", {

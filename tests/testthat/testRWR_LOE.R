@@ -1,5 +1,6 @@
 context("RWR_LOE Tests")
 library(RWRtoolkit)
+library(mockery) 
 
 ########################################################################
 # Global Variables/Functions
