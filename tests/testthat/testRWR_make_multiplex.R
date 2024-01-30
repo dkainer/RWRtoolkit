@@ -18,7 +18,7 @@ nw_tibble_bad_path <- tibble::tibble(
   "nwgroup" = c(1, 1)
 )
 
-nw_groups <- list_of(nw_tibble)
+nw_groups <- vctrs::list_of(nw_tibble)
 
 # Heterogeneous Network Tibble
 nw_tibble_het1 <- tibble::tibble(
