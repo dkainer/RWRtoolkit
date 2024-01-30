@@ -48,7 +48,6 @@ Imports:
     iterators,
     dplyr,
     RandomWalkRestartMH,
-    IRkernel,
     stringr,
     Matrix
 Suggests: 
