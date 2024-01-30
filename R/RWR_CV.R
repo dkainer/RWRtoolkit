@@ -46,6 +46,7 @@ update_folds_by_method <- function(
       file = stderr()
     )
   } else if (method == "kfold") {
+	# If kfold is not available due to too many folds, switch method to LOO
     if ((nrow(geneset) / num_folds) < 1) {
       folds <- nrow(geneset)
       method <- "loo"
@@ -173,7 +174,6 @@ create_rankings_cv <- function(rwr,
   rwr$RWRM_Results
 }
 
-# For 'loo' and 'kfold', each gene is leftout once, so gets ranked once.
 RWR <- function(geneset,
                 adjnorm,
                 mpo,
