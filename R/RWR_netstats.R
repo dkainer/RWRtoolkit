@@ -20,8 +20,6 @@
 #' @param verbose Print progress to console.
 #'
 #' @return A data.table
-#'
-#' @export
 load_flist <- function(path_to_flist, verbose=FALSE) {
     flist <- data.table::fread(
         path_to_flist,
@@ -45,8 +43,6 @@ load_flist <- function(path_to_flist, verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return An multiplex network object.
-#'
-#' @export
 make_dummy_multiplex <- function(
     flist_or_path,
     verbose=FALSE
@@ -113,8 +109,6 @@ make_dummy_multiplex <- function(
 #' @param verbose Print progress to console.
 #'
 #' @return An igraph network object.
-#'
-#' @export
 merged_with_all_edges <- function(mpo, verbose=FALSE) {
     message(sprintf("merging %d network layers ...\n", mpo$Number_of_Layers))
     nl        <- mpo$Number_of_Layers
@@ -151,8 +145,6 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return An igraph network object.
-#'
-#' @export
 merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
     n_nodes <- mpo$Number_of_Nodes_Multiplex
@@ -198,8 +190,6 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 #' @param default The default network name.
 #'
 #' @return A string.
-#'
-#' @export
 get_name <- function(g, default="<G>") {
     if (is.null(igraph::get.graph.attribute(g, "name"))) {
         g_name <- default
@@ -239,8 +229,6 @@ get_name <- function(g, default="<G>") {
 #'
 #' @seealso \code{\link{igraph::vcount}}, \code{\link{igraph::ecount}},
 #' \code{\link{igraph::diameter}}.
-#'
-#' @export
 calculate_basic_statistics <- function(
     g,
     name=NULL,
@@ -302,8 +290,6 @@ calculate_basic_statistics <- function(
 #' @param verbose Print progress to console.
 #'
 #' @return NULL
-#'
-#' @export
 basic_statistics_multiplex <- function(mpo, verbose=FALSE) {
     # Calculate basic network statistics on each layer of a multiplex network.
 
@@ -359,8 +345,6 @@ check_weighted_edges <- function(network, network_name) {
 #' @param verbose Print progress to console.
 #'
 #' @return Jaccard similarity coefficient.
-#'
-#' @export
 jaccard_score_edges <- function(g, h, verbose=FALSE) {
     i <- igraph::graph.intersection(g, h)
     u <- igraph::graph.union(g, h)
@@ -382,8 +366,6 @@ jaccard_score_edges <- function(g, h, verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return Overlap score.
-#'
-#' @export
 overlap_score <- function(g, h, verbose=FALSE) {
     # Sum of edges weights from the intersection divided by
     # the number of edges in the network of interest.
@@ -539,8 +521,6 @@ overlap_many_vs_reference <- function(
 #' @param verbose Print progress to console.
 #'
 #' @return Tau vector (numeric)
-#'
-#' @export
 calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
     scores <- overlap_many_vs_reference(mpo,
                     reference_network,
