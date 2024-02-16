@@ -157,11 +157,17 @@ view_top_network_loe <- function(results,
                                  cyto = 1,
                                  modname = "") {
   if (cyto) {
-    topresults <- RandomWalkRestartMH::create.multiplexNetwork.topResults(
-      results,
-      nw_mpo,
-      k = ntop
-    )
+    #1.  compress multiplex to aggregate net
+    merged_mp <- merged_with_edgecounts(nw_mpo)$merged_network
+
+    #2.  extract "ntop" results from "results" as subnet
+    top_rows <- results$RWRM_Results[results$RWRM_Results$rank <= ntop, ]
+    top_ranks <- top_rows$NodeNames
+    seed_genes <- results$Seed_Nodes
+
+    subgraph_nodes <- c(top_ranks, seed_genes)
+    topresults <- igraph::subgraph(merged_mp, subgraph_nodes)
+
 
     igraph::V(topresults)$label.cex <- 0.6 # nolint: igraph method
     if (!is.null(query_geneset)) {
@@ -191,6 +197,7 @@ view_top_network_loe <- function(results,
       title = paste0("seeds_to_top", ntop),
       collection = modname
     )
+	RCy3::setVisualStyle("Curved")
     RCy3::layoutNetwork("kamada-kawai")
     RCy3::setNodeBorderColorDefault(new.color = "#666666")
     RCy3::setNodeBorderWidthDefault(new.width = 4)
@@ -394,7 +401,6 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
 
   # Core of method
   message("\nBeginning RWR_LOE ...")
-
   # Set network_names to be the concatenation of individual network names
   network_names <- paste(
     names(nw_mpo)[1:nw_mpo$Number_of_Layers],
