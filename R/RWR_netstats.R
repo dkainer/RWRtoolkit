@@ -399,8 +399,6 @@ overlap_score <- function(g, h, verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return Score
-#'
-#' @export
 compare_networks <- function(g, h, metric="overlap", verbose=FALSE) {
     if (metric == "overlap") {
         score <- overlap_score(g, h, verbose = verbose)
@@ -426,8 +424,6 @@ compare_networks <- function(g, h, metric="overlap", verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return Score
-#'
-#' @export
 overlap_pair <- function(...) {
     # Wrapper for compare_networks
     compare_networks(...)
@@ -440,8 +436,6 @@ overlap_pair <- function(...) {
 #' @param verbose Print progress to console.
 #'
 #' @return numeric vector
-#'
-#' @export
 overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
     n <- mpo$Number_of_Layers
     mat <- matrix(0, nrow = n, ncol = n)
@@ -489,8 +483,6 @@ overlap_many_pairwise <- function(mpo, metric="overlap", verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return numeric vector
-#'
-#' @export
 overlap_many_vs_reference <- function(
                                 mpo,
                                 reference_network,
@@ -555,8 +547,6 @@ calculate_tau <- function(mpo, reference_network, verbose=FALSE) {
 #' @param verbose Print progress to console.
 #'
 #' @return NULL
-#'
-#' @export
 exclusivity <- function(mpo, verbose=FALSE) {
     # Get the number of edges between each node pair.
     merged <- merged_with_edgecounts(mpo)
