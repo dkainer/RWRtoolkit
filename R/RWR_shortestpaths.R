@@ -29,21 +29,6 @@
 ########################################################################
 # Internal Functions
 ########################################################################
-
-merge_networks <- function(nw_mpo) {
-  # Merge the subnetworks into one big network.
-  message("Merging network layers down...")
-  nl <- nw_mpo$Number_of_Layers
-  nw_dflist <- lapply(nw_mpo[1:nl], igraph::as_data_frame)
-  nw_df <- do.call(rbind, nw_dflist)
-  nw_df <- nw_df %>%
-    dplyr::group_by(type) %>%
-    dplyr::mutate(weightnorm = weight / sum(weight))
-  nw_merged <- igraph::graph_from_data_frame(nw_df, directed = FALSE)
-  message("Done.")
-  return(nw_merged)
-}
-
 get_shortest_paths <- function(nw_merged,
                                source_geneset,
                                target_geneset,
@@ -417,7 +402,7 @@ RWR_ShortestPaths <- function( # nolint
   target_genes <- target_geneset_plus_extras[[1]]
   message(head(target_genes))
 
-  nw_merged <- merge_networks(nw_mpo)
+  nw_merged <- merged_with_all_edges(nw_mpo)$merged_network
 
   res <- get_shortest_paths(nw_merged, source_genes, target_genes, threads)
 
