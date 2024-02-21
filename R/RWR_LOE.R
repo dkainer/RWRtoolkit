@@ -413,6 +413,7 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
     x = nw_adjnorm,
     MultiplexObject = nw_mpo,
     Seeds = seed_geneset$gene,
+	weights = seed_geneset$weight,
     r = restart
   )
 
