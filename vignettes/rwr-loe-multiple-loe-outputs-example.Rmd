@@ -1,0 +1,235 @@
+---
+title: "Advanced RWR-LOE To Explore Multiple LOE Outputs"
+author: "Matthew Lane"
+date: "2023-8-25"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{UsingAdvanced RWR-LOE To Explore Multiple LOE Outputs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+The RWR_LOE command uses RWR to rank all genes in the multiplex network with respect to a geneset, which provides biological context for the seed genes in the gene set using the multiple lines of evidence (i.e. layers) contained within the multiplex network. The output of RWR_LOE is a matrix with random walk scores, and their associated ranks. Each row additionally contains the number of seeds within the network, the total supplied number of seeds, the network name, the modified name, and the seed gene set name. The connectivity between seed genes and the top n ranking genes can be visualized as a subnetwork in Cytoscape via the RCy3 implementation of CyREST (Gustavsen 2019, Ono 2015) by setting the cyto flag. Users can use RWR_LOE output from two separate gene sets on the same multiplex to explore data driven differences between those seed sets of interest. 
+
+# Background
+Jarvis et al. have demonstrated phenotypic differences though two double knockout experiments: {FAE1, FAD2} and {FAE1, ROD1} (Jarvis et al. 2021). The {FAE1, FAD2} knockout experiment obtained a 90% accumulation of oleic acid, however, overall seed yield was reduced and growth stunted. Conversely, the {FAE1, ROD1} experiment saw a 60% accumulation of oleic acid but did not see stunted growth or reduction of seed yield.  Though both knockout experiments result in a greater accumulation of oleic acid, the authors noted that there was not immediately apparent explanation as to what could have caused the drastic difference in phenotypes.  `(Jarvis, 2021)`
+
+We can use RWR_LOE to explore the surrounding topological regions within the multiplex network for each set of knockouts to obtain a greater understanding as to why these phenotypic differences may have occurred. 
+
+# Setup
+```{r setup, warning=F, message=F}
+library(RWRtoolkit)
+library(ggplot2)
+library(ggbreak)
+library(gprofiler2)
+library(dplyr)
+library(RColorBrewer)
+```
+## Load Networks
+### Expression/Regulation Multiplex
+We will load a previously created regulation multiplex from the RWRtoolkit-Data github repository: 
+
+| **Const** | Comprehensive_Network_AT_d0.5_v02.Rdata |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Version** | 0.1 |
+| **Description** | Contains the following network layers with unweighted edges and delta value = 0.5: <br/> CoEvolution-DUO (DU) version 0.1 (AT-UU-DU-67-AA-01)  <br/>Coexpression Gene-Atlas (GA) version 0.3 (AT-UU-GA-01-AA-01)<br/>Knockout Similarity (KS) version 0.3 (AT-UU-KS-00-AA-01)<br/>PPI-6merged (PP) version 0.3 (AT-UU-PP-00-AA-01)<br/>PEN-Diversity (PX) version 0.1 (AT-UU-PX-01-AA-01)<br/>Predictive CG Methylation (PY) version 0.1 (AT-UU-PY-01-LF-01)<br/>Regulation-ATRM (RE) version 0.3 (AT-UU-RE-00-AA-01)<br/>Regulation-Plantregmap (RP) version 0.3 (AT-UU-RP-03-AA-01)<br/>Metabolic-AraCyc (RX) version 0.3 (AT-UU-RX-00-AA-01) |
+
+The network variables will be: 
+
+- `nw.mpo`:     The multiplex object
+- `nw.adj`:     The supra-adjacency matrix
+- `nw.adjnorm`: The normalized supra-adjacency matrix
+
+```{r Read Multiplex from URL}
+# comprehensiveNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Comprehensive_Network_AT_d0.5_v02.RData?raw=True"
+# comprehensiveNetworkPathURL <- url(comprehensiveNetworkPath)
+# load(comprehensiveNetworkPathURL)
+comprehensiveNetworkPath <- '../../RWRtoolkit-data/Comprehensive_Network_AT_d0.5_v02.RData'
+```
+
+### Seed List Generation
+In order to run our experiment, we will need to create the two gene lists in question. Additionally, we will need to ensure we're using the correct TAIR IDs for these genes in question so that they match the node names within the multiplex: 
+
+| **Gene Name** | **TAIR ID**  |
+|:----------------|:----------------|
+| FAE1  | AT4G34520 | 
+| FAD2  | AT3G12120 |
+| ROD1  | AT3G15820 |
+
+To create these gene lists,  we will write a quick function to save those to file: 
+
+```{r title="Create Gene Lists", messages=FALSE, warning=FALSE}
+write_genelist_to_file <- function(genelist, setlist, filename) {
+  df <- data.frame(setlist, genelist)
+  write.table(df, filename, sep = "\t", row.names = FALSE, quote = FALSE, col.names = FALSE)
+}
+
+## FAE1 FAD2
+fae1fad2List <- c("AT4G34520", "AT3G12120")
+setlist1 <- c("set1", "set1")
+fea1fad2GenesetPath <- "./genelist_fae1_fad2.tsv"
+write_genelist_to_file(fae1fad2List, setlist1, fea1fad2GenesetPath)
+
+## FAE1 ROD1
+fae1rod1List <- c("AT4G34520", "AT3G15820")
+setlist2 <- c("set2", "set2")
+fae1rod1GenesetPath <- "./genelist_fae1_rod1.tsv"
+write_genelist_to_file(fae1rod1List, setlist2, fae1rod1GenesetPath)
+```
+
+
+# Running RWR LOE and Comparing Ranks
+To implement this exploration of the differential ranking between the two RWR_LOE outputs, we, naturally, must run RWR_LOE twice:
+- once with the `fae1fad2GenesetPath`
+- once with the `fae1rod1GenesetPath`. 
+We will then take the top 200 genes from each output and explore the differences in these output ranks:
+
+```{r Run LOE, messages=FALSE, warning=FALSE}
+fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = '~/Documents/projects/RWR/RWRtoolkit-data/Comprehensive_Network_AT_d0.5_v02.RData',
+  seed_geneset = fea1fad2GenesetPath,
+  outdir = "./fae1fad2",
+  #cyto=200 # To load via cytoscape, make sure your cytoscape application is open
+)
+
+fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = comprehensiveNetworkPath,
+  seed_geneset = fae1rod1GenesetPath,
+  outdir = "./fae1rod1",
+  #cyto=200 # To load via cytoscape, make sure your cytoscape application is open
+)
+
+## Extract Ranked Genes from the Results:
+fae1fad2RankedGenes <- fea1fad2_loeOutput$RWRM_Results
+fae1rod1RankedGenes <- fae1rod1_loeOutput$RWRM_Results
+```
+
+
+## Calculating the Differential Ranks
+Now that we have our ranked genes for each experiment, we can begin to explore which genes are most differentially ranked. This method follows the hypothesis that genes which are ranked similarly (within some differential rank threshold) affect the phenotypes similarly, whereas the genes which have a high degree of differential ranking likely have some effects with respect to the phenotypes exhibited within the knockouts. 
+
+To quickly illustrate the differences in our gene sets, we will create two plots illustrating the top 200 ranks with respect to each other. 
+```{r fig.height = 4, fig.width = 7, fig.align = "center", echo = FALSE, message=FALSE}
+join_ranks_of_experiment <- function(x_set, y_set, threshold = 200, x_label="x", y_label="y"){
+  top_200_xset <- x_set[ x_set$rank <= threshold, c("NodeNames", "rank")]
+  print(head(top_200_xset))
+  x_joined_y <- left_join(top_200_xset, y_set[, c('NodeNames', 'rank')], by='NodeNames')
+  colnames(x_joined_y) <- c('NodeNames', x_label, y_label)
+  x_joined_y
+}
+
+
+create_ranking_diff_scatter_plot <- function(x_joined_y, x_label="x", y_label='y', title="", include_legend=FALSE, base_size=33){
+  x_joined_y$change <- unlist(
+    purrr::map(
+      x_joined_y[[y_label]], 
+      function(x){
+        if(is.na(x)) return(NA)
+        if (x < 300) {
+        return("SMALL") 
+          }
+        else ("LARGE")
+        }
+      )
+  )
+
+  myColorPal <- brewer.pal(2,"Set2")
+  myColors <- myColorPal[c(1,2)]
+  names(myColors) <- c('SMALL', 'LARGE')
+  colScale <- scale_colour_manual(name = "change",values = myColors)
+  legend_value <- if(include_legend)c(1,-1) else "none"
+  
+  p <- ggplot(x_joined_y) +
+    aes_string(x = x_label, y=y_label, colour="change") + 
+    geom_point(size=1) + 
+    scale_y_reverse()+
+    scale_y_cut(breaks=c(1000))+
+    ggtitle(title) + 
+    theme(legend.position=legend_value)
+    
+
+  p1 <- p + colScale 
+  p1
+}
+
+fad2_joined_rod1 <- join_ranks_of_experiment(fae1fad2RankedGenes, fae1rod1RankedGenes, threshold=200, x_label="fae1.fad2_Rankings", y_label="fae1.rod1_Rankings")
+p1 <- create_ranking_diff_scatter_plot(fad2_joined_rod1, x_label="fae1.fad2_Rankings", y_label="fae1.rod1_Rankings", title="FAE1/FAD2 to FAE1/ROD1 Rankings", include_legend = FALSE)
+
+rod1_joined_fad2 <- join_ranks_of_experiment(fae1rod1RankedGenes, fae1fad2RankedGenes, threshold=200, x_label="fae1.rod1_Rankings", y_label="fae1.fad2_Rankings")
+p2 <- create_ranking_diff_scatter_plot(rod1_joined_fad2, x_label="fae1.rod1_Rankings", y_label='fae1.fad2_Rankings',  title="FAE1/ROD1 to FAE1/FAD2 Rankings", include_legend=TRUE)
+
+extra <- gridExtra::grid.arrange(p1, p2, ncol=2)
+extra
+```
+
+The top 200 ranked genes from the outputs of RWR_LOE for fae1/fad2 and fae1/rod1 are shown above with ranks from the the respective other knockout experiment acting as the y axes. As we can see from above, many genes appear to be ranked similarly within the top 200 (i.e. the top, decreasing linear section) and are almost entirely annotated as being related to fatty acids. There are, however, many genes that do not similarly rank. Drastic changes in ranking between the experiments could indicate the genes with great differences in rank play a greater role in the phenotypic output differences. 
+
+Farther examining our genes of interest, we can extract the genes that had the greatest change in rank for each. By selecting genes that rank below 200 for each of our experiments, we can see the most highly associated genes that are uniquely connected to those knocked out. Additionally, we can extract those genes that rank similarly as a sanity check. 
+```{r differential ranking extraction}
+fad2_differentially_ranked <- fad2_joined_rod1[fad2_joined_rod1$fae1.rod1_Rankings > 200, ]$NodeNames
+rod1_differentially_ranked <- rod1_joined_fad2[rod1_joined_fad2$fae1.fad2_Rankings > 200, ]$NodeNames
+
+fae1_fad2_rod1_intersected_genes <- fad2_joined_rod1[fad2_joined_rod1$fae1.rod1_Rankings <= 200, ]$NodeNames
+```
+
+First we will explore those genes that exist in both the fae1/fad2 and fae1/rod1. As both sets of knockout pairs exist within the biosynthetic pathway of fatty acid synthesis, we can see below that, when enriched for GO/Kegg terms, the output we see parses with the original intent of the dual knockout study, that is we see many "Fatty Acid", "Lipid", "Organic Acid" molecular function, biosynthetic process GO and Kegg terms. Curiously, we do also see terms such as "Response to Light Stimulus" and "Response to Light Radiation". 
+```{r fig.height = 4, fig.width = 7, fig.align = "center"}
+fae1fad2rod1GORanks <- gost(query = fae1_fad2_rod1_intersected_genes, organism = "athaliana")
+gostplot(fae1fad2rod1GORanks)
+```
+
+Next, we begin to investigate the distinction in phenotypes by exploring those genes most differentially ranked for each knockout pair. Starting with the fae1/fad2 knockout pair, we see the genes that ranked highly within the fae1/fad2 RWR-LOE runs while ranking poorly within the fae1/rod1 knockout pair runs begin to tell a different story when enriched. While we do see many fatty acid biosynthesis, we do begin to see clues as to why the growth may be stunted from enriched GO terms such as "Photoinhibition", "Negative Regulation of Photosynthesis", "Negative Regulation of Photosynthesis: Light Reaction". Unlike the light reaction GO terms found within the intersection, these negative interactions appear to point us in the direction of the fae1/fad2 dual knockout having a greater 
+
+```{r fig.height = 4, fig.width = 7, fig.align = "center"}
+fae1fad2GORanks <- gost(query = fad2_differentially_ranked, organism = "athaliana")
+gostplot(fae1fad2GORanks)
+```
+
+Conversely, when enriching the genes unique to the top 200 ranks within the fae1/rod1 RWR_LOE output, we see lipid droplet and lipid storage genes. The terms that do exist appear to be consistent with our phenotypic results. 
+
+```{r fig.height = 4, fig.width = 7, fig.align = "center"}
+fae1rod1GORanks <- gost(query = rod1_differentially_ranked, organism = "athaliana")
+gostplot(fae1rod1GORanks)
+```
+
+
+
+## Exploring Set Differences
+For users interested in a more visual approach, instead of using a method of differentially ranking two RWR_LOE output sets, we can also extract similar results by running RWR LOE on our network and supplied seed genes by supplying an integer to `cyto` we can then produce a cytoscape session with the ranked genes. 
+
+Note the following commands **assume a cytoscape is open.**
+## Cytoscape
+```{r eval=FALSE}
+cyto_num <- 200
+fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetworkPath,
+  seed_geneset = fea1fad2GenesetPath,
+  outdir = "./fae1fad2",
+  cyto = cyto_num
+)
+
+fae1rod1_loeOutput <- RWRtoolkit::RWR_LOE(
+  data = regulationNetrworkPath,
+  seed_geneset = fae1rod1GenesetPath,
+  outdir = "./fae1rod1",
+  cyto = cyto_num
+)
+```
+
+With the newly created cytoscape networks, separate sub-networks can then be generated using the difference and intersect methods in cytoscape to get nodes that exist within one subnetwork but not the other. ClueGO can then be run on the three distinct subnetworks. 
+
+
+## References
+Gustavsen JA, Pai S, Isserlin R, Demchak B, Pico AR. RCy3: Network biology using Cytoscape from within R. F1000Res. 2019 Oct 18;8:1774. doi: 10.12688/f1000research.20887.3. PMID: 31819800; PMCID: PMC6880260.
+
+Jarvis, Brice & Romsdahl, Trevor & McGinn, Michaela & Nazarenus, Tara & Cahoon, Edgar & Chapman, Kent & Sedbrook, John. (2021). CRISPR/Cas9-Induced fad2 and rod1 Mutations Stacked With fae1 Confer High Oleic Acid Seed Oil in Pennycress (Thlaspi arvense L.). Frontiers in Plant Science. 12. 652319. 10.3389/fpls.2021.652319. 
+
+Ono K, Muetze T, Kolishovski G, Shannon P, Demchak B. CyREST: Turbocharging Cytoscape Access for External Tools via a RESTful API. F1000Res. 2015 Aug 5;4:478. doi: 10.12688/f1000research.6767.1. PMID: 26672762; PMCID: PMC4670004.
