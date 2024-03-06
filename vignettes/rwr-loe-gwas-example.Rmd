@@ -1,0 +1,121 @@
+---
+title: "Using RWR-LOE To Explore GWAS Output"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using RWR-LOE To Explore GWAS Output}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+The RWR_LOE command uses RWR to rank all genes in the multiplex network with respect to a geneset, which provides biological context for the seed genes in the gene set using the multiple lines of evidence (i.e. layers) contained within the multiplex network. The output of RWR_LOE is a matrix with random walk scores, and their associated ranks. Each row additionally contains the number of seeds within the network, the total supplied number of seeds, the network name, the modified name, and the seed gene set name. The connectivity between seed genes and the top n ranking genes can be visualized as a subnetwork in Cytoscape via the RCy3 implementation of CyREST (Gustavsen 2019, Ono 2015) by setting the cyto flag. 
+
+# Background
+Given a list of genes, obtained from GWAS output for example, we can explore the most highly ranked genes with respect to those GWAS hits. 
+
+We have run GWAS to obtain significant SNPs with respect to the dry weight of well watered shoot bio-mass in switchgrass using BLINK and FarmCPU. After filtering, we chose to explore the top hits shared by both FarmCPU and BLINK within the framework of an arabidopsis multiplex by using orthologous genes: 
+
+| Gene            | A thal Ortholog | FarmCPU FDR p-value | BLINK FDR p-value | SNP to Gene Distance |
+| --------------- | --------------- | ------------------- | ----------------- | -------------------- |
+| Pavir.8NG064200 | AT3G47570.1     | 1.20E-09            | 8.34E-06          | -1715                |
+| Pavir.2KG285100 | AT2G46210.1     | 8.38E-13            | 1.00E-05          | -6514                |
+
+By using these two GWAS identified genes as seeds, we can plug those into our RWR-LOE algorithm and explore the most highly connected and related genes. 
+
+# Setup
+```{r setup, warning=F, message=F}
+library(RWRtoolkit)
+library(gprofiler2)
+```
+
+## Load Networks
+### Expression/Regulation Multiplex
+We will load a previously created regulation multiplex from the RWRtoolkit-Data github repository: 
+
+| **Const** | Comprehensive_Network_AT_d0.5_v02.Rdata |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Version** | 0.1 |
+| **Description** | Contains the following network layers with unweighted edges and delta value = 0.5: <br /> CoEvolution-DUO (DU) version 0.1 (AT-UU-DU-67-AA-01) <br /> Coexpression Gene-Atlas (GA) version 0.3 (AT-UU-GA-01-AA-01) <br /> Knockout Similarity (KS) version 0.3 (AT-UU-KS-00-AA-01) <br /> PPI-6merged (PP) version 0.3 (AT-UU-PP-00-AA-01) <br /> PEN-Diversity (PX) version 0.1 (AT-UU-PX-01-AA-01) <br /> Predictive CG Methylation (PY) version 0.1 (AT-UU-PY-01-LF-01) <br /> Regulation-ATRM (RE) version 0.3 (AT-UU-RE-00-AA-01) <br /> Regulation-Plantregmap (RP) version 0.3 (AT-UU-RP-03-AA-01) <br /> Metabolic-AraCyc (RX) version 0.3 (AT-UU-RX-00-AA-01) <br />|
+
+The network variables will be: 
+- `nw.mpo`:     The multiplex object
+- `nw.adj`:     The supra-adjacency matrix
+- `nw.adjnorm`: The normalized supra-adjacency matrix
+
+```{r title="Read Multiplex from URL", warning=FALSE, message=FALSE}
+comprehensiveNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Comprehensive_Network_AT_d0.5_v02.RData?raw=True"
+comprehensiveNetworkPathURL <- url(comprehensiveNetworkPath)
+load(comprehensiveNetworkPathURL)
+```
+
+### Seed List Generation
+Next, we can generate our gene lists to act as seeds for our separate LOE runs, with our genes converted to their corresponding TAIR IDs:  
+
+
+| **Gene ** | **Ortholog TAIR ID**  |
+|:----------------|:----------------|
+| Pavir.8NG064200 | AT3G47570.1 | 
+| Pavir.2KG285100 | AT2G46210.1 |
+
+
+```{r title="Create Gene Lists", warning=FALSE, message=FALSE}
+write_genelist_to_file <- function(genelist, setlist, filename) {
+  df <- data.frame(setlist, genelist)
+  write.table(df, filename, sep = "\t", row.names = FALSE, quote = FALSE, col.names = FALSE)
+}
+
+## Gene set creation
+genelist <- c("AT3G47570", "AT2G46210")
+setlist <- c("set1", "set1")
+ww_shoot_biomass_setlist_path <- "./genelist_ww_set.tsv"
+write_genelist_to_file(genelist, setlist, ww_shoot_biomass_setlist_path)
+
+```
+
+
+# Running RWR LOE and Exploring Ranks
+To run RWR-LOE, all we need to do is simply input the path to the multiplex, the gene set for seeding, and the desired output directory. 
+
+```{r title="Run LOE", warning=F, message=F}
+ww_shoot_output <- RWRtoolkit::RWR_LOE(
+  data = comprehensiveNetworkPath,
+  seed_geneset = ww_shoot_biomass_setlist_path,
+  outdir = "./ww_shoot_biomas"
+)
+```
+
+RWR_LOE output contains a ranked list of all genes not in the seed set with respect to the seed genes. The output data is a data frame consisting of columsn for node names, their associated random walk scores and rank, the total number of seeds and how many of those seeds were in the network, the name of the seed set, the layers of the networks, as well as any modified name for the output data. 
+
+The rankings of each gene correspond to a measure of relatedness to the seed genes. We can then take these ranked genes and threshold them to begin to explore which genes are most highly connected to our seed genes in question. Using these thresholded ranked genes, users can then  begin to explore genes most highly related to those seed genes in question with any number of methods such as literature searches or GO/Kegg  enrichments.
+
+```{r title="Exploring top ranked GO Enrichment", fig.align = 'center' , out.width="100%"}
+threshold <- 200
+top_200_genes <- ww_shoot_output$RWRM_Results[1:threshold, ]$NodeNames
+gostres <- gost(top_200_genes, organism='athaliana')
+
+gostplot(gostres)
+```
+
+
+Additionaly, for users who like a visual method of examination, the top N ranks can be explored via a merged monoplex in cytoscape by using the `cytoscape` parameter and supplying it with the `n` values.  
+
+```{r eval=FALSE}
+ww_shoot_output <- RWRtoolkit::RWR_LOE(
+  data = comprehensiveNetworkPath,
+  seed_geneset = ww_shoot_biomass_setlist_path,
+  outdir = "./ww_shoot_biomas",
+  cyto=theshold
+)
+```
+
+## References
+Gustavsen JA, Pai S, Isserlin R, Demchak B, Pico AR. RCy3: Network biology using Cytoscape from within R. F1000Res. 2019 Oct 18;8:1774. doi: 10.12688/f1000research.20887.3. PMID: 31819800; PMCID: PMC6880260.
+
+Ono K, Muetze T, Kolishovski G, Shannon P, Demchak B. CyREST: Turbocharging Cytoscape Access for External Tools via a RESTful API. F1000Res. 2015 Aug 5;4:478. doi: 10.12688/f1000research.6767.1. PMID: 26672762; PMCID: PMC4670004.
