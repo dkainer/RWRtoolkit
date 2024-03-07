@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r title='setup', warnings=F, message=F}
 library(RWRtoolkit)
 library(igraph)
 ```
@@ -30,18 +30,9 @@ In a given multiplex, there are a number of paths of equal lengths between any t
 ## 2. Setup
 ### Layer Generation
 
-The `RWR_ShortestPaths` function requres an `mpo` R object, a vector of source nodes and a vector of target nodes. First we'll need to create an example multiplex. In this example, we'll create a 3 layer multiplex:  
-```
- ABC Layer 1      # ABC Layer 2            # ABC Layer 3
- A◄───B◄──────C   # G        H             #    H◄─┐ 
-      ▲       ▲   # │        │             #       │ 
-      │       │   # └──►D    └─►E       F  #  D◄───E◄┐        F  
- D◄───E◄─┬──F─┤   #     │       │       │  #         │        │  
-      ▲  │  ▲ │   #     └───►B◄─┘──►C◄──┘  #         ├───►C◄──┘  
-      │  │  │ │   #          │      │      #         │ 
-  G───┘  H ─┴─┘              └──►A◄─┘      #         A 
-```
-```{r}
+The `RWR_ShortestPaths` function requres an `mpo` R object (generated from RWR_make_multiplex), a vector of source nodes and a vector of target nodes. First we'll need to create an example multiplex. In this example, we'll create a 3 layer multiplex:  
+
+```{r title='Creating Network Layers', warning=F, message=F}
 # Layer 1
 source <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
 sink <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
@@ -64,28 +55,27 @@ edgelist_layer3 <- data.frame(list(source = source, sink = sink, weight = weight
 write.table(edgelist_layer3, "./abc_layer3.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
-```{r Fig1, echo=FALSE, fig.align = 'center'}
-set.seed(42)
+```{r title="Fig1", echo=FALSE, fig.align = 'center', warning=F, message=F}
+set.seed(32)
 layer1 <- igraph::graph_from_data_frame(edgelist_layer1, directed= F)
 layer2 <- igraph::graph_from_data_frame(edgelist_layer2, directed= F)
 layer3 <- igraph::graph_from_data_frame(edgelist_layer3, directed= F)
 output <- capture.output({
-  V(layer1)$label.cex <- 0.65
-  V(layer2)$label.cex <- 0.65
-  V(layer3)$label.cex <- 0.65
+  V(layer1)$label.cex <- 0.45
+  V(layer2)$label.cex <- 0.45
+  V(layer3)$label.cex <- 0.45
   
   png('layers.png', width=700, height=350, res=300)
   par(mfrow= c(1,3), mar=c(1,1,1,1))
-  igraph::plot.igraph(layer1, main="Layer 1", vertex.size=35)
-  igraph::plot.igraph(layer2, main="Layer 2", vertex.size=35)
-  igraph::plot.igraph(layer3, main="Layer 3", vertex.size=35)
+  igraph::plot.igraph(layer1, main="Layer 1", vertex.size=28)
+  igraph::plot.igraph(layer2, main="Layer 2", vertex.size=28)
+  igraph::plot.igraph(layer3, main="Layer 3", vertex.size=28)
   dev.off()
 })
 knitr::include_graphics('layers.png')
-
 ```
 
-### FLIST Generation
+### FLIST and Multiplex Generation
 We now have all three of our layers, we need to create a quick flist and then to make our multiplex! The flist must be a file of the type: 
 
 | **File Path** | **Short Name**  | **Group**  |
@@ -94,7 +84,9 @@ We now have all three of our layers, we need to create a quick flist and then to
 | path_to_file2 | layer2_name | layer_group |
 | path_to_file3 | layer3_name | layer_group |
 
-```{r}
+And once we have our multiplex flist, we can make a multiplex with `RWR_make_multiplex`: 
+
+```{r title="Create flist file", message=FALSE, warning=FALSE}
 filepaths <- c("./abc_layer1.tsv", "./abc_layer2.tsv", "./abc_layer3.tsv")
 layernames <- c("layer1", "layer2", "layer3")
 groups <- c(1, 1, 1)
@@ -103,19 +95,14 @@ flist_df <- data.frame(list(filepaths = filepaths, layernames = layernames, grou
 
 flist_filename <- "multiplex_flist.tsv"
 write.table(flist_df, file = flist_filename, quote = F, sep = "\t", row.names = F, col.names = F)
-```
 
-
-### Multiplex Generation
-Now that we have our multiplex flist, we can make a multiplex with `RWR_make_multiplex`: 
-```{r}
 multiplex_filename <- "abc_multiplex.Rdata"
 RWR_make_multiplex(flist_filename, output = multiplex_filename)
 
 # load saved data:
 load(multiplex_filename)
-nw.mpo
 ```
+
 
 ### Node Set Generation
 Now that we have our multiplex, let's use `RWR_shortestpaths` to extract some information!  
@@ -124,20 +111,18 @@ It should be noted that `RWR_ShortestPaths` can be run in two separate modes:
 
 - With both `source_geneset` and `target_geneset` such that all shortest paths will be found between each node within the `source_geneset` to each target node in the `target_geneset`. 
 
-Additionally, it ought to be noted that all provided geneset files ought to be formatted in a way such that there exist two columns, the first being `setid` the second being the corresponding `gene`, such as: 
+Additionally, it ought to be noted that all provided geneset files ought to be formatted in a way such that there exist two columns, the first being `setid` the second being the corresponding `node` in the network (gene), such as: 
 
 | **Set ID** | **Node Name**  |
 |:----------------|:----------------|
-| setA1 | G6PD |
-| setA1 | PMM1 |
-| setA1 | TPI1 |
-| setA1 | PFKM |
-| setA1 | HKDC1 |
-| setA1 | CDC5L |
+| setA1 | A |
+| setA1 | C |
+| setA1 | G |
+| setA1 | F |
 
 Let's extract our first path to be a path from nodes `G` to `C`. To do so, we'll need a target file and a source file, each consisting of a list of nodes with an associated set name). 
 
-```{r}
+```{r title="Create Source and Target Files"}
 source_nodes <- c("G")
 target_nodes <- c("C")
 
@@ -159,7 +144,7 @@ write.table(target_df, file = target_file, quote = F, sep = "\t", row.names = F,
 
 ### Running RWR_ShortestPaths
 Finally, now that we have a network, source nodes, and target nodes, we can call `RWR_shortestpaths`. 
-```{r}
+```{r title="Run RWR Shortest Paths", warnings=F, message=F}
 shortest_paths_output <- RWRtoolkit::RWR_ShortestPaths(
   data = multiplex_filename,
   source_geneset = source_file,
@@ -180,7 +165,7 @@ Note, given that RWR Toolkit does not currently employ methods for directed netw
 
 In the above example output, we see that the two layers in which our shortest path from G to A exist are layers 1 and 2.  It is not always the case that only one path will exist in a dataset, however. This can be illustrated with by obtaining the shortest paths from `H` to `A`: 
 
-```{r}
+```{r title='Run RWR Shortest Paths', warnings=F, message=F}
 source_nodes <- c("H")
 target_nodes <- c("A")
 
@@ -209,7 +194,7 @@ shortest_paths_output
 
 In the above output, we have two options for the edge that exists between nodes `H` and `E`. We can use `RWRtoolkit::extract_highest_scoring_path` in order to obtain the highest scoring path of our path. This does so by extracting the edges with the highest weight either by `weight` or by `weightnorm` (defaulted). 
 
-```{r}
+```{r title="Obtaining the besthighest ranking paths"}
 desired_path <- "H_A"
 optimal_paths <- RWRtoolkit::extract_highest_scoring_path(shortest_paths_output, desired_path)
 
@@ -244,7 +229,7 @@ The `string_interaction` multiplex contains 9 layers:
 ### Load the Two Gene Sets
 Next we must define the geneset paths from which to define our source and target nodes. Only the file paths are needed for the genesets: 
 
-```{r}
+```{r title="Get existing gene sets"}
 geneset1_filepath <- paste(extdata.dir, "/geneset1.tsv", sep = "")
 geneset2_filepath <- paste(extdata.dir, "/geneset2.tsv", sep = "")
 outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
@@ -281,7 +266,7 @@ outdir <- paste(extdata.dir, "/out/rwr_shortestpath", sep = "")
 ## 3. Running RWR_ShortestPaths
 
 To run `RWR Shortest Paths` we paste in the filepaths to our flist, source, and target genesets: 
-```{r}
+```{r title="RWR Shortest Path on Real Data", warnings=F, message=F}
 shortest_path_df <- RWR_ShortestPaths(
   data = multiplex_object_filepath,
   source_geneset = geneset1_filepath,
