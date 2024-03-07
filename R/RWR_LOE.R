@@ -413,8 +413,9 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
     x = nw_adjnorm,
     MultiplexObject = nw_mpo,
     Seeds = seed_geneset$gene,
+    r = restart,
+	tau = tau,
 	weights = seed_geneset$weight,
-    r = restart
   )
 
   # Add a rank column to the results (min_rank gives the minimum rank on a
