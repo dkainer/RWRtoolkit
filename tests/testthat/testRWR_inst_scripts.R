@@ -309,20 +309,20 @@ describe("RWR inst/scripts", {
       outdir_path <- "./test_rwr_netstats_output_directory"
       network1_filepath <- "../testSTRINGDB/netstat/combined_score-random-gold.tsv"
       network2_filepath <- "../testSTRINGDB/netstat/combined_score-random-test.tsv"
-      basic_statistics = T
-      scoring_metric = "both"
-      pairwise_between_mpo_layer = T
-      multiplex_layers_to_refnet = T
-      net_to_net_similarity = T
-      calculate_tau_for_mpo = T
-      merged_with_all_edges = T
-      merged_with_edgecounts = T
-      calculate_exclusivity_for_mpo = T
-      verbose = T
+      basic_statistics <- TRUE
+      scoring_metric <- "both"
+      pairwise_between_mpo_layer <- TRUE
+      multiplex_layers_to_refnet <- TRUE
+      net_to_net_similarity <- TRUE
+      calculate_tau_for_mpo <- TRUE
+      merged_with_all_edges <- TRUE
+      merged_with_edgecounts <- TRUE
+      calculate_exclusivity_for_mpo <- TRUE
+      verbose <- TRUE
 
       script <- paste(
         "Rscript",
-        run_netstats_filepath, 
+        run_netstats_filepath,
         "--data",
         network_filepath,
         "--network_1",
