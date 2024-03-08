@@ -221,7 +221,7 @@ save_plots_loe <- function(metrics,
 
   p1 <- ggplot2::ggplot(metrics$results) +
     ggplot2::geom_path(
-      ggplot2::aes(x = REC, y = PREC),
+      ggplot2::aes(x = REC, y = PREC), #nolint column names
       col = "darkorange",
       alpha = 0.5
     ) +
@@ -233,7 +233,7 @@ save_plots_loe <- function(metrics,
   #  plot ROC curve including all folds and average
   p2 <- ggplot2::ggplot(metrics$results) +
     ggplot2::geom_line(
-      ggplot2::aes(x = FPR, y = REC),
+      ggplot2::aes(x = FPR, y = REC), #nolint column names
       col = "darkorange",
       alpha = 1
     ) +
