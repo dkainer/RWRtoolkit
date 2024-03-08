@@ -1,7 +1,23 @@
-#' @importFrom dplyr %>%
-#' @importFrom foreach %dopar%
-#' @importFrom foreach %:%
-#' Merge a multiplex network object and keep all edges.
+###############################################################################
+# Perform aggregation on a multiplex objects from RWR_make_multiplex 
+#
+# RWRtoolkit is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# RWRtoolkit is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# RWRtoolkit. If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
+
+
+#' Merged with All Edges
 #'
 #' Merge down all layers in a multiplex object, but don't
 #' aggregate the edges (i.e. keep all edges). This function can take a dummy
@@ -11,6 +27,10 @@
 #' @param verbose Print progress to console.
 #'
 #' @return An igraph network object.
+#' @importFrom dplyr %>%
+#' @importFrom foreach %dopar%
+#' @importFrom foreach %:%
+#'
 merged_with_all_edges <- function(mpo, verbose=FALSE) {
   message(sprintf("merging %d network layers ...\n", mpo$Number_of_Layers))
   nl    <- mpo$Number_of_Layers
@@ -35,18 +55,21 @@ merged_with_all_edges <- function(mpo, verbose=FALSE) {
   )
 }
 
-#' Merge a multiplex network object and aggregate edges.
+#' Merged With Edgecounts
 #'
 #' Merge down all layers and aggregate multi-edges into one edge
 #' where edge weight is the number of layers in which the two nodes are
 #' connected.
-#'
+#' 
 #' @param mpo A multiplex network object. Edge weights are the sum of the
 #'       weights of the edges in the multiplex network object.
 #' @param inv Set the edge weight to the reciprocal of the sum of the weights.
 #' @param verbose Print progress to console.
 #'
 #' @return An igraph network object.
+#' @importFrom dplyr %>%
+#' @importFrom foreach %dopar%
+#' @importFrom foreach %:%
 merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
   n_nodes <- mpo$Number_of_Nodes_Multiplex
@@ -87,6 +110,9 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 }
 
 
+#' RWR_network_aggregation
+#' 
+#' This function acts as an aggregator for RWR multiplex objects. 
 #' @param merged_with_all_edges     A boolean denoting a return of a merged
 #'                    down multiplex network along with 
 #'                    network edge counts and vertex counts.
@@ -97,6 +123,11 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 #'                    of layers in which that edge existed.
 #'                    Default False
 #' @export
+#'
+#' @importFrom dplyr %>%
+#' @importFrom foreach %dopar%
+#' @importFrom foreach %:%
+#' 
 RWR_network_aggregation <- function(
     data = NULL,
     flist= NULL,
