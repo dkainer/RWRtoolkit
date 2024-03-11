@@ -135,7 +135,6 @@ RWR_network_aggregation <- function(
     merged_with_all_edges = F,
     merged_with_edgecounts = F,
     verbose = F) {
-
   utils_output_list <- list()
   `%notin%` <- Negate(`%in%`)
 
@@ -159,7 +158,6 @@ RWR_network_aggregation <- function(
     utils_output_list$merged_with_all_edges <- merged_with_all_edges(
       nw_mpo,
       verbose = verbose)
-
     write_networks_to_file_if_fp(
       outdir,
       "merged_with_all_edges.tsv",
