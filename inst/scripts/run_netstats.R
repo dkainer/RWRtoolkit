@@ -91,18 +91,6 @@ parse_arguments <- function() {
             help = "A boolean denoting a return of the distribution of 'tau', with respect to the network layers,  calculated via edge overlap weight / total edgeweight multipled by the total number of layers"
         ),
         make_option(
-            c("--merged_with_all_edges"),
-            action = "store_true",
-            default = FALSE,
-            help = "A boolean denoting a return of a merged down multiplex network along with  network edge counts and vertex counts."
-        ),
-        make_option(
-            c("--merged_with_edgecounts"),
-            action = "store_true",
-            default = FALSE,
-            help = "A boolean denoting a return of a merged down multiplex, but simplified with edge weights denoting the total number of layers in which that edge existed."
-        ),
-        make_option(
             c("--calculate_exclusivity_for_mpo"),
             action = "store_true",
             default = FALSE,
@@ -188,8 +176,6 @@ main <- function() {
         multiplex_layers_to_refnet = opt$multiplex_layers_to_refnet,
         net_to_net_similarity = opt$net_to_net_similarity,
         calculate_tau_for_mpo = opt$calculate_tau_for_mpo,
-        merged_with_edgecounts = opt$merged_with_edgecounts,
-        merged_with_all_edges = opt$merged_with_all_edges,
         calculate_exclusivity_for_mpo = opt$calculate_exclusivity_for_mpo,
         verbose = opt$verbose
     )
