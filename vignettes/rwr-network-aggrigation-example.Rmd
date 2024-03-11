@@ -46,9 +46,9 @@ create_layer <- function(n_vertices, probaility, weights){
 
 set.seed(42)
 
-layer1 <- create_layer(30, 1/5) # will have vertices A - AD
-layer2 <- create_layer(15, 1/4) # will have vertices A - O
-layer3 <- create_layer(10, 1/3) # will have vertices A - J
+layer1 <- create_layer(15, 1/5) # will have vertices A - AD
+layer2 <- create_layer(10, 1/4) # will have vertices A - O
+layer3 <- create_layer(5, 1/3) # will have vertices A - J
 ```
 
 ### Writing Edgelists 
@@ -114,7 +114,7 @@ pal <- brewer.pal(n_colors, "Set2")
 names(pal) <- unique(E(merged_layers)$type)
 E(merged_layers)$color <- unlist(lapply(E(merged_layers)$type, function(x) pal[[x]]))
 
-png('merged_with_all_edges.png', width=1000, height=1000, res=300)
+png('merged_with_all_edges.png', width=1000, height=1000, res=250)
 par(mar=c(1,1,1,1))
 set.seed(42)
 coords <- layout_with_kk(merged_layers)
@@ -136,18 +136,12 @@ aggregations <- RWRtoolkit::RWR_network_aggregation(
 edgecount_layer <- aggregations$merged_with_edgecounts$merged_network
 # E(edgecount_layer)$color <- unlist(lapply(E(edgecount_layer)$weight, function(x) pal[[x]]))
 
-png('merged_with_edge_count.png', width=1000, height=1000, res=300)
+png('merged_with_edge_count.png', width=1000, height=1000, res=250)
 par(mar=c(1,1,1,1))
 set.seed(42)
 coords <- layout_with_kk(edgecount_layer)
 edge_thickness <- E(edgecount_layer)$weight
-
 igraph::plot.igraph(edgecount_layer, layout=coords, main="Merged With Edge Count", vertex.size=15, edge.width=edge_thickness)
-
-legend('topleft',
-       legend=paste(names(pal)[order(names(pal), decreasing=F)], "edge(s)"),
-       fill=pal[order(names(pal), decreasing=F)], cex=1/3) 
-
 dev.off()
 
 knitr::include_graphics('merged_with_edge_count.png')
