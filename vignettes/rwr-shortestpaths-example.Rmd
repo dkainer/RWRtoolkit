@@ -280,6 +280,7 @@ Once you have obtained the shortest paths results, we can either view all edges 
 ```{r}
 shortest_path_df[shortest_path_df$pathname == "PMM1_PGLS", ]
 ```
+
 Or we extract the shortest path with the highest edge weights: 
 ```{r}
 desired_path <- "PMM1_PGLS"
