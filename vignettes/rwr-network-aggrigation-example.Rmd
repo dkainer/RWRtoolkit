@@ -21,11 +21,9 @@ library(RColorBrewer)
 ```
 
 
-
-
 # Merging Networks
 ## Collapsing a Multiplex Network
-It's not impossibe that you'll at some point with to collapse down your multiplex network into a multigraph.  RWRtoolkit provides two methods of multiplex network aggregation. 
+It's not impossible that you'll at some point with to collapse down your multiplex network into a multigraph.  RWRtoolkit provides two methods of multiplex network aggregation. 
 
 Let's first build a toy multiplex for example: 
 ## Toy Multiplex Generation 
@@ -134,7 +132,6 @@ aggregations <- RWRtoolkit::RWR_network_aggregation(
 )
 
 edgecount_layer <- aggregations$merged_with_edgecounts$merged_network
-# E(edgecount_layer)$color <- unlist(lapply(E(edgecount_layer)$weight, function(x) pal[[x]]))
 
 png('merged_with_edge_count.png', width=1000, height=1000, res=250)
 par(mar=c(1,1,1,1))
