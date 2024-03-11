@@ -306,7 +306,7 @@ describe("RWR inst/scripts", {
     it("Runs RWR netstats from the command line", {
       run_netstats_filepath <- "../../inst/scripts/run_netstats.R"
       network_filepath <- "../testSTRINGDB/string_interactions.Rdata"
-      outdir_path <- "./test_rwr_netstats_output_directory"
+      outdir_path <- "./test_rwr_netstats_output_directory_inst_script"
       network1_filepath <- "../testSTRINGDB/netstat/combined_score-random-gold.tsv"
       network2_filepath <- "../testSTRINGDB/netstat/combined_score-random-test.tsv"
       basic_statistics <- TRUE
@@ -315,8 +315,6 @@ describe("RWR inst/scripts", {
       multiplex_layers_to_refnet <- TRUE
       net_to_net_similarity <- TRUE
       calculate_tau_for_mpo <- TRUE
-      merged_with_all_edges <- TRUE
-      merged_with_edgecounts <- TRUE
       calculate_exclusivity_for_mpo <- TRUE
       verbose <- TRUE
 
@@ -338,13 +336,11 @@ describe("RWR inst/scripts", {
         "--multiplex_layers_to_refnet",
         "--net_to_net_similarity",
         "--calculate_tau_for_mpo",
-        "--merged_with_edgecounts",
-        "--merged_with_all_edges",
-        "--calculate_exclusivity_for_mpo"
-                )
+        "--calculate_exclusivity_for_mpo")
 
       system(script)
       actual_output_files <- list.files(outdir_path)
+
 
       expected_output_files <- c(
         "base_stats.tsv",
@@ -354,18 +350,51 @@ describe("RWR inst/scripts", {
         "multiplex_layers_to_refnet_overlap.tsv",
         "net_to_net_similarity.tsv",
         "calculated_tau.tsv",
-        "merged_with_all_edges.tsv",
-        "merged_with_edgecounts.tsv",
         "exclusivity.tsv"
          )
-
-
 
       expect_setequal(actual_output_files, expected_output_files)
     })
     
     teardown({
-      system("rm -rf ./test_rwr_netstats_output_directory")
+      system("rm -rf ./test_rwr_netstats_output_directory_inst_script")
     })
   })
+
+  describe("RWR Network Aggregation command line", {
+    it("Runs RWR network aggregator from the command line", {
+      run_aggregator_filepath <- "../../inst/scripts/run_network_aggregation.R"
+      network_filepath <- "../testSTRINGDB/string_interactions.Rdata"
+      outdir_path <- "./test_rwr_aggregator_output_directory_inst_script"
+
+      verbose <- TRUE
+ 
+      script <- paste(
+        "Rscript",
+        run_aggregator_filepath,
+        "--data",
+        network_filepath,
+        "--merged_with_all_edges",
+        "--merged_with_edgecounts",
+        "--outdir",
+        outdir_path
+    )
+      system(script)
+      actual_output_files <- list.files(outdir_path)
+
+      expected_output_files <- c(
+     "merged_with_all_edges.tsv",
+     "merged_with_edgecounts.tsv"
+    ) 
+
+      expect_setequal(actual_output_files, expected_output_files)
+    })
+    
+    teardown({ 
+      system("rm -rf ./test_rwr_aggregator_output_directory_inst_script")
+    })
+  })
+
+
+
 })
