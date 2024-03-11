@@ -1,12 +1,11 @@
 ########################################################################
 # Parse arguments
 ########################################################################
-
 parse_arguments <- function() {
   # [TODO] Need to verify 'help' messages (I ripped several of these from
   # other scripts followed by liberal copy/pasta).
   suppressPackageStartupMessages(library(optparse))
-  option_list = list(
+  option_list <- list(
     make_option(c("-d", "--data"),
       action = "store",
       default = NULL,
@@ -18,7 +17,7 @@ parse_arguments <- function() {
     make_option(
       c("-o", "--outdir"),
       action = "store",
-      default = "netstats",
+      default = "aggregations",
       type = "character",
       help = 'Output file name (default "netstats")'
     ),
@@ -46,26 +45,25 @@ parse_arguments <- function() {
     optparse::OptionParser(
       option_list = option_list
     )
-    )
+  )
 
   # Verify opt.
   errors <- FALSE
 
   # Require that the user passes either --data or --flist (not both).
   if (!is.null(opt$data) & !is.null(opt$flist)) {
-  errors <- TRUE
-  message(
-    "\n[ERROR] You may provide either --data or --flist but not both.\n"
-  )
+    errors <- TRUE
+    message(
+      "\n[ERROR] You may provide either --data or --flist but not both.\n"
+    )
   }
 
   # Require that the user provided at least one input.
   if (is.null(opt$data) ) {
-
-  errors <- TRUE
-  message(
-    "\n[ERROR] You must supply one of the following arguments:\n",
-    "  --data\n"
+    errors <- TRUE
+    message(
+      "\n[ERROR] You must supply one of the following arguments:\n",
+      "  --data\n"
   )}
 
   if (errors) {
@@ -81,14 +79,14 @@ parse_arguments <- function() {
 
 main <- function() {
   # Get args.
-  
   opt <- parse_arguments()
-  print("RUNNING NETSTATS WITH ")
+  print("Running aggregator with")
   print(opt)
-  RWRtoolkit::RWR_network_aggregation()(
+  RWRtoolkit::RWR_network_aggregation(
     data = opt$data,
     merged_with_edgecounts = opt$merged_with_edgecounts,
     merged_with_all_edges = opt$merged_with_all_edges,
+    outdir = opt$outdir,
     verbose = opt$verbose
   )
 }
