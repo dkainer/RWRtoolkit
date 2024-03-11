@@ -49,10 +49,9 @@ The network variables will be:
 - `nw.adjnorm`: The normalized supra-adjacency matrix
 
 ```{r Read Multiplex from URL}
-# comprehensiveNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Comprehensive_Network_AT_d0.5_v02.RData?raw=True"
-# comprehensiveNetworkPathURL <- url(comprehensiveNetworkPath)
-# load(comprehensiveNetworkPathURL)
-comprehensiveNetworkPath <- '../../RWRtoolkit-data/Comprehensive_Network_AT_d0.5_v02.RData'
+comprehensiveNetworkPath <- "https://github.com/dkainer/RWRtoolkit-data/blob/main/Comprehensive_Network_AT_d0.5_v02.RData?raw=True"
+comprehensiveNetworkPathURL <- url(comprehensiveNetworkPath)
+load(comprehensiveNetworkPathURL)
 ```
 
 ### Seed List Generation
