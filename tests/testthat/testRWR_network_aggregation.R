@@ -1,6 +1,4 @@
 
-
-
 describe("merging methods: ", {
      # The Multiplex:
      # ABC Layer 1      # ABC Layer 2            # ABC Layer 3
@@ -65,7 +63,7 @@ describe("merging methods: ", {
 
     describe("merged_with_all_edges", {
       it("merges all layers of an MPO", {
-        actual_merged <- RWRtoolkit::merged_with_all_edges(nw.mpo) #nolint
+        actual_merged <- merged_with_all_edges(nw.mpo) #nolint
 
         expect_setequal(E(actual_merged$merged_network),
                         E(expected_merged))
@@ -82,7 +80,7 @@ describe("merging methods: ", {
 
     describe("merged_with_edgecounts", {
       it("merges layers and removes all duplicate edges w/ edgecount as weight", { #nolint
-        actual_merged <- RWRtoolkit::merged_with_edgecounts(nw.mpo)
+        actual_merged <- merged_with_edgecounts(nw.mpo)
 
         expected_simple_merged <- igraph::simplify(expected_merged)
 

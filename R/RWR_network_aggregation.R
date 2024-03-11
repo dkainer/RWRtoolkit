@@ -111,7 +111,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
 
 #' RWR_network_aggregation
-#' 
+#'
 #' This function acts as an aggregator for RWR multiplex objects. 
 #' @param merged_with_all_edges     A boolean denoting a return of a merged
 #'                    down multiplex network along with 

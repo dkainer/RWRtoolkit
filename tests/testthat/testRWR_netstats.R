@@ -60,17 +60,17 @@ describe("RWR_netstats", {
           )
 
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_flist",
         load_flist_stub
       )
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_network",
         load_network_stub
       )
 
-      RWRtoolkit::make_dummy_multiplex(flist_file_path)
+      make_dummy_multiplex(flist_file_path)
 
       expect_called(load_flist_stub, 1)
       expect_called(load_network_stub, 3)
@@ -92,17 +92,17 @@ describe("RWR_netstats", {
       )
 
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_flist",
         load_flist_stub
       )
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_network",
         load_network_stub
       )
 
-      RWRtoolkit::make_dummy_multiplex(flist_file_path)
+      make_dummy_multiplex(flist_file_path)
 
       expect_called(load_flist_stub, 0)
       expect_called(load_network_stub, 3)
@@ -119,18 +119,18 @@ describe("RWR_netstats", {
       load_network_stub <- mock()
 
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_flist",
         load_flist_stub
       )
       stub(
-        RWRtoolkit::make_dummy_multiplex,
+        make_dummy_multiplex,
         "load_network",
         load_network_stub
       )
 
       expect_error(
-        RWRtoolkit::make_dummy_multiplex(flist_file_path),
+        make_dummy_multiplex(flist_file_path),
         "Input must be either a path to an flist or a flist dataframe."
       )
     })
@@ -146,14 +146,14 @@ describe("RWR_netstats", {
                           "name",
                           network_name)
 
-      actual_name <- RWRtoolkit::get_name(named_network)
+      actual_name <- get_name(named_network)
 
 
       expect_equal(actual_name, network_name)
     })
 
     it("returns the function default name from an unnamed network", {
-      actual_name <- RWRtoolkit::get_name(unnamed_network)
+      actual_name <- get_name(unnamed_network)
 
       expected_name <- "<G>"
       expect_equal(actual_name, expected_name)
@@ -176,13 +176,13 @@ describe("RWR_netstats", {
 
       get_name_stub <- mock("TREE")
       stub(
-        RWRtoolkit::calculate_basic_statistics,
+        calculate_basic_statistics,
         "get_name",
         get_name_stub
       )
 
       actual_messages <- capture_messages(
-        RWRtoolkit::calculate_basic_statistics(tree_network,
+        calculate_basic_statistics(tree_network,
                                     directed = T,
                                     verbose = T))
 
@@ -216,12 +216,12 @@ describe("RWR_netstats", {
 
       get_name_stub <- mock("TREE")
       stub(
-        RWRtoolkit::calculate_basic_statistics,
+        calculate_basic_statistics,
         "get_name",
         get_name_stub
       )
 
-      actual_stats <- RWRtoolkit::calculate_basic_statistics(
+      actual_stats <- calculate_basic_statistics(
                         tree_network,
                         directed = T
       )
@@ -247,12 +247,12 @@ describe("RWR_netstats", {
 
       basic_stats_stub <- mock()
       stub(
-        RWRtoolkit::basic_statistics_multiplex,
+        basic_statistics_multiplex,
         "calculate_basic_statistics",
         basic_stats_stub
       )
 
-      RWRtoolkit::basic_statistics_multiplex(mp_faux)
+      basic_statistics_multiplex(mp_faux)
       expect_called(basic_stats_stub, 2)
       expect_args(basic_stats_stub, 1, mp_faux$layer1, "layer1", F)
       expect_args(basic_stats_stub, 2, mp_faux$layer2, "layer2", F)
@@ -292,7 +292,7 @@ describe("RWR_netstats", {
 
       it("calculates a jaccard score between two networks", {
         # (C--D) / (A--B, B--C, C--D, E--F, D--E)
-        actual_score <- RWRtoolkit::jaccard_score_edges(network_a, network_b)
+        actual_score <- jaccard_score_edges(network_a, network_b)
 
         expected_score <- 0.2
         expect_equal(actual_score, expected_score)
@@ -304,7 +304,7 @@ describe("RWR_netstats", {
         # Gets intersection
         # Sums weights
         # divides sum of intersected weights
-        actual_overlap <- RWRtoolkit::overlap_score(network_a, network_b)
+        actual_overlap <- overlap_score(network_a, network_b)
 
         sum_intersected_edges <- 1
         total_edges_net_b <- length(E(network_b))
@@ -320,7 +320,7 @@ describe("RWR_netstats", {
                                     "weight")
 
         expect_warning(
-          RWRtoolkit::overlap_score(network_a, unweighted_net),
+          overlap_score(network_a, unweighted_net),
           "Network <H> has no weighted edges. All scores will be zero."
         )
       })
@@ -336,17 +336,17 @@ describe("RWR_netstats", {
         overlap_stub <- mock()
 
         stub(
-          RWRtoolkit::compare_networks,
+          compare_networks,
           "jaccard_score_edges",
           jaccard_stub
         )
         stub(
-          RWRtoolkit::compare_networks,
+          compare_networks,
           "overlap_score",
           overlap_stub
         )
 
-        actual_output <- RWRtoolkit::compare_networks(
+        actual_output <- compare_networks(
                         network_a,
                         network_b,
                         metric)
@@ -365,17 +365,17 @@ describe("RWR_netstats", {
          overlap_stub <- mock(overlap_stub_output)
 
          stub(
-           RWRtoolkit::compare_networks,
+           compare_networks,
            "jaccard_score_edges",
            jaccard_stub
          )
          stub(
-           RWRtoolkit::compare_networks,
+           compare_networks,
            "overlap_score",
            overlap_stub
          )
 
-         actual_output <- RWRtoolkit::compare_networks(
+         actual_output <- compare_networks(
            network_a,
            network_b,
            metric
@@ -396,12 +396,12 @@ describe("RWR_netstats", {
         arg2 <- "B"
 
         stub(
-          RWRtoolkit::overlap_pair,
+          overlap_pair,
           "compare_networks",
           compare_stub
         )
 
-        actual_output <- RWRtoolkit::overlap_pair(arg1, arg2)
+        actual_output <- overlap_pair(arg1, arg2)
 
         expect_equal(actual_output, expected_output)
         expect_args(compare_stub, 1, arg1, arg2)
@@ -429,12 +429,12 @@ describe("RWR_netstats", {
           1.0)
 
         stub(
-          RWRtoolkit::overlap_many_pairwise,
+          overlap_many_pairwise,
           "compare_networks",
           comp_networks_stub
         )
 
-        actual_output <- RWRtoolkit::overlap_many_pairwise(
+        actual_output <- overlap_many_pairwise(
           nw.mpo,
           metric = metric
         )
@@ -469,12 +469,12 @@ describe("RWR_netstats", {
           1.0, 
           1.0)
         stub(
-          RWRtoolkit::overlap_many_pairwise,
+          overlap_many_pairwise,
           "compare_networks",
           comp_networks_stub
         )
 
-        actual_output <- RWRtoolkit::overlap_many_pairwise(nw.mpo)
+        actual_output <- overlap_many_pairwise(nw.mpo)
 
         expected_output <- matrix(1, nrow = 3, ncol = 3)
         rownames(expected_output) <- c("layer1", "layer2", "layer3")
@@ -504,12 +504,12 @@ describe("RWR_netstats", {
 
         comp_networks_stub <- mock(1.0, 0.5, 0.2)
         stub(
-          RWRtoolkit::overlap_many_vs_reference,
+          overlap_many_vs_reference,
           "compare_networks",
           comp_networks_stub
         )
 
-        actual_output <- RWRtoolkit::overlap_many_vs_reference(
+        actual_output <- overlap_many_vs_reference(
                                         nw.mpo,
                                         ref_net)
 
@@ -540,12 +540,12 @@ describe("RWR_netstats", {
         overlap_many_v_ref_stub <- mock(many_v_ref_output)
 
         stub(
-          RWRtoolkit::calculate_tau,
+          calculate_tau,
           "overlap_many_vs_reference",
           overlap_many_v_ref_stub
         )
 
-        actual_tau <- RWRtoolkit::calculate_tau(nw.mpo, ref_net)
+        actual_tau <- calculate_tau(nw.mpo, ref_net)
 
         expected_output <- c(
           1.0 / 2.5 * nw.mpo$Number_of_Layers,
@@ -575,7 +575,7 @@ describe("RWR_netstats", {
       # C--H      # F--C F--C C--F
       # G--D
       
-      actual_output <- RWRtoolkit::exclusivity(nw.mpo)
+      actual_output <- exclusivity(nw.mpo)
 
       expected_in_3 <-  2 / 15
       expected_in_2 <-  4 / 15
@@ -615,7 +615,7 @@ describe("RWR_netstats", {
       )
 
       expect_error(
-        RWRtoolkit::RWR_netstats(),
+        RWR_netstats(),
         expected_error_message,
         fixed = T
       )
@@ -635,42 +635,42 @@ describe("RWR_netstats", {
     #   merged_with_edgecounts_stub <- mock()
       exclusivity_stub <- mock()
 
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
         "calculate_basic_statistics",
         basic_stats_stub
       )
-      stub(RWRtoolkit::RWR_netstats, "load_network", load_network_stub)
-      stub(RWRtoolkit::RWR_netstats, "load_flist", load_flist_stub)
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats, "load_network", load_network_stub)
+      stub(RWR_netstats, "load_flist", load_flist_stub)
+      stub(RWR_netstats,
           "make_dummy_multiplex",
           make_dummy_multiplex_stub
       )
 
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "basic_statistics_multiplex",
           basic_stats_multiplex_stub
       )
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "overlap_many_pairwise",
           overlap_many_pairwise_stub
       )
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "overlap_many_vs_reference",
           overlap_many_vs_reference_stub
       )
-      stub(RWRtoolkit::RWR_netstats, "overlap_pair", overlap_pair_stub)
-      stub(RWRtoolkit::RWR_netstats, "calculate_tau", calculate_tau_stub)
-    #   stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats, "overlap_pair", overlap_pair_stub)
+      stub(RWR_netstats, "calculate_tau", calculate_tau_stub)
+    #   stub(RWR_netstats,
     #       "merged_with_all_edges",
     #       merged_with_all_edges_stub
     #   )
-    #   stub(RWRtoolkit::RWR_netstats,
+    #   stub(RWR_netstats,
     #       "merged_with_edgecounts",
     #       merged_with_edgecounts_stub
     #   )
-      stub(RWRtoolkit::RWR_netstats, "exclusivity", exclusivity_stub)
+      stub(RWR_netstats, "exclusivity", exclusivity_stub)
 
-      actual_output <- RWRtoolkit::RWR_netstats(
+      actual_output <- RWR_netstats(
           data = NULL,
           flist  = NULL,
           network_1 = net1_file_path,
@@ -732,44 +732,44 @@ describe("RWR_netstats", {
       exclusivity_stub <- mock("exclusivity_mock_output")
 
 
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "load_multiplex_data",
           load_multiplex_data_stub
       )
 
-      stub(RWRtoolkit::RWR_netstats, "calculate_basic_statistics", basic_stats_stub)
-      stub(RWRtoolkit::RWR_netstats, "load_network", load_network_stub)
-      stub(RWRtoolkit::RWR_netstats, "load_flist", load_flist_stub)
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats, "calculate_basic_statistics", basic_stats_stub)
+      stub(RWR_netstats, "load_network", load_network_stub)
+      stub(RWR_netstats, "load_flist", load_flist_stub)
+      stub(RWR_netstats,
           "make_dummy_multiplex",
           make_dummy_multiplex_stub
       )
 
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "basic_statistics_multiplex",
           basic_stats_multiplex_stub
       )
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "overlap_many_pairwise",
           overlap_many_pairwise_stub
       )
-      stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats,
           "overlap_many_vs_reference",
           overlap_many_vs_reference_stub
       )
-      stub(RWRtoolkit::RWR_netstats, "overlap_pair", overlap_pair_stub)
-      stub(RWRtoolkit::RWR_netstats, "calculate_tau", calculate_tau_stub)
-    #   stub(RWRtoolkit::RWR_netstats,
+      stub(RWR_netstats, "overlap_pair", overlap_pair_stub)
+      stub(RWR_netstats, "calculate_tau", calculate_tau_stub)
+    #   stub(RWR_netstats,
     #       "merged_with_all_edges",
     #       merged_with_all_edges_stub
     #   )
-    #   stub(RWRtoolkit::RWR_netstats,
+    #   stub(RWR_netstats,
     #       "merged_with_edgecounts",
     #       merged_with_edgecounts_stub
     #   )
-      stub(RWRtoolkit::RWR_netstats, "exclusivity", exclusivity_stub)
+      stub(RWR_netstats, "exclusivity", exclusivity_stub)
 
-      actual_output <- RWRtoolkit::RWR_netstats(
+      actual_output <- RWR_netstats(
           data = mpo_filepath,
           flist  = NULL,
           network_1 = net1_file_path,
