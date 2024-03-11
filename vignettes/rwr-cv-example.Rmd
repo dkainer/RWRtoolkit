@@ -71,10 +71,7 @@ We'll select an A. thaliana multiplex consisting of 10 layers (for further descr
 ```{r Loading network}
 athal_multiplex_url <- "https://github.com/dkainer/RWRtoolkit-data/raw/main/Comprehensive_Network_AT_d0.5_v02.RData?raw=True"
 athal_multiplex <- url(athal_multiplex_url)
-
 load(athal_multiplex)
-
-
 
 athal_multiplex_object <- nw.mpo
 athal_multiplex_adj <- nw.adj
