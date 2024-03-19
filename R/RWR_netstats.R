@@ -142,6 +142,7 @@ get_name <- function(g, default="<G>") {
 #'
 #' @return NULL
 #'
+#'
 #' @seealso \code{\link{igraph::vcount}}, \code{\link{igraph::ecount}},
 #' \code{\link{igraph::diameter}}.
 calculate_basic_statistics <- function(
@@ -660,8 +661,6 @@ write_networks_to_file_if_fp <- function(
 #'    multiplex_layers_to_refnet = T,
 #'    net_to_net_similarity = T,
 #'    calculate_tau_for_mpo = T,
-#'    merged_with_all_edges = T,
-#'    merged_with_edgecounts = T,
 #'    calculate_exclusivity_for_mpo = T,
 #'    outdir = "./rwr_netstats/",
 #'    verbose = T
