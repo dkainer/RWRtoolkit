@@ -122,12 +122,26 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 #'                    edge weights denoting the total number
 #'                    of layers in which that edge existed.
 #'                    Default False
-#' @export
 #'
 #' @importFrom dplyr %>%
 #' @importFrom foreach %dopar%
 #' @importFrom foreach %:%
+#' @examples
+#' # An example of aggregating multiplex networks 
+#' # into a singular network 
+#' extdata.dir <- system.file("example_data", package="RWRtoolkit")
+#' mpo_path <- paste(extdata.dir, "string_interactions.Rdata", sep = "/")
 #' 
+#' output_aggregated_networks <- RWR_network_aggregation(
+#'    data = mpo_path,
+#'    merged_with_all_edges = T,
+#'    merged_with_edgecounts = T,
+#'    verbose = T
+#' )
+#' 
+#' print(output_aggregated_networks)
+
+#' @export
 RWR_network_aggregation <- function(
     data = NULL,
     flist= NULL,
