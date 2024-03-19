@@ -46,7 +46,7 @@ update_folds_by_method <- function(
       file = stderr()
     )
   } else if (method == "kfold") {
-	# If kfold is not available due to too many folds, switch method to LOO
+    # If kfold is not available due to too many folds, switch method to LOO
     if ((nrow(geneset) / num_folds) < 1) {
       folds <- nrow(geneset)
       method <- "loo"
@@ -473,20 +473,20 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         fname = paste(substr(fname, 1, 99), 'plots.png', sep='.')
         out_path = file.path(outdirPath, fname)
         
-		if (write_to_file){
-        	png(out_path, width = 1200, height=1000)
-		}
+        if (write_to_file){
+            png(out_path, width = 1200, height=1000)
+        }
 
-		grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
-		print(p1, vp = vplayout(1, 1))
-		print(p3, vp = vplayout(1, 2))
-		print(p6, vp = vplayout(2, 1))
-		print(p7, vp = vplayout(2, 2))
+        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
+        print(p1, vp = vplayout(1, 1))
+        print(p3, vp = vplayout(1, 2))
+        print(p6, vp = vplayout(2, 1))
+        print(p7, vp = vplayout(2, 2))
 
-		if (write_to_file) {
-			dev.off()
-        	message('File saved:', out_path, "\n")
-		}
+        if (write_to_file) {
+            dev.off()
+            message('File saved:', out_path, "\n")
+        }
     }
     
     ######## SINGLETONS (many folds) #########
@@ -579,20 +579,20 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         
 
         if (write_to_file){
-			png(out_path, width = 1200, height=1000)
-		}
-		
-		grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
-		
-		print(p1, vp = vplayout(1, 1))  # Top left
-		print(p3, vp = vplayout(1, 2))  # top R
-		print(p5, vp = vplayout(2, 1))  # Bottom L
-		print(p7, vp = vplayout(2, 2))  # Bottom R
-		
-		if(write_to_file){
-			dev.off()
-			cat('File saved:', out_path,"\n")
-		} 
+            png(out_path, width = 1200, height=1000)
+        }
+        
+        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
+        
+        print(p1, vp = vplayout(1, 1))  # Top left
+        print(p3, vp = vplayout(1, 2))  # top R
+        print(p5, vp = vplayout(2, 1))  # Bottom L
+        print(p7, vp = vplayout(2, 2))  # Bottom R
+        
+        if(write_to_file){
+            dev.off()
+            cat('File saved:', out_path,"\n")
+        } 
     }
     
 
@@ -667,9 +667,9 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         out_path = file.path(outdirPath, fname)
         
 
-		if(write_to_file){
-        	png(out_path, width = 1200, height=1000)
-		}
+        if(write_to_file){
+            png(out_path, width = 1200, height=1000)
+        }
         # print( (p1 + p2)/(p3 + p4) + plot_layout(heights=c(1,1)) )
         # dev.off()
         # cat('File saved:', out_path,"\n")
@@ -680,10 +680,10 @@ save_plots_cv <- function(metrics, geneset, folds, dataPath, modname, outdirPath
         print(p2, vp = vplayout(1, 2))  # Top right 
         print(p4, vp = vplayout(2, 1:2))  # Bottom 
         
-		if(write_to_file){
-			dev.off()
-			message(paste('File saved:', out_path))
-		}
+        if(write_to_file){
+            dev.off()
+            message(paste('File saved:', out_path))
+        }
     }
 
 }
@@ -1002,7 +1002,7 @@ RWR_CV <- function(data = NULL,
 
   ############# Save plots  ##################################################
   if (plot) {
-	save_plots_cv(metrics, geneset, folds, data, modname, outdir, write_to_file)
+    save_plots_cv(metrics, geneset, folds, data, modname, outdir, write_to_file)
   }
 
 
