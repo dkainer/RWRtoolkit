@@ -1,8 +1,8 @@
 ---
-title: "Using RWR-LOE To Explore GWAS Output"
+title: "Exploring Gene Sets with RWR_LOE"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using RWR-LOE To Explore GWAS Output}
+  %\VignetteIndexEntry{Exploring Gene Sets with RWR_LOE}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "Validating a Network with RWR-CV"
+title: "Determining Network Validity with RWR_CV"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Validating a Network with RWR-CV}
+  %\VignetteIndexEntry{Determining Network Validity with RWR_CV}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

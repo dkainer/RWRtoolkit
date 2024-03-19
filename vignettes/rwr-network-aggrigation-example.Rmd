@@ -1,8 +1,8 @@
 ---
-title: "Aggregating Multiplexes"
+title: "Squashing a Multiplex into a Monoplex Using RWR_network_aggregation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Aggregating Multiplexes}
+  %\VignetteIndexEntry{Squashing a Multiplex into a Monoplex Using RWR_network_aggregation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

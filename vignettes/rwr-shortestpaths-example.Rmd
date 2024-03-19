@@ -1,10 +1,10 @@
 ---
-title: "Using RWR Shortest Paths to Explore Connectivity"
+title: "Using RWR_shortest_paths between Seed Sets to Explore Multiplex Connectivity"
 author: "Matthew Lane"
 date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using RWR Shortest Paths to Explore Connectivity}
+  %\VignetteIndexEntry{Using RWR_shortest_paths between Seed Sets to Explore Multiplex Connectivity}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

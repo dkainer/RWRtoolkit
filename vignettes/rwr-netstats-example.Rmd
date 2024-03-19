@@ -1,10 +1,10 @@
 ---
-title: "Using RWR Netstats"
+title: "Calculating Network statistics using RWR_Netstats"
 author: "Matthew Lane"
 date: "2022-12-13"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using RWR Netstats}
+  %\VignetteIndexEntry{Calculating Network statistics using RWR_Netstats}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

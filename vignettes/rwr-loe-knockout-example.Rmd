@@ -1,10 +1,10 @@
 ---
-title: "Advanced RWR-LOE To Explore Multiple LOE Outputs"
+title: "Multiple RWR_LOE Output Comparision for Differential Ranking"
 author: "Matthew Lane"
 date: "2023-8-25"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Advanced RWR-LOE To Explore Multiple LOE Outputs}
+  %\VignetteIndexEntry{Multiple RWR_LOE Output Comparision for Differential Ranking}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

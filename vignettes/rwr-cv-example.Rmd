@@ -1,10 +1,10 @@
 ---
-title: "Using RWR CV See Seed Set Connectivity"
+title: "Seed Set Connectivity Calculations with RWR_CV"
 author: "Matthew Lane"
 date: "2023-8-24"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using RWR CV See Seed Set Connectivity}
+  %\VignetteIndexEntry{Seed Set Connectivity Calculations with RWR_CV}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
