@@ -1,10 +1,10 @@
 ---
-title: "Using RWR Netstats"
+title: "Calculating Network statistics using RWR_Netstats"
 author: "Matthew Lane"
 date: "2022-12-13"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using RWR Netstats}
+  %\VignetteIndexEntry{Calculating Network statistics using RWR_Netstats}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -40,10 +40,10 @@ The current setup of RWR netstats takes a 4 posible input values to generate sta
 - A path to an flist
 - A path to an edgelist
 
- Edgelists are evaluated as: `<Source> <Target> <Weight>`. It should be noted that for the sake of computational speed, the `flist` method does not create an actual multiplex object, but only mimics the multiplex itself (i.e. it does not create the supraadjacency matrix, nor its normalized counterpart).
+ Edge lists are evaluated as: `<Source> <Target> <Weight>`. It should be noted that for the sake of computational speed, the `flist` method does not create an actual multiplex object, but only mimics the multiplex itself (i.e. it does not create the supra-adjacency matrix, nor its normalized counterpart).
 
 
-In order to deomonstrate `RWR_netstats`, we will need to generate some networks. Let's generate 5 networks: 
+In order to demonstrate `RWR_netstats`, we will need to generate some networks. Let's generate 5 networks: 
 
 1. 3 layers to act work together as a multiplex
 2. 1 layer to act as a "gold standard" network. 
@@ -51,7 +51,6 @@ In order to deomonstrate `RWR_netstats`, we will need to generate some networks.
 
 ### Network Layer Generation
 ```{r}
-
 # a quick function for generating erdos.renyi layers
 create_layer <- function(n_vertices, probaility, weights){
   # overwrite letters to contain letter combinations for more options
@@ -74,6 +73,7 @@ layer3 <- create_layer(10, 1/3) # will have vertices A - J
 ref_layer <- create_layer(10, 1/3) # will have vertices A - J 
 interest_layer <- create_layer(20, 1/4) # will have vertices A - T 
 ```
+
 ### Writing Edgelists 
 We now have 5 sample networks all with similar vertices, but randomly created edges. We can create a multiplex out of 3 of them, and use the fourth to act as a reference network, and the 5th to act as a standalone network of interest. Additionally, we want our edges to have weights, so we will add an additional vector to their edgelists: 
 
@@ -127,12 +127,14 @@ RWRtoolkit::RWR_make_multiplex(
                   flist_filename, 
                   output = multiplex_filepath)
 ```
+
 Note: It's often the case the the creation of the multiplex values takes quite a long while. In this case, it's often best to use the `flist` parameter when calculating the statistics, as the all of the statistics calculated within the `RWR_netstats` function are calculated without making use of the supra-adjacency matrices.
 
 
 ## 4. Running RWR Netstats
 ### Base Network Statistics
-When running `RWR_netstats`, there are many optoins we can use. All options (beyond the networks themselves) require only a boolean flag. First, to obtain base statistics for a given network layer or multiplex we simply use the `base_statistics` flag. This returns a dataframe for network containing the **number of nodes** in the network, the **edge count** and the network's **diameter**: 
+When running `RWR_netstats`, there are many options we can use. All options (beyond the networks themselves) require only a boolean flag. First, to obtain base statistics for a given network layer or multiplex we simply use the `base_statistics` flag. This returns a dataframe for network containing the **number of nodes** in the network, the **edge count** and the network's **diameter**: 
+
 ```{r}
 reflayer_filename <- "./ref_layer.tsv"
 netstats <- RWRtoolkit::RWR_netstats(
@@ -150,9 +152,9 @@ print(netstats$base_stats_mpo)
 ```
 
 ### Pairwise Layer Comparisons
-With `RWR_netstats` we can compare networks by calculating jaccard similarity coefficient or overlap scores with respect to the shared edges between the networks of interest. 
+With `RWR_netstats` we can compare networks by calculating Jaccard similarity coefficient or overlap scores with respect to the shared edges between the networks of interest. 
 
-When calculating the jaccard similarity coefficient between two layers (or two networks) A and B, we create sets of their edges: 
+When calculating the Jaccard similarity coefficient between two layers (or two networks) A and B, we create sets of their edges: 
 
 $$
 jaccard(A,B) = \frac{E(A) \cap E(B)}{ E(A) \cup E(B) }
@@ -162,9 +164,9 @@ The overlap scoring considers the weights of the network edges that exist in bot
 
 $$
 \hspace{2ex} overlap(A,B) = \frac{\sum_{e \in E(C)} W_{e} }{ | E(B) | }
-    $\begin{cases}  
+    \begin{cases}
         C = A \cap B 
-    \end{cases}$
+    \end{cases}
 $$
 
 The `scoring_metric` parameter defines whether `jaccard` or `overlap` are used for scoring, however both methods can be employed by supplying `both` to the parameter. For the remainder of this vignette, we'll use `both`. 
@@ -186,7 +188,6 @@ netstats
 
 #### Comparing Pairwise Metrics for All Layers of a Multiplex
 You'll likely wish to compare each of the layers within a multiplex network as well, this can be done using `pairwise_between_mpo_layer` flag to obtain the pairwise overlap scores. : 
-
 
 ```{r}
 netstats <- RWRtoolkit::RWR_netstats(
@@ -248,58 +249,3 @@ netstats <- RWRtoolkit::RWR_netstats(
 netstats$exclusivity
 ```
 
-
-### Merging Networks
-#### Collapsing a Multiplex Network
-It's not impossibe that you'll at some point with to collapse down your multiplex network into a multigraph (such that all edges exist within the same topological layer): 
-
-```{r, out.width="100%", fig.align="center"}
-netstats <- RWRtoolkit::RWR_netstats(
-  data = multiplex_filepath, 
-  merged_with_all_edges = T
-)
-merged_layers <- netstats$merged_with_all_edges$merged_network
-n_colors <- length(unique(E(merged_layers)$type))
-pal <- brewer.pal(n_colors, "Set2")
-names(pal) <- unique(E(merged_layers)$type)
-E(merged_layers)$color <- unlist(lapply(E(merged_layers)$type, function(x) pal[[x]]))
-
-png('merged_with_all_edges.png', width=1000, height=1000, res=300)
-par(mar=c(1,1,1,1))
-set.seed(42)
-coords <- layout_with_kk(merged_layers)
-igraph::plot.igraph(merged_layers, layout=coords, main="Merged With All Edges", vertex.size=18)
-legend('topleft',legend=names(pal), fill=pal, cex=1/3)
-dev.off()
-
-knitr::include_graphics('merged_with_all_edges.png')
-```
-
-#### Simplifying a Multiplex
-It may also be the case that you wish to simplify your multiplex into a single network, but with only one possible edge between any two nodes. We can do this with `merged_with_edgecounts`, but in this function, all edge weights between any two nodes i and j are a reflection of how many total edges existed between i and j within the multiplex: 
-```{r, out.width="100%", fig.align="center"}
-netstats <- RWRtoolkit::RWR_netstats(
-  data = multiplex_filepath, 
-  merged_with_edgecounts = T
-)
-
-edgecount_layer <- netstats$merged_with_edgecounts$merged_network
-n_colors <- length(unique(E(edgecount_layer)$weight))
-pal <- brewer.pal(n_colors, "Set2")
-names(pal) <- unique(E(edgecount_layer)$weight)
-E(edgecount_layer)$color <- unlist(lapply(E(edgecount_layer)$weight, function(x) pal[[x]]))
-
-png('merged_with_all_edges.png', width=1000, height=1000, res=300)
-par(mar=c(1,1,1,1))
-set.seed(42)
-coords <- layout_with_kk(edgecount_layer)
-igraph::plot.igraph(edgecount_layer, layout=coords, main="Merged With All Edges", vertex.size=15)
-legend('topleft',
-       legend=paste(names(pal)[order(names(pal), decreasing=F)], "edge(s)"),
-       fill=pal[order(names(pal), decreasing=F)], cex=1/3) 
-
-dev.off()
-
-knitr::include_graphics('merged_with_all_edges.png')
-
-```

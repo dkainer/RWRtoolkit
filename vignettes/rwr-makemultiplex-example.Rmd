@@ -1,10 +1,10 @@
 ---
-title: "Creating a Multiplex with RWR_Make_Multiplex"
+title: "Building a Multiplex from scratch with RWR_Make_Multiplex"
 author: "Matthew Lane"
 date: "2022-12-05"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Creating a Multiplex with RWR_Make_Multiplex}
+  %\VignetteIndexEntry{Building a Multiplex from scratch with RWR_Make_Multiplex}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

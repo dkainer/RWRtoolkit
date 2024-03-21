@@ -1,5 +1,4 @@
 context("RWR_shortestpaths Tests")
-library(RWRtoolkit)
 library(RandomWalkRestartMH)
 library(vctrs)
 library(igraph)
@@ -16,28 +15,6 @@ outdir <- "tmp"
 ########################################################################
 # Tests
 ########################################################################
-describe("merged multiplex", {
-  it("has all expected nodes", {
-    expected_nodes <- c(
-      "CDC5L", "ENO1", "ENO3", "G6PD", "GAPDH", "GCK", "GFPT1", "GFPT2",
-      "GNPNAT1", "GPI", "H6PD", "HK1", "HK2", "HK3", "HKDC1", "IDNK",
-      "MPI", "PFKL", "PFKM", "PFKP", "PGD", "PGLS", "PGM1", "PKLR",
-      "PKM", "PMM1", "TALDO1", "TKT", "TPI1", "KHK", "PMM2"
-    )
-    load(data)
-    geneset1_plus_extras <- load_geneset(geneset1, nw.mpo)
-    source_genes <- geneset1_plus_extras[[1]]
-    geneset2_plus_extras <- load_geneset(geneset2, nw.mpo)
-    target_genes <- geneset2_plus_extras[[1]]
-    nw_merged <- merge_networks(nw.mpo)
-    returned_nodes <- names(V(nw_merged))
-
-    expect_equal(
-      expected_nodes,
-      returned_nodes
-    )
-  })
-})
 
 
 describe("shortest paths result", {
@@ -48,7 +25,7 @@ describe("shortest paths result", {
     source_genes <- geneset1_plus_extras[[1]]
     geneset2_plus_extras <- load_geneset(geneset2, nw.mpo)
     target_genes <- geneset2_plus_extras[[1]]
-    nw_merged <- merge_networks(nw.mpo)
+    nw_merged <- merged_with_all_edges(nw.mpo)$merged_network
     res <- get_shortest_paths(
       nw_merged,
       source_genes,

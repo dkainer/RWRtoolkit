@@ -16,8 +16,6 @@ RWR_netstats(
   multiplex_layers_to_refnet = F,
   net_to_net_similarity = F,
   calculate_tau_for_mpo = F,
-  merged_with_all_edges = F,
-  merged_with_edgecounts = F,
   calculate_exclusivity_for_mpo = F,
   verbose = F
 )
@@ -66,17 +64,6 @@ network_2) (scoring defined by
 \code{scoring_metric}: default jaccard).
 Default False}
 
-\item{merged_with_all_edges}{A boolean denoting a return of a merged
-down multiplex network along with
-network edge counts and vertex counts.
-Default False}
-
-\item{merged_with_edgecounts}{A boolean denoting a return of a merged
-down multiplex, but simplified with
-edge weights denoting the total number
-of layers in which that edge existed.
-Default False}
-
 \item{calculate_exclusivity_for_mpo}{A boolean denoting a return of total
 percentage of edges that exist within
 all n layers of the multiplex.
@@ -90,6 +77,17 @@ distribution of "tau", with respect
 to the network layers,  calculated via
 edge overlap weight / total edgeweight
 multipled by the total number of layers
+Default False}
+
+\item{merged_with_all_edges}{A boolean denoting a return of a merged
+down multiplex network along with
+network edge counts and vertex counts.
+Default False}
+
+\item{merged_with_edgecounts}{A boolean denoting a return of a merged
+down multiplex, but simplified with
+edge weights denoting the total number
+of layers in which that edge existed.
 Default False}
 }
 \value{
@@ -108,20 +106,18 @@ gold <- paste(extdata.dir, "netstat/combined_score-random-gold.tsv", sep="/")
 test <- paste(extdata.dir, "netstat/combined_score-random-test.tsv", sep="/")
 
 output_nstats <- RWR_netstats(
-     data = mpo_path,
-     network_1 = gold,
-     network_2 = test,
-     basic_statistics = T,
-     scoring_metric = "jaccard",
-     pairwise_between_mpo_layer = T,
-     multiplex_layers_to_refnet = T,
-     net_to_net_similarity = T,
-     calculate_tau_for_mpo = T,
-     merged_with_all_edges = T,
-     merged_with_edgecounts = T,
-     calculate_exclusivity_for_mpo = T,
-     outdir = "./rwr_netstats/",
-     verbose = T
+   data = mpo_path,
+   network_1 = gold,
+   network_2 = test,
+   basic_statistics = T,
+   scoring_metric = "jaccard",
+   pairwise_between_mpo_layer = T,
+   multiplex_layers_to_refnet = T,
+   net_to_net_similarity = T,
+   calculate_tau_for_mpo = T,
+   calculate_exclusivity_for_mpo = T,
+   outdir = "./rwr_netstats/",
+   verbose = T
 )
 
 print(output_nstats)

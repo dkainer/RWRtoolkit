@@ -157,11 +157,17 @@ view_top_network_loe <- function(results,
                                  cyto = 1,
                                  modname = "") {
   if (cyto) {
-    topresults <- RandomWalkRestartMH::create.multiplexNetwork.topResults(
-      results,
-      nw_mpo,
-      k = ntop
-    )
+    #1.  compress multiplex to aggregate net
+    merged_mp <- merged_with_edgecounts(nw_mpo)$merged_network
+
+    #2.  extract "ntop" results from "results" as subnet
+    top_rows <- results$RWRM_Results[results$RWRM_Results$rank <= ntop, ]
+    top_ranks <- top_rows$NodeNames
+    seed_genes <- results$Seed_Nodes
+
+    subgraph_nodes <- c(top_ranks, seed_genes)
+    topresults <- igraph::subgraph(merged_mp, subgraph_nodes)
+
 
     igraph::V(topresults)$label.cex <- 0.6 # nolint: igraph method
     if (!is.null(query_geneset)) {
@@ -191,6 +197,7 @@ view_top_network_loe <- function(results,
       title = paste0("seeds_to_top", ntop),
       collection = modname
     )
+	RCy3::setVisualStyle("Curved")
     RCy3::layoutNetwork("kamada-kawai")
     RCy3::setNodeBorderColorDefault(new.color = "#666666")
     RCy3::setNodeBorderWidthDefault(new.width = 4)
@@ -214,7 +221,7 @@ save_plots_loe <- function(metrics,
 
   p1 <- ggplot2::ggplot(metrics$results) +
     ggplot2::geom_path(
-      ggplot2::aes(x = REC, y = PREC),
+      ggplot2::aes(x = REC, y = PREC), #nolint column names
       col = "darkorange",
       alpha = 0.5
     ) +
@@ -226,7 +233,7 @@ save_plots_loe <- function(metrics,
   #  plot ROC curve including all folds and average
   p2 <- ggplot2::ggplot(metrics$results) +
     ggplot2::geom_line(
-      ggplot2::aes(x = FPR, y = REC),
+      ggplot2::aes(x = FPR, y = REC), #nolint column names
       col = "darkorange",
       alpha = 1
     ) +
@@ -394,7 +401,6 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
 
   # Core of method
   message("\nBeginning RWR_LOE ...")
-
   # Set network_names to be the concatenation of individual network names
   network_names <- paste(
     names(nw_mpo)[1:nw_mpo$Number_of_Layers],
@@ -407,7 +413,9 @@ RWR_LOE <- function(data = NULL, # nolint PACKAGE FUNCTION NAME
     x = nw_adjnorm,
     MultiplexObject = nw_mpo,
     Seeds = seed_geneset$gene,
-    r = restart
+    r = restart,
+	tau = tau,
+	weights = seed_geneset$weight,
   )
 
   # Add a rank column to the results (min_rank gives the minimum rank on a

@@ -225,6 +225,28 @@ describe("RWR_LOE funtional tests", {
     expect_equal(result$Seed_Nodes, expected_seeds)
   })
 
+  it("basic parameters return expected scores and seeds of WEIGHTED gene set", {
+    expected_RWRM_Results_NodeNames <- c("0", "3") 
+    expected_RWRM_Results_Score <- c(0.019592967, 0.002029385)
+    expected_RWRM_Results_rank <- c(1, 2)
+    expected_RWRM_Results_num_in_network <- c(2, 2)
+    expected_RWRM_Results_num_seeds <- c(2, 2)
+    expected_RWRM_Results_networks <- c("m1_m2", "m1_m2")
+    expected_RWRM_Results_modname <- c("default", "default")
+    expected_RWRM_Results_seed_geneset <- c("setA", "setA")
+    expected_RWRM_Results <- data.frame(  
+      "NodeNames" = expected_RWRM_Results_NodeNames, "Score" = expected_RWRM_Results_Score,
+      "rank" = expected_RWRM_Results_rank, "num_in_network" = expected_RWRM_Results_num_in_network,
+      "num_seeds" = expected_RWRM_Results_num_seeds, "networks" = expected_RWRM_Results_networks,
+      "modname" = expected_RWRM_Results_modname, "seed_geneset" = expected_RWRM_Results_seed_geneset )
+
+    expected_seeds <- c("1", "2")
+
+    invisible(capture.output(result <- RWRtoolkit::RWR_LOE(data = "../testNetworks/network_m1m2.rdata", seed_geneset = "../testGenesets/testGeneset1_weighted.tsv", tau = "1,1")))
+    expect_equal(result$RWRM_Results, expected_RWRM_Results, tolerance = 1e-3)
+    expect_equal(result$Seed_Nodes, expected_seeds)
+  })
+
   it("using query geneset returns expected scores and seeds", {
     expected_RWRM_Results_NodeNames <- c("0", "3")
     expected_RWRM_Results_Score <- c(0.033961993, 0.006687154)
