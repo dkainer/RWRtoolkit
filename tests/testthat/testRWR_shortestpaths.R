@@ -97,6 +97,10 @@ describe("test RWR_shortestpaths", {
       pathelements = expected_pathelements
     ))
 
+    print("actual")
+    print(actual)
+    print("expected")
+    print(expected)
     expect_equal(actual, expected)
   })
 })

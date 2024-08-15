@@ -29,6 +29,52 @@
 ########################################################################
 # Internal Functions
 ########################################################################
+create_individual_path_df <- function(nw_merged, vpath, g, h){
+  sg_df <- igraph::as_data_frame(
+      igraph::induced_subgraph(
+        nw_merged,
+        vids = vpath,
+        impl = "create_from_scratch"
+      )
+    )
+
+
+    sg_df$pathname <- paste(
+      g,
+      h,
+      sep = "_"
+    )
+
+    sg_df$pathlength <- length(vpath)
+
+    path_string <- paste(
+      lapply(
+        vpath,
+        function(x) igraph::V(nw_merged)$name[x]
+      ),
+      collapse = "->"
+    )
+
+    sg_df$pathelements <- path_string
+    sg_df
+
+}
+
+
+calculate_path_df <- function(nw_merged, sp, g, h){
+  path_dfs <- NULL
+  for (path in 1:length(sp$vpaths)){
+    path_data <- sp$vpaths[[path]]
+    single_path_df <- create_individual_path_df(nw_merged, path_data, g, h)
+    path_dfs <- rbind(path_dfs, single_path_df)
+  }
+  path_dfs
+}
+
+
+
+
+
 get_shortest_paths <- function(nw_merged,
                                source_geneset,
                                target_geneset,
@@ -46,47 +92,22 @@ get_shortest_paths <- function(nw_merged,
     nrow(source_geneset) * length(targets)
   ))
 
+  print(nw_merged)
   doParallel::registerDoParallel(cores = threads)
   res <- foreach::foreach(g = source_geneset$gene, .combine = rbind) %:%
     foreach::foreach(t = targets, .combine = rbind) %dopar% {
       # Only get the shortest path if the start and end
       # nodes are not the same!
-      if (igraph::V(nw_merged)$name[t] != g) {
-        sp <- igraph::shortest_paths(
+      h <- igraph::V(nw_merged)$name[t]
+      if (h != g) {
+        # print("G TO T")
+        sp <- igraph::all_shortest_paths(
           nw_merged,
           from = g,
-          to = t,
-          output = "vpath",
+          to = h,
           weights = wt
         )
-
-
-        sg_df <- igraph::as_data_frame(
-          igraph::induced_subgraph(
-            nw_merged,
-            vids = sp$vpath[[1]],
-            impl = "create_from_scratch"
-          )
-        )
-
-
-        sg_df$pathname <- paste(g,
-          igraph::V(nw_merged)$name[t],
-          sep = "_"
-        )
-
-        sg_df$pathlength <- length(sp$vpath[[1]])
-
-        path_string <- paste(
-          lapply(
-            sp$vpath[[1]],
-            function(x) igraph::V(nw_merged)$name[x]
-          ),
-          collapse = "->"
-        )
-
-        sg_df$pathelements <- path_string
-        sg_df
+        calculate_path_df(nw_merged, sp, g, h)
       }
     }
   doParallel::stopImplicitCluster()
