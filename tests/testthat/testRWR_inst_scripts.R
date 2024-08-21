@@ -103,7 +103,6 @@ describe("RWR inst/scripts", {
         write_to_file = T
       )
 
-      print("LISTING DIRECTORIES")
       system("ls runCVOutput_script")
       system("ls runCVOutput_rfunc")
 

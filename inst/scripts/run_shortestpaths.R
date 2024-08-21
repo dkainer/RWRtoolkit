@@ -127,8 +127,6 @@ main <- function() {
 print("parse options")
   opt <- parse_arguments()
 
-    print("OPTINOS")
-    print(opt)
   ## Call to ShortestPaths
   RWRtoolkit::RWR_ShortestPaths(
     data = opt$data,

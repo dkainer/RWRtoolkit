@@ -25,9 +25,61 @@ RWRtoolkit enables easy use of RandomWalk with Restart on multiplex networks.  T
 
 #### Dependencies
 
-Installation of this R package requires R >= 4.1.0 and r-devtools.  If you use prefer the use of conda you can create the base environment with `conda create --name r-RWRtoolkit -c conda-forge "r>=4.1" "r-base>=4.1" r-devtools` (`r-irkernel` is optional). You can also install devtools from within a base R environment with `install.packages("devtools")`.
+Installation of this R package requires R >= 4.1.0 and devtools.  If you use prefer the use of conda you can create the base environment with `conda create --name r-RWRtoolkit -c conda-forge "r>=4.1" "r-base>=4.1" r-devtools` (`r-irkernel` is optional). You can also install devtools from within a base R environment with `install.packages("devtools")`.
 
 ##### Installation Issues
+
+###### Unable to access Bioconductor: 
+You may likely run into an issue with your R environment installing packages via bioconductor: 
+```R
+devtools::install()
+Error: Unknown remote type: bioc
+  cannot open URL 'https://bioconductor.org/config.yaml'
+```
+To ensure the issue is a certificate issue, use another library to call bioconductor: 
+```R
+httr::GET("https://bioconductor.org/config.yaml")
+Error in curl::curl_fetch_memory(url, handle = handle) :
+  SSL peer certificate or SSH remote key was not OK: [bioconductor.org] SSL certificate problem: self-signed certificate in certificate chain
+```
+
+This problem is an SSL error where you will need to update your SSL certificate. 
+To fix this, in your terminal, type the following: 
+```bash
+# 1. Get a certificate if you don't have one
+curl -o ~/.ssh/cert.pem https://curl.se/ca/cacert.pem
+
+# 2. Get a bioconductor specific certificate 
+echo | openssl s_client -showcerts -servername bioconductor.org -connect bioconductor.org:443 2>/dev/null | openssl x509 -inform pem -outform pem > bioconductor_cert.pem
+
+# 3. Append your bioconductor cert to your cert.pem file
+cat bioconductor_cert.pem >> ~/.ssh/cert.pem
+
+# 4. Add the cert path to your `.Renviron`
+echo CURL_CA_BUNDLE=/Users/96v/.ssh/cert.pem > ~/.Renviron
+```
+
+In a newly restarted R environment, type: 
+```R
+httr::set_config(httr::config(cainfo = "/Users/96v/.ssh/cert.pem"))
+response <- httr::GET("https://bioconductor.org/config.yaml")
+print(response)
+```
+
+You ought to get an output similar to: 
+```
+Response [https://bioconductor.org/config.yaml]
+  Date: 2024-08-14 10:57
+  Status: 200
+  Content-Type: <unknown>
+  Size: 12.6 kB
+<BINARY BODY>
+```
+
+Now, `devtools::install()` ought to work. 
+
+
+###### devtools/r-devtools installation
 It is possible you may run into issues installing `r-devtools` via conda or `devtools` via R's `install.packages()` function. 
 
 **textshaping**

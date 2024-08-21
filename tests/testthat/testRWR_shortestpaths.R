@@ -99,7 +99,65 @@ describe("test RWR_shortestpaths", {
 
     expect_equal(actual, expected)
   })
+
+  it('extracts multiple paths if they exist', {
+    circular_multiplex <- "../testMultiplex/circular_network.Rdata"
+    source_set_filepath <- "../testGenesets/test_circular_geneset_1.tsv"
+    target_set_filepath <- "../testGenesets/test_circular_geneset_2.tsv"
+
+    actual <- RWRtoolkit::RWR_ShortestPaths(
+      data = circular_multiplex,
+      source_geneset = source_set_filepath,
+      target_geneset = target_set_filepath
+    )
+
+    expected_pathelements <- "A->B->D"
+    expected_pathname <- "A_D"
+    expected_pathlength <- 3
+    expected_from <- c("A", "B")
+    expected_to <- c("B", "D")
+    expected_weight <- c(1, 1)
+    expected_weightnorm <- c(0.25, 0.25)
+    expected_type <- "layer1"
+
+    expected_1 <- data.frame(list(
+      from = expected_from,
+      to = expected_to,
+      weight = expected_weight,
+      type = expected_type,
+      weightnorm = expected_weightnorm,
+      pathname = expected_pathname,
+      pathlength = expected_pathlength,
+      pathelements = expected_pathelements
+    ))
+    
+    expected_pathelements <- "A->C->D"
+    expected_pathname <- "A_D"
+    expected_pathlength <- 3
+    expected_from <- c("A", "C")
+    expected_to <- c("C", "D")
+    expected_weight <- c(1, 1)
+    expected_weightnorm <- c(0.25, 0.25)
+    expected_type <- "layer1"
+
+    expected_2 <- data.frame(list(
+      from = expected_from,
+      to = expected_to,
+      weight = expected_weight,
+      type = expected_type,
+      weightnorm = expected_weightnorm,
+      pathname = expected_pathname,
+      pathlength = expected_pathlength,
+      pathelements = expected_pathelements
+    ))
+
+    expected <- rbind(expected_1, expected_2)
+
+    expect_equal(actual, expected)
+  })
 })
+
+
 
 describe("tests extract_node_from_row", {
   path_elements <- "G->E->A"
@@ -136,6 +194,8 @@ describe("tests extract_node_from_row", {
 
     expect_equal(actual, expected)
   })
+
+
 
   # it("extracts the 'to' and 'from' nodes from a shortest path df", {
   #     starting_node <- "E"

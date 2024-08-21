@@ -34,7 +34,7 @@ describe("load_network", {
           igraph::E(actual_network)$weight,
           igraph::E(expected_network)$weight
         )
-        expect_true(!is.directed(actual_network))
+        expect_true(!is_directed(actual_network))
       })
 
       it("loads a graph from an edgelist with no weights", {
@@ -52,7 +52,7 @@ describe("load_network", {
           E(actual_network),
           E(expected_network)
         )
-        expect_true(!is.directed(actual_network))
+        expect_true(!is_directed(actual_network))
       })
 
       it("loads a graph from an edgelist with weights and additional cols", {
@@ -76,7 +76,7 @@ describe("load_network", {
           E(actual_network)$weight,
           E(expected_network)$weight
         )
-        expect_true(!is.directed(actual_network))
+        expect_true(!is_directed(actual_network))
       })
 
 
@@ -104,7 +104,7 @@ describe("load_network", {
         )
         expect_equal(E(actual_network)$type, expected_type)
         expect_setequal(E(actual_network), E(expected_network))
-        expect_true(igraph::is.directed(actual_network))
+        expect_true(igraph::is_directed(actual_network))
       })
     })
 
