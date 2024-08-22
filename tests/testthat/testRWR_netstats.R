@@ -1,4 +1,5 @@
 library(mockery)
+library(igraph)
 
 describe("RWR_netstats", {
 
@@ -143,7 +144,7 @@ describe("RWR_netstats", {
 
     it("returns the name of a named network", {
       network_name <- "test_network"
-      named_network <- igraph::set.graph.attribute(
+      named_network <- igraph::set_graph_attr(
                           unnamed_network,
                           "name",
                           network_name)
@@ -317,7 +318,7 @@ describe("RWR_netstats", {
 
       it("throws a warning when one of the networks has no weights", {
         unweighted_net <- network_b
-        unweighted_net <- igraph::remove.edge.attribute(
+        unweighted_net <- igraph::delete_edge_attr(
                                     unweighted_net,
                                     "weight")
 
@@ -600,11 +601,11 @@ describe("RWR_netstats", {
     flist_file_path <- "../testFlists/abc_flist.txt"
     net1_file_path <- "../testNetworks/abc_layer1.tsv"
     net1 <- read.table(net1_file_path)
-    net1 <- graph.data.frame(net1)
+    net1 <- graph_from_data_frame(net1)
 
     net2_file_path <- "../testNetworks/abc_layer2.tsv"
     net2 <- read.table(net2_file_path)
-    net2 <- graph.data.frame(net2)
+    net2 <- graph_from_data_frame(net2)
 
     it("throws error if no networks or paths included", {
       expected_error_message <- paste(

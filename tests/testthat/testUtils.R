@@ -99,7 +99,7 @@ describe("load_network", {
 
         ## established it reads graph, test if it sets attributes
         expect_equal(
-          igraph::get.graph.attribute(actual_network)$name,
+          igraph::graph_attr(actual_network)$name,
           expected_name
         )
         expect_equal(E(actual_network)$type, expected_type)
