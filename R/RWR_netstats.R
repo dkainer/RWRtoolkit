@@ -106,10 +106,10 @@ make_dummy_multiplex <- function(
 #'
 #' @return A string.
 get_name <- function(g, default="<G>") {
-  if (is.null(igraph::get.graph.attribute(g, "name"))) {
+  if (is.null(igraph::graph_attr(g, "name"))) {
     g_name <- default
   } else {
-    g_name <- igraph::get.graph.attribute(g, "name")
+    g_name <- igraph::graph_attr(g, "name")
   }
   return(g_name)
 }
@@ -262,8 +262,8 @@ check_weighted_edges <- function(network, network_name) {
 #'
 #' @return Jaccard similarity coefficient.
 jaccard_score_edges <- function(g, h, verbose=FALSE) {
-  i <- igraph::graph.intersection(g, h)
-  u <- igraph::graph.union(g, h)
+  i <- igraph::intersection(g, h)
+  u <- igraph::union(g, h)
   score <- igraph::ecount(i) / igraph::ecount(u)
   if (verbose) {
     message(sprintf("Jaccard score for edges (%s vs %s): %.2f\n",
@@ -294,7 +294,7 @@ overlap_score <- function(g, h, verbose=FALSE) {
   check_weighted_edges(g, get_name(g, "<G>"))
   check_weighted_edges(h, get_name(h, "<H>"))
 
-  i <- igraph::graph.intersection(g, h)
+  i <- igraph::intersection(g, h)
   sum_of_i_edge_weights <- sum(igraph::E(i)$weight_1)
   h_n_edges <- igraph::ecount(h)
   score <- sum_of_i_edge_weights / h_n_edges
