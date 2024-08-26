@@ -55,6 +55,7 @@ Suggests:
     testthat,
     mockery,
     gprofiler2,
+    ggbreak,
     knitr,
     rmarkdown,
     RColorBrewer
