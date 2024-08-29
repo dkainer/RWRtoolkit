@@ -93,7 +93,7 @@ We will then take the top 200 genes from each output and explore the differences
 
 ```{r Run LOE, messages=FALSE, warning=FALSE}
 fea1fad2_loeOutput <- RWRtoolkit::RWR_LOE(
-  data = '~/Documents/projects/RWR/RWRtoolkit-data/Comprehensive_Network_AT_d0.5_v02.RData',
+  data = comprehensiveNetworkPath,
   seed_geneset = fea1fad2GenesetPath,
   outdir = "./fae1fad2",
   #cyto=200 # To load via cytoscape, make sure your cytoscape application is open
