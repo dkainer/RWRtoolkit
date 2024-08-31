@@ -243,7 +243,7 @@ basic_statistics_multiplex <- function(mpo, verbose=FALSE) {
 check_weighted_edges <- function(network, network_name) {
   `%notin%` <- Negate(`%in%`)
 
-  if ("weight" %notin% names(igraph::edge.attributes(network))) {
+  if ("weight" %notin% names(igraph::edge_attr(network))) {
     warning(
       paste(
         "Network",
