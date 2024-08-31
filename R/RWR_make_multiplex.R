@@ -27,7 +27,35 @@
 ########################################################################
 # Internal Functions
 ########################################################################
-make_multiplex <- function(nwdf) {
+get_neighboring_edge_ids <- function(g, node){
+    neighbors <- igraph::neighbors(g, node)$name
+    connected_nodes <- c()
+    for (neighbor in neighbors){
+        connected_nodes <- c(connected_nodes, node, neighbor)
+    }
+    edge_ids <- igraph::get.edge.ids(g, connected_nodes)
+    return(edge_ids)
+}
+
+
+remove_edges_connected_to_node <- function(g, node){
+    if( ! (node %in% igraph::V(g)$name )) return(g)
+    edge_ids_to_remove <- get_neighboring_edge_ids(g, node)
+    g <- igraph::delete_edges(g, edge_ids_to_remove)
+    g
+}
+
+
+drop_edges_from_nodes_in_graph <- function(g, elements_to_remove){
+    for (element in elements_to_remove){
+        g <- remove_edges_connected_to_node(g, element)
+    }
+    g
+}
+
+
+
+make_multiplex <- function(nwdf, knockout_nodes=c()) {
   # Make_multiplex is a wrapper around iGraph and RandomWalkRestartMH
 
   # Preparing data for create.multiplex function call
@@ -39,7 +67,9 @@ make_multiplex <- function(nwdf) {
       col_names = c("from", "to", "weight"),
       select = 1:3
     )
-
+    if (length(knockout_nodes) > 0){
+       nw_g <- drop_edges_from_nodes_in_graph(nw_g, knockout_nodes)
+    }
     igraph::edge_attr(nw_g, "type") <- d$nwname
 
     nw_g
@@ -54,13 +84,13 @@ make_multiplex <- function(nwdf) {
   return(mpo)
 }
 
-make_homogenous_network <- function(nw.groups, delta, out, verbose) {
+make_homogenous_network <- function(nw.groups, delta, out, knockout_nodes = c(), verbose=F) {
   # Takes in group data from flist, converts to multiplex network, and saves to a file
 
   # Constructs Multiplex Network
   cat("constructing multiplex network from 1 group of layers: ", nw.groups[[1]]$nwname, "\n")
-  nw.mpo <- make_multiplex(nw.groups[[1]])
-
+  nw.mpo <- make_multiplex(nw.groups[[1]], knockout_nodes)
+  
   # Create the adjacency matrix and normalize the data for the network
   print("constructing the adjacency matrix...be VERY patient if there are lots of layers or layers are big")
   nw.adj <- RandomWalkRestartMH::compute.adjacency.matrix(nw.mpo, delta = delta)
@@ -220,7 +250,7 @@ read_flist <- function(flist) {
 #' system("rm example.flist")
 #'
 #' @export
-RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata",  verbose = FALSE) {
+RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata",  knockout_nodes = c(), verbose = FALSE) {
   if (flist == "") {
     stop("Please provide a path to your flist, or pass test=TRUE to view an example")
   }
@@ -233,7 +263,7 @@ RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata"
 
   # Call appropriate network creation function based on groups
   if (length(nw.groups) == 1 && all(nw.groups[[1]]$nwgroup == 1)) {
-    make_homogenous_network(nw.groups, delta, output, verbose)
+    make_homogenous_network(nw.groups, delta, output, knockout_nodes, verbose)
   } else if (length(nw.groups) == 3 && nw.groups[[1]]$nwgroup == 1 && nw.groups[[2]]$nwgroup == 2 && nw.groups[[3]]$nwgroup == 3) {
     warning(
       paste("Hetergeneous Multiplexes are capable of being made",
