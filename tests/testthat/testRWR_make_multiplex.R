@@ -97,13 +97,98 @@ run_test_for_diff_graph_data <- function(
   expect_equal(nw.adj, expected_nonnormalized_mat)  #nolint loaded from file
 }
 
+describe("get neighboring edge ids", {
+  input_graph <- igraph::make_graph(
+    c('a','b',
+      'a','c',
+      'c','d',
+      'd','e',
+      'f','c'
+    ), 
+    directed=FALSE
+  )
+
+  it("gets the edge indices associated with c", {
+    node <- 'c'
+    
+    expected_output <- c(2, 3, 5)
+
+    actual_output <- get_neighboring_edge_ids(input_graph, node)
+
+    expect_equal(actual_output, expected_output)
+  })
+})
+
+
+describe("remove edges connected to nodes", {
+  input_graph <- igraph::make_ring(6, directed=FALSE)
+  igraph::V(input_graph)$name <- LETTERS[1:6]
+
+  it("returns the base graph if node does not exist", {
+    expected_output <- input_graph
+
+    actual_output <- remove_edges_connected_to_node(input_graph, 'X')
+
+    expect_equal(actual_output, expected_output)
+  })
+
+  it("returns a graph with the desired node removed", {
+    expected_output <- igraph::make_graph(c("A","B","B","C", "C","D","D","E"), directed=FALSE)
+
+    actual_output <- remove_edges_connected_to_node(input_graph, 'F')
+    
+    expect_setequal(
+      igraph::E(actual_output), 
+      igraph::E(expected_output)
+    )
+    expect_equal(
+      igraph::V(actual_output)$name,
+      c("A","B","C","D","E","F") # F still exists. 
+    )
+  })
+})
+
+describe("drop edges from nodes in graph ", {
+   input_graph <- igraph::make_ring(7, directed=F)
+   igraph::V(input_graph)$name <- LETTERS[1:7]
+   
+   it("removes only one of the two supplied nodes", {
+    input_nodes <- c('G', 'X')
+    
+    expected_output <- igraph::make_graph(c("A","B","B","C", "C","D","D","E","E","F"), directed=FALSE)
+
+    actual_output <- drop_edges_from_nodes_in_graph(input_graph, input_nodes)
+
+    expect_setequal(
+      igraph::E(actual_output),
+      igraph::E(expected_output)
+    )
+   })
+   it("removes only both of the two supplied nodes", {
+    input_nodes <- c('G', 'A')
+    
+    expected_output <- igraph::make_graph(c("B","C", "C","D","D","E","E","F"), directed=FALSE)
+
+    actual_output <- drop_edges_from_nodes_in_graph(input_graph, input_nodes)
+
+    expect_setequal(
+      igraph::E(actual_output),
+      igraph::E(expected_output)
+    )
+    expect_equal(
+      V(actual_output)$name,
+      LETTERS[1:7]
+    )
+   })
+})
+
 describe("make_multiplex", {
   it("throws an error when fed an flist tibble with non-existant files", {
     nw_groups <- list_of(nw_tibble_bad_path)
     expect_error(make_multiplex(nw_groups[[1]]))
   })
 
-  it("also makes a multiplex", {
+  it("makes a multiplex", {
     # expected output as multiplex object:
     # Because of how RandomWalkRestartMH Calculates the edge weights
     # our graph, m1, originally has weights 1 and 2. Those get normalized
@@ -145,6 +230,108 @@ describe("make_multiplex", {
     # Check Layer descriptions for each layer:
     expect_equal(E(actual_output$m1)$type, E(graph1)$type)
     expect_equal(E(actual_output$m2)$type, E(graph2)$type)
+  })
+
+
+  it("makes a multiplex with a knockout", {
+    nw_tibble <- tibble::tibble(
+      "nwfile" = c("../testNetworks/abc_layer1.tsv", 
+                   "../testNetworks/abc_layer2.tsv"),
+      "nwname" = c("m1", "m2"),
+      "nwgroup" = c(1, 1)
+    )
+    nw_groups <- vctrs::list_of(nw_tibble)
+
+    
+    # expected output as multiplex object:
+    # Because of how RandomWalkRestartMH Calculates the edge weights
+    # our graph, m1, originally has weights 1 and 2. Those get normalized
+    # my the create multiplex to then have the weights 0.5 and 1, respectively.
+    graph1 <- make_graph(
+      c("B","A",
+        "E","B",
+        "C","B",
+        "E","D",
+        "F","E",
+        "F","C",
+        "G","E",
+        "H","E",
+        "H","F",
+        "H","C"), 
+      directed = FALSE)
+    E(graph1)$weight <- 1
+    E(graph1)$type <- "m1"
+    
+    graph2 <- make_graph(
+       c("G","D",
+        "H","E",
+        "D","B",
+        "E","B",
+        "F","C",
+        "B","A",
+        "C","A",
+        "E","C"),
+      directed = FALSE
+    )
+    E(graph2)$weight <- 1
+    E(graph2)$type <- "m2"
+
+    expected_g1 <- make_graph(
+      c("B","A",
+        # "E","B",
+        "C","B",
+        # "E","D",
+        # "F","E",
+        # "F","C",
+        # "G","E",
+        # "H","E",
+        # "H","F",
+        "H","C"), 
+      directed = FALSE)
+    E(expected_g1)$weight <- 1
+    E(expected_g1)$type <- "m1"
+    
+    expected_g2 <- make_graph(
+       c("G","D",
+        # "H","E",
+        "D","B",
+        # "E","B",
+        # "F","C",
+        "B","A",
+        "C","A"
+        # "E","C"
+        ),
+      directed = FALSE
+    )
+    E(expected_g2)$weight <- 1
+    E(expected_g2)$type <- "m2"
+
+    expected_num_layers <- 2
+    expected_num_nodes <- 8
+    actual_output <- NULL
+    invisible(
+      capture.output(
+        actual_output <- make_multiplex(nw_groups[[1]], c("F","E"))
+      ) 
+    )
+    
+    expect_equal(actual_output$Number_of_Layers, expected_num_layers)
+    expect_equal(actual_output$Number_of_Nodes_Multiplex, expected_num_nodes)
+    # Issues with sorted nature of vertices and edges.
+    # Check node equality for each layer:
+    expect_setequal(V(actual_output$m1)$name, V(graph1)$name)
+    expect_setequal(V(actual_output$m2)$name, V(graph2)$name)
+    # # Check edge equality for each layer:
+    expect_setequal(E(actual_output$m1), E(expected_g1))
+    expect_setequal(E(actual_output$m2), E(expected_g2))
+    # # Check edge weight equality for each layer:
+
+    expect_equal(E(actual_output$m1)$weight, E(expected_g1)$weight)
+    expect_equal(E(actual_output$m2)$weight, E(expected_g2)$weight)
+
+    # # Check Layer descriptions for each layer:
+    expect_equal(E(actual_output$m1)$type, E(expected_g1)$type)
+    expect_equal(E(actual_output$m2)$type, E(expected_g2)$type)
   })
 })
 
@@ -220,13 +407,82 @@ describe("make_homogenous_network", {
         nw_groups,
         delta,
         output_filename,
-        verbose
+        # knockout_nodes=c(),
+        verbose=verbose
       )
     )
     load(output_filename)
 
     expect_equal(nw.adj, expected_nonnormalized_mat)
     expect_equal(nw.adjnorm, expected_normalized_mat)
+  })
+
+
+  it('creates a multiplex with knockout data', {
+    nw_tibble <- tibble::tibble(
+      "nwfile" = c("../testNetworks/abc_layer1.tsv", 
+                   "../testNetworks/abc_layer2.tsv"),
+      "nwname" = c("m1", "m2"),
+      "nwgroup" = c(1, 1)
+    )
+    nw_groups <- vctrs::list_of(nw_tibble)
+    knockout_nodes <- c('F', 'E')
+    output_filename <- "testthatOutput_abc_knockout.rdata"
+
+    colnames <- c("A_1", "B_1", "C_1", "D_1", "E_1", "F_1", "G_1", "H_1", 
+                  "A_2", "B_2", "C_2", "D_2", "E_2", "F_2", "G_2", "H_2")
+
+    knockouts <- c('F', 'E')
+    . <- 0
+    E <- 0.5
+    D <- 0.5
+
+    list_mat <- c(
+      # A  B  C  D  E  F  G  H   A   B    C  D  E  F  G  H  
+      c(., E, ., ., ., ., ., ., D, ., ., ., ., ., ., .),
+      c(E, ., E, ., ., ., ., ., ., D, ., ., ., ., ., .),
+      c(., E, ., ., ., ., ., E, ., ., D, ., ., ., ., .),
+      c(., ., ., ., ., ., ., ., ., ., ., D, ., ., ., .),
+      c(., ., ., ., ., ., ., ., ., ., ., ., D, ., ., .),
+      c(., ., ., ., ., ., ., ., ., ., ., ., ., D, ., .),
+      c(., ., ., ., ., ., ., ., ., ., ., ., ., ., D, .),
+      c(., ., E, ., ., ., ., ., ., ., ., ., ., ., ., D),
+      c(D, ., ., ., ., ., ., ., ., E, E, ., ., ., ., .),
+      c(., D, ., ., ., ., ., ., E, ., ., E, ., ., ., .),
+      c(., ., D, ., ., ., ., ., E, ., ., ., ., ., ., .),
+      c(., ., ., D, ., ., ., ., ., E, ., ., ., ., E, .),
+      c(., ., ., ., D, ., ., ., ., ., ., ., ., ., ., .),
+      c(., ., ., ., ., D, ., ., ., ., ., ., ., ., ., .),
+      c(., ., ., ., ., ., D, ., ., ., ., E, ., ., ., .),
+      c(., ., ., ., ., ., ., D, ., ., ., ., ., ., ., .)
+    )
+    mat <- matrix(
+      list_mat,
+      nrow = 16,
+      ncol = 16,
+      dimnames = list(colnames, colnames)
+    )
+    # Normalize the matrix by column
+    normalized_mat <- mat %*% diag(1 / colSums(mat))
+    # non normalized matrix retains the original delta as the intra-layer weight
+    expected_nonnormalized_mat <- as(mat, "dgCMatrix")
+    # non matrix are normalized along with the [0,1]
+    #    normalized edge weights in each layer.
+    expected_normalized_mat <- as(normalized_mat, "dgCMatrix")
+    colnames(expected_normalized_mat) <- colnames
+
+    invisible(
+      make_homogenous_network(
+        nw_groups,
+        D,
+        output_filename,
+        knockouts,
+        verbose
+      )
+    )
+    load(output_filename)
+
+    expect_equal(nw.adj, expected_nonnormalized_mat)
   })
 
   it("creates multiplexes with tab delimited data", {
@@ -469,6 +725,7 @@ describe("RWR_make_multiplex.R:", {
       nw_group_input,
       0.5,
       "network.Rdata",
+      c(),
       FALSE
     )
     expect_called(make_heterogenous_stub, 0)
@@ -511,6 +768,7 @@ describe("RWR_make_multiplex.R:", {
       nw_group_input,
       delta,
       output_file,
+      c(),
       verbose)
     expect_called(make_heterogenous_stub, 0)
   })
@@ -584,6 +842,7 @@ teardown(
     system("rm testthatOutputP5_fromMixedDelim.txt")
     system("rm testthatOutputP5_fromMixedHeader.txt")
     system("rm testthatOutputP5_fromMixedHeaderDelim.txt")
+    system("rm testthatOutput_abc_knockout.rdata")
   },
   env = parent.frame()
 )
