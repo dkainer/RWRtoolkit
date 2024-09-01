@@ -17,4 +17,5 @@ inst/doc
 /Meta/
 *[gG]old.tsv
 testNet_*.tsv
-
+*.gz
+*.tar
