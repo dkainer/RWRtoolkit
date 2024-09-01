@@ -19,3 +19,4 @@ inst/doc
 testNet_*.tsv
 *.gz
 *.tar
+*.tgz
