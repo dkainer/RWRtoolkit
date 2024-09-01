@@ -188,7 +188,7 @@ describe("make_multiplex", {
     expect_error(make_multiplex(nw_groups[[1]]))
   })
 
-  it("makes a multiplex", {
+  it("makes a multiplex from a graph df", {
     # expected output as multiplex object:
     # Because of how RandomWalkRestartMH Calculates the edge weights
     # our graph, m1, originally has weights 1 and 2. Those get normalized
@@ -233,7 +233,7 @@ describe("make_multiplex", {
   })
 
 
-  it("makes a multiplex with a knockout", {
+  it("makes a multiplex from a graph df with a knockout", {
     nw_tibble <- tibble::tibble(
       "nwfile" = c("../testNetworks/abc_layer1.tsv", 
                    "../testNetworks/abc_layer2.tsv"),
@@ -324,14 +324,129 @@ describe("make_multiplex", {
     # # Check edge equality for each layer:
     expect_setequal(E(actual_output$m1), E(expected_g1))
     expect_setequal(E(actual_output$m2), E(expected_g2))
-    # # Check edge weight equality for each layer:
 
+    # # Check edge weight equality for each layer:
     expect_equal(E(actual_output$m1)$weight, E(expected_g1)$weight)
     expect_equal(E(actual_output$m2)$weight, E(expected_g2)$weight)
 
     # # Check Layer descriptions for each layer:
     expect_equal(E(actual_output$m1)$type, E(expected_g1)$type)
     expect_equal(E(actual_output$m2)$type, E(expected_g2)$type)
+  })
+
+  it('throws an error if multiple object types are in the list', {
+    graph1 <- make_graph(c('a','b','c','d'))
+    not_graph <- list('a','b','c','d')
+
+    expected_error <- "List of graph elements ought to be only igraph objects"
+    expect_error(make_multiplex(list(graph1, not_graph)), expected_error)
+  })
+
+  it('makes a multiplex from a graph list', {
+    graph1 <- make_graph(c("0", "1", "0", "2", "1", "2"), directed = FALSE)
+    E(graph1)$weight <- c(0.5, 1.0, 0.5)
+
+    # Add vertex 3 because RandomWalkRestartMH
+    # ensures all layers share common vertices
+    graph1 <- add_vertices(graph1, 1, name = c("3"))
+    graph2 <- make_graph(
+        c("0", "2", "0", "3", "1", "2", "2", "3"),
+        directed = FALSE
+    )
+    E(graph2)$weight <- c(1, 1, 1, 1)
+    expected_num_layers <- 2
+    expected_num_nodes <- 4
+    graph2 <- igraph::set_graph_attr(graph2, 'name', "graph2_name")
+
+    expected_g1_type <- rep('graph_1', 3)
+    expected_g2_type <- rep("graph2_name", 4)
+    
+    invisible(
+      capture.output(
+        actual_output <- make_multiplex(list(graph1, graph2))
+      )
+    )
+    expect_equal(actual_output$Number_of_Layers, expected_num_layers)
+    expect_equal(actual_output$Number_of_Nodes_Multiplex, expected_num_nodes)
+    # Issues with sorted nature of vertices and edges.
+    # Check node equality for each layer:
+    expect_setequal(V(actual_output$graph_1)$name, V(graph1)$name)
+    expect_setequal(V(actual_output$graph2_name)$name, V(graph2)$name)
+    # # Check edge equality for each layer:
+    expect_setequal(E(actual_output$graph_1), E(graph1))
+    expect_setequal(E(actual_output$graph2_name), E(graph2))
+    # # Check edge weight equality for each layer:
+
+    expect_equal(E(actual_output$graph_1)$weight, E(graph1)$weight)
+    expect_equal(E(actual_output$graph2_name)$weight, E(graph2)$weight)
+    # # Check Layer descriptions for each layer:
+    expect_equal(E(actual_output$graph_1)$type, expected_g1_type)
+    expect_equal(E(actual_output$graph2_name)$type, expected_g2_type)
+  })
+
+
+  it('makes a multiplex from a graph list with a knockout', {
+    graph1 <- make_graph(
+      c("F", "G",
+      "F", "N",
+      "F", "M", 
+      "G", "M"),
+    directed = FALSE)
+    E(graph1)$weight <- c(1, 2, 2, 1)
+
+    graph2 <- make_graph(
+        c("F", "M",
+         "F", "H", 
+         "G", "M", 
+         "M", "H"),
+        directed = FALSE
+    )
+
+    E(graph2)$weight <- c(1, 1, 1, 1)
+    expected_num_layers <- 2 
+    expected_num_nodes <- 5
+    graph2 <- igraph::set_graph_attr(graph2, 'name', "graph2_name")
+
+    expected_g1 <-  make_graph(
+      c("F", "N",
+      "F", "M"),
+      directed = FALSE)
+
+    E(expected_g1)$weight <- c(1, 1) # rwrmh normlaized the two nodes 
+
+    expected_g2 <- make_graph( c(
+         "F", "M"),
+        directed = FALSE
+    )
+    E(expected_g2)$weight <- 1
+     
+    expected_g1_type <- rep('graph_1', 2)
+    expected_g2_type <- rep("graph2_name", 1)
+    
+    # invisible(
+    #   capture.output(
+        actual_output <- make_multiplex(list(graph1, graph2), knockout_nodes=c("G", "H"))
+    #   )
+    # )
+
+    expect_equal(actual_output$Number_of_Layers, expected_num_layers)
+    expect_equal(actual_output$Number_of_Nodes_Multiplex, expected_num_nodes)
+    # Issues with sorted nature of vertices and edges.
+    # Check node equality for each layer:
+    expect_setequal(V(actual_output$graph_1)$name, c(V(expected_g1)$name, 'G', 'H') ) # G and H knocked out
+    expect_setequal(V(actual_output$graph2_name)$name, c(V(expected_g2)$name, 'N', "G", "H") ) # G and H knocked out, N not in network
+    # # Check edge equality for each layer:
+    expect_setequal(E(actual_output$graph_1), E(expected_g1))
+    expect_setequal(E(actual_output$graph2_name), E(expected_g2))
+    # # # Check edge weight equality for each layer:
+
+    # print(E(actual_output$graph_1)$weight)
+    expect_equal(E(actual_output$graph_1)$weight, E(expected_g1)$weight)
+    expect_equal(E(actual_output$graph2_name)$weight, E(expected_g2)$weight)
+    # # # Check Layer descriptions for each layer:
+    expect_equal(E(actual_output$graph_1)$type, expected_g1_type)
+    expect_equal(E(actual_output$graph2_name)$type, expected_g2_type)
+
   })
 })
 

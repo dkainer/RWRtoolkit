@@ -55,27 +55,83 @@ drop_edges_from_nodes_in_graph <- function(g, elements_to_remove){
 
 
 
+get_class_of_nw_groups <- function(nw_groups){
+  groups_class <- class(nw_groups)
+  if (length(groups_class) > 1){
+    if ('data.frame' %in% groups_class) return('data.frame')  
+
+  }
+  unique_classes <- unique(purrr::map(nw_groups, class))
+  if (length(unique_classes) > 1 ) {
+    stop('List of graph elements ought to be only igraph objects')
+  }
+  unique_classes[[1]]
+}
+
+get_network_name <- function(g, index, previous_names){
+  graph_name_does_not_exist <- is.null(igraph::graph_attr(g, "name"))
+  matches_other_name_in_list <- if (!graph_name_does_not_exist)  
+    igraph::graph_attr(g, "name") %in% previous_names 
+    else FALSE
+    
+  if (graph_name_does_not_exist || matches_other_name_in_list) {
+    return(paste("graph", index, sep='_'))
+  }
+  return( igraph::graph_attr(g, "name") )
+}
+
+# get_graph_list_names <- function(graph_list){
+#   name_list <- c()
+#   for (g_idx in 1:length(graph_list)){
+#     g <- graph_list[[g_idx]]
+#     name <- get_network_name(g, g_idx, name_list)
+#     name_list <- c(name_list, name)
+#   }
+#   name_list
+# }
+
 make_multiplex <- function(nwdf, knockout_nodes=c()) {
   # Make_multiplex is a wrapper around iGraph and RandomWalkRestartMH
 
   # Preparing data for create.multiplex function call
   # For each network, read as a datatable, convert to igraph, attribute 
   # edges with nwnames
-  nwlist <- foreach::foreach(d = iterators::iter(nwdf, by = "row")) %do% {
+
+ 
+  nwlist <- if (get_class_of_nw_groups(nwdf) != "igraph") foreach::foreach(d = iterators::iter(nwdf, by = "row")) %do% {
     nw_g <- load_network(
       d$nwfile,
+      type = d$nwname,
+      name= d$nwname,
       col_names = c("from", "to", "weight"),
-      select = 1:3
+      select = 1:3, 
     )
-    if (length(knockout_nodes) > 0){
-       nw_g <- drop_edges_from_nodes_in_graph(nw_g, knockout_nodes)
-    }
-    igraph::edge_attr(nw_g, "type") <- d$nwname
-
     nw_g
-  }
+  } else nwdf
 
-  names(nwlist) <- nwdf$nwname
+  name_vector <- c()
+  for (g_idx in 1:length(nwlist)){
+    g <- nwlist[[g_idx]]
+    name <- get_network_name(g, g_idx, name_vector)
+    g <- igraph::set_graph_attr(g, 'name', name)
+    name_vector <- c(name_vector, name)
+
+
+    if (length(knockout_nodes) > 0){
+      g <- drop_edges_from_nodes_in_graph(g, knockout_nodes)
+
+    }
+
+    g <- igraph::set_edge_attr(g, "type", seq(1, igraph::ecount(g)), name)
+    nwlist[[g_idx]] <- g
+  }
+  
+    
+
+
+  names(nwlist) <- name_vector
+  # nwlist 
+
 
   # Make the multiplex network object (return as mpo)
   print("constructing a multiplex network...be patient if there are lots of layers or layers are big")
@@ -88,7 +144,7 @@ make_homogenous_network <- function(nw.groups, delta, out, knockout_nodes = c(),
   # Takes in group data from flist, converts to multiplex network, and saves to a file
 
   # Constructs Multiplex Network
-  cat("constructing multiplex network from 1 group of layers: ", nw.groups[[1]]$nwname, "\n")
+  # cat("constructing multiplex network from 1 group of layers: ", nw.groups[[1]]$nwname, "\n")
   nw.mpo <- make_multiplex(nw.groups[[1]], knockout_nodes)
   
   # Create the adjacency matrix and normalize the data for the network
@@ -96,6 +152,9 @@ make_homogenous_network <- function(nw.groups, delta, out, knockout_nodes = c(),
   nw.adj <- RandomWalkRestartMH::compute.adjacency.matrix(nw.mpo, delta = delta)
   nw.adjnorm <- RandomWalkRestartMH::normalize.multiplex.adjacency(nw.adj)
 
+  if (is.null(out)){
+    return(list(nw.mpo, nw.adj, nw.adjnorm))
+  }
   # Save data to file with presupplied filename or default: network.Rdata
   if (!dir.exists(dirname(out))) {
     dir.create(dirname(out), recursive = TRUE)

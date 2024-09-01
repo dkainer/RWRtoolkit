@@ -49,6 +49,7 @@ Imports:
     dplyr,
     RandomWalkRestartMH,
     stringr,
+    purrr,
     Matrix
 Suggests: 
     RCy3,
