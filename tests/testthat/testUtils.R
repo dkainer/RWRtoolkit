@@ -270,7 +270,26 @@ describe("load_geneset", {
     expect_equal(output, expected_output)
   })
 
+ it('loads a genest from a character vector', {
+    input <- c('0', '1')
+    Pool_of_Nodes <- c("0", "1") #nolint
+    nw.mpo <- data.frame(Pool_of_Nodes) #nolint
 
+    expected_geneset <- data.frame(
+      setid = c('gene_set','gene_set'),
+      gene = input,
+      weight = c(1, 1)
+    )
+
+    expected_output <- list(
+      geneset = expected_geneset,
+      extras = NULL
+    )
+
+    actual_output <- load_geneset(input, nw.mpo)
+
+    expect_equal(actual_output, expected_output)
+ })
 })
 
 describe("get_or_set_tau", {
