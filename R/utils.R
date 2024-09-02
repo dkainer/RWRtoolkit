@@ -58,11 +58,12 @@ load_network <- function(path_to_edgelist,
   g <- igraph::graph_from_data_frame(edgelist, directed = directed)
 
   if (!is.null(name)) {
-    igraph::graph_attr(g, "name") <- name
+    g <- igraph::set_graph_attr(g, "name", name)
   }
 
   if (!is.null(type)) {
-    igraph::edge_attr(g, "type") <- type
+    num_edges <- igraph::ecount(g) 
+    g <- igraph::set_edge_attr(g, "type", 1:num_edges , type)
   }
 
   return(g)
@@ -373,22 +374,31 @@ vplayout <- function(x, y) {
 
 # Load the multiplex network and adjacency matrices
 # (i.e. nw.mpo, nw.adj, nw.adjnorm)
-load_multiplex_data <- function(filepath_or_url) {
-  if (is.null(filepath_or_url)) {
+load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5) {
+  if (is.null(filepath_url_or_graphlist)) {
     stop("ERROR: Mandatory arguement data is missing.")
   }
 
-  is_url <- stringr::str_detect(filepath_or_url, pattern = "http")
+  if (class(filepath_url_or_graphlist) == 'list'){
+    outlist <- make_homogenous_network(filepath_url_or_graphlist, delta)
+    nw.mpo <- outlist$nw.mpo
+    nw.adj <- outlist$nw.adj
+    nw.adjonrm <- outlist$nw.adjonrm
 
-  if (!is_url && !file.exists(filepath_or_url)) {
-    stop("ERROR: Rdata input file does not exist: ", filepath_or_url)
+  } else {
+    is_url <- stringr::str_detect(filepath_url_or_graphlist, pattern = "http")
+
+    if (!is_url && !file.exists(filepath_url_or_graphlist)) {
+      stop("ERROR: Rdata input file does not exist: ", filepath_url_or_graphlist)
+    }
+
+    updated_file_path <- if (is_url) url(filepath_url_or_graphlist) else filepath_url_or_graphlist
+    # this contains the multiplex network layers and adj matrix
+    load(updated_file_path)
+
+    if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object") # nolint
   }
 
-  updated_file_path <- if (is_url) url(filepath_or_url) else filepath_or_url
-  # this contains the multiplex network layers and adj matrix
-  load(updated_file_path)
-
-  if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object") # nolint
 
   return(list(
     nw.mpo = nw.mpo,
