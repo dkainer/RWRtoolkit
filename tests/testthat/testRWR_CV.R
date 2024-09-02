@@ -151,8 +151,6 @@ describe("update_folds_by_method", {
 
 describe("extract_lo_and_seed_genes_cv", {
   # Unexpected method is checked earlier in pipeline, redundant to check here.
-
-
   it("extracts one seed genes and leaves out the remainder for singletons where fold is 1", {
     method <- "singletons"
     fold <- 1
@@ -461,7 +459,7 @@ describe("RWR", {
     stub(RWR, "extract_lo_and_seed_genes_cv", mock_extract_leftout_and_seed_genes_cv)
     stub(RWR, "RandomWalkRestartMH::Random.Walk.Restart.Multiplex", mock_RWRMH)
     stub(RWR, "create_rankings_cv", mock_create_rankings_cv)
-    expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)
+expected_response <- list(first_mockLayer, second_mockLayer, third_mockLayer)
 
     response <- RWR(
       geneset = geneset_3genes,

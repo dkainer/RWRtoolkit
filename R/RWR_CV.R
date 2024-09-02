@@ -770,6 +770,22 @@ calculate_average_rank_across_folds_cv <- function(res_combined){
   res_avg
 }
 
+extract_and_rename_score_column <- function(df_list){
+  lapply(df_list, function(df) {
+    seed_value <- unique(df$seed)
+    df <- df[, c('NodeNames', 'Score')]
+    colnames(df)[which(colnames(df) == "Score")] <- paste0(seed_value)
+    df
+  })
+}
+
+combine_ranks_to_embed_matrix <- function(res){
+  extracted_score_and_nodes <- extract_and_rename_score_column(res)
+  reduced <- Reduce(function(x, y) merge(x, y, by ='NodeNames', all=T), extracted_score_and_nodes)
+  reduced
+}
+
+
 ########################################################################
 # Main Function
 ########################################################################
@@ -873,14 +889,16 @@ RWR_CV <- function(data = NULL,
                    out_full_ranks = NULL,
                    out_mean_ranks = NULL,
                    threads = 1,
+                   hpc = FALSE,
+                   create_emedding_matrix = FALSE,
                    verbose = FALSE,
                    write_to_file = FALSE) {
-
+ 
   ############# Initialize  ##################################################
   data_list <- load_multiplex_data(data)
   nw_mpo <- data_list$nw.mpo
   nw_adjnorm <- data_list$nw.adjnorm
-  
+
   if ((!is.null(outdir) |
        !is.null(out_full_ranks) |
        !is.null(out_mean_ranks)
@@ -896,7 +914,10 @@ RWR_CV <- function(data = NULL,
   tau <- get_or_set_tau(nw_mpo, tau)
 
   # Geneset is required.
-  geneset_list <- load_geneset(geneset_path, nw_mpo, verbose = verbose)
+  geneset_list <- if (create_emedding_matrix) 
+                    load_geneset(nw_mpo$Pool_of_Nodes, nw_mpo, verbose = verbose)
+                  else 
+                    load_geneset(geneset_path, nw_mpo, verbose = verbose)
   geneset <- geneset_list$geneset
   extras <- geneset_list$extras
 
@@ -922,6 +943,14 @@ RWR_CV <- function(data = NULL,
              verbose)
 
   ############# post process results  ########################################
+  if (create_emedding_matrix) {
+    embedded_matrix <- combine_ranks_to_embed_matrix(res)
+    return(list(
+      embedding_matrix = embedded_matrix,
+      method = method
+    ))
+  }
+
   res_combined <- post_process_rwr_output_cv(res, extras, folds, nw_mpo)
   # get the average ranks across all CV folds/runs
   res_avg <- calculate_average_rank_across_folds_cv(res_combined)
