@@ -64,22 +64,20 @@ load_network <- function(path_to_edgelist,
   if (!is.null(type)) {
     num_edges <- igraph::ecount(g) 
     g <- igraph::set_edge_attr(g, "type", 1:num_edges , type)
-  }
+}
 
   return(g)
 }
 
 
-
-load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
-  if (is.null(path)) {
-    return(NULL)
-  } else if (!file.exists(path)) {
-    stop("ERROR: geneset file does not exist: ", path)
-  } else {
-    # geneset <- read.table(path, header = F, colClasses = c("character"))
+load_geneset_from_file <- function(path_or_vector, select){
+    if (!file.exists(path_or_vector)) {
+      stop("ERROR: geneset file does not exist: ", path_or_vector)
+    } 
+    
+     # geneset <- read.table(path_or_vector, header = F, colClasses = c("character"))
     geneset <- data.table::fread(
-                  path,
+                  path_or_vector,
                   header =F,
                   select = select,
                   colClasses = c("character")
@@ -92,13 +90,29 @@ load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
     if (!is.null(geneset$V3) && all(!is.null(numericV3)) && all(!is.na(numericV3))) {
       geneset <- dplyr::select(geneset, 1:3)
       geneset$V3 <- as.numeric(geneset$V3)
-      colnames(geneset) <- c("setid", "gene", "weight")
     } else {
       # If there is a non-numeric third col, then just give all genes a weight of 1.
       geneset <- dplyr::select(geneset, 1:2) %>% dplyr::mutate(weight = 1)
-      colnames(geneset) <- c("setid", "gene", "weight")
     }
+    geneset
+}
+
+load_geneset <- function(path_or_vector, nw.mpo = NULL, verbose = FALSE, select=NULL) {
+  if (is.null(path_or_vector)) {
+    return(NULL)
+  } 
+  
+  geneset <- if(is.vector(path_or_vector) && length(path_or_vector) > 1) {
+    geneset <- data.frame(
+        'gene_set',
+        path_or_vector,
+        1
+    )
+  } else {
+    load_geneset_from_file(path_or_vector, select)
   }
+
+  colnames(geneset) <- c("setid", "gene", "weight")
 
   # Filtering
   # Remove any duplicate genes
@@ -116,16 +130,16 @@ load_geneset <- function(path, nw.mpo = NULL, verbose = FALSE, select=NULL) {
 
     # Warn user if some genes in the seed geneset are not in the multiplex
     if (nrow(geneset) < ngenes) {
-      message(sprintf("%s genes from geneset (%s) are present in the multiplex \n", nrow(geneset), path))
+      message(sprintf("%s genes from geneset (%s) are present in the multiplex \n", nrow(geneset), path_or_vector))
       extras <- geneset_orig %>% dplyr::slice(which(!geneset_orig$gene %in% nw.mpo$Pool_of_Nodes))
-      warning(sprintf("WARNING:: %s genes from geneset (%s) were not found in multiplex: %s\n ", nrow(extras), path, list(extras)))
+      warning(sprintf("WARNING:: %s genes from geneset (%s) were not found in multiplex: %s\n ", nrow(extras), path_or_vector, list(extras)))
       warning(sprintf("Please ensure your geneset files are formated: [ setids | genes | weights (if weights exist) ]\n"))
     } else {
-      message(sprintf("All %s genes in the geneset (%s) are present in the multiplex\n", nrow(geneset), path))
+      message(sprintf("All %s genes in the geneset (%s) are present in the multiplex\n", nrow(geneset), path_or_vector))
     }
     # print(head(geneset))
   } else {
-    message(sprintf("Geneset %s was not filtered (nw.mpo not passed to load_geneset utility function)\n", path))
+    message(sprintf("Geneset %s was not filtered (nw.mpo not passed to load_geneset utility function)\n", path_or_vector))
   }
 
   if (verbose) {
