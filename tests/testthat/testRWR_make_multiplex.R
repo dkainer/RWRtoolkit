@@ -440,7 +440,6 @@ describe("make_multiplex", {
     expect_setequal(E(actual_output$graph2_name), E(expected_g2))
     # # # Check edge weight equality for each layer:
 
-    # print(E(actual_output$graph_1)$weight)
     expect_equal(E(actual_output$graph_1)$weight, E(expected_g1)$weight)
     expect_equal(E(actual_output$graph2_name)$weight, E(expected_g2)$weight)
     # # # Check Layer descriptions for each layer:
