@@ -388,16 +388,22 @@ vplayout <- function(x, y) {
 
 # Load the multiplex network and adjacency matrices
 # (i.e. nw.mpo, nw.adj, nw.adjnorm)
-load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5) {
+load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5, knockouts=c()) {
   if (is.null(filepath_url_or_graphlist)) {
     stop("ERROR: Mandatory arguement data is missing.")
   }
+
+  nw.mpo <- NULL  
+  nw.adj <- NULL  
+  nw.adjonrm <- NULL    
 
   if (class(filepath_url_or_graphlist) == 'list'){
     outlist <- make_homogenous_network(filepath_url_or_graphlist, delta)
     nw.mpo <- outlist$nw.mpo
     nw.adj <- outlist$nw.adj
-    nw.adjonrm <- outlist$nw.adjonrm
+    nw.adjnorm <- outlist$nw.adjnorm
+
+    knockout_outlist <- make_homogenous_network(filepath_url_or_graphlist, delta, knockout_nodes=knockouts)
 
   } else {
     is_url <- stringr::str_detect(filepath_url_or_graphlist, pattern = "http")
@@ -412,6 +418,7 @@ load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5) {
 
     if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object") # nolint
   }
+
 
 
   return(list(
