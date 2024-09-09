@@ -86,7 +86,7 @@ run_test_for_diff_graph_data <- function(
 
   invisible(
     make_homogenous_network(
-      nw_groups,
+      nw_groups[[1]],
       delta,
       output_filename,
       verbose)
@@ -458,7 +458,7 @@ describe("make_homogenous_network", {
 
     invisible(
       make_homogenous_network(
-        nw_groups,
+        nw_groups[[1]],
         delta,
         output_filename,
         verbose
@@ -518,7 +518,7 @@ describe("make_homogenous_network", {
 
     invisible(
       make_homogenous_network(
-        nw_groups,
+        nw_groups[[1]],
         delta,
         output_filename,
         # knockout_nodes=c(),
@@ -587,7 +587,7 @@ describe("make_homogenous_network", {
 
     invisible(
       make_homogenous_network(
-        nw_groups,
+        nw_groups[[1]],
         D,
         output_filename,
         knockouts,
@@ -717,7 +717,7 @@ describe("make_homogenous_network", {
 
     expect_error(
       make_homogenous_network(
-        nw_groups,
+        nw_groups[[1]],
         delta,
         output_filename,
         verbose)
@@ -836,7 +836,7 @@ describe("RWR_make_multiplex.R:", {
     expect_args(
       make_homogenous_stub,
       1,
-      nw_group_input,
+      nw_group_input[[1]],
       0.5,
       "network.Rdata",
       c(),
@@ -879,7 +879,7 @@ describe("RWR_make_multiplex.R:", {
     expect_args(
       make_homogenous_stub,
       1,
-      nw_group_input,
+      nw_group_input[[1]],
       delta,
       output_file,
       c(),

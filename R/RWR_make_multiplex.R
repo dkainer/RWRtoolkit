@@ -59,8 +59,8 @@ get_class_of_nw_groups <- function(nw_groups){
   groups_class <- class(nw_groups)
   if (length(groups_class) > 1){
     if ('data.frame' %in% groups_class) return('data.frame')  
-
   }
+
   unique_classes <- unique(purrr::map(nw_groups, class))
   if (length(unique_classes) > 1 ) {
     stop('List of graph elements ought to be only igraph objects')
@@ -140,12 +140,12 @@ make_multiplex <- function(nwdf, knockout_nodes=c()) {
   return(mpo)
 }
 
-make_homogenous_network <- function(nw.groups, delta, out, knockout_nodes = c(), verbose=F) {
+make_homogenous_network <- function(nw.groups, delta, out=NULL, knockout_nodes = c(), verbose=F) {
   # Takes in group data from flist, converts to multiplex network, and saves to a file
 
   # Constructs Multiplex Network
   # cat("constructing multiplex network from 1 group of layers: ", nw.groups[[1]]$nwname, "\n")
-  nw.mpo <- make_multiplex(nw.groups[[1]], knockout_nodes)
+  nw.mpo <- make_multiplex(nw.groups, knockout_nodes)
   
   # Create the adjacency matrix and normalize the data for the network
   print("constructing the adjacency matrix...be VERY patient if there are lots of layers or layers are big")
@@ -153,7 +153,11 @@ make_homogenous_network <- function(nw.groups, delta, out, knockout_nodes = c(),
   nw.adjnorm <- RandomWalkRestartMH::normalize.multiplex.adjacency(nw.adj)
 
   if (is.null(out)){
-    return(list(nw.mpo, nw.adj, nw.adjnorm))
+    return(list(
+      "nw.mpo" = nw.mpo, 
+      "nw.adj" = nw.adj, 
+      "nw.adjnorm" = nw.adjnorm
+    ))
   }
   # Save data to file with presupplied filename or default: network.Rdata
   if (!dir.exists(dirname(out))) {
@@ -322,7 +326,7 @@ RWR_make_multiplex <- function(flist = "", delta = 0.5, output = "network.Rdata"
 
   # Call appropriate network creation function based on groups
   if (length(nw.groups) == 1 && all(nw.groups[[1]]$nwgroup == 1)) {
-    make_homogenous_network(nw.groups, delta, output, knockout_nodes, verbose)
+    make_homogenous_network(nw.groups[[1]], delta, output, knockout_nodes, verbose)
   } else if (length(nw.groups) == 3 && nw.groups[[1]]$nwgroup == 1 && nw.groups[[2]]$nwgroup == 2 && nw.groups[[3]]$nwgroup == 3) {
     warning(
       paste("Hetergeneous Multiplexes are capable of being made",
