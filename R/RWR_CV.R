@@ -174,6 +174,8 @@ create_rankings_cv <- function(rwr,
   rwr$RWRM_Results
 }
 
+
+
 RWR <- function(geneset,
                 adjnorm,
                 mpo,
@@ -184,45 +186,64 @@ RWR <- function(geneset,
                 tau = c(1, 1),
                 name = "default",
                 threads = 1,
+                hpc = FALSE,
                 verbose = FALSE) {
+
+  run_individual_random_walk_model <- function(r){
+    lo_seed_genelist <- extract_lo_and_seed_genes_cv(
+          geneset,
+          method,
+          r,
+          chunks
+        )
+        leftout <- lo_seed_genelist[[1]]
+        seed_genes <- lo_seed_genelist[[2]]
+
+        ### run RWR on a fold
+        rwr <- RandomWalkRestartMH::Random.Walk.Restart.Multiplex(
+          x = adjnorm,
+          MultiplexObject = mpo,
+          Seeds = seed_genes,
+          r = restart,
+          tau = tau
+        )
+        ranking_results <- create_rankings_cv(
+          rwr,
+          networks,
+          r,
+          name,
+          geneset,
+          method,
+          seed_genes,
+          leftout,
+          mpo$Number_of_Nodes_Multiplex
+        )
+        ranking_results
+  }
+
+
   # This is the name of the combined networks.
   networks <- paste(names(mpo)[1:mpo$Number_of_Layers], collapse = "_")
+  fold_vector <- 1:num_folds
 
-  doParallel::registerDoParallel(cores = threads)
-  res <- foreach::foreach(r = 1:num_folds) %dopar% {
-    lo_seed_genelist <- extract_lo_and_seed_genes_cv(
-      geneset,
-      method,
-      r,
-      chunks
-    )
-    leftout <- lo_seed_genelist[[1]]
-    seed_genes <- lo_seed_genelist[[2]]
 
-    ### run RWR on a fold
-    rwr <- RandomWalkRestartMH::Random.Walk.Restart.Multiplex(
-      x = adjnorm,
-      MultiplexObject = mpo,
-      Seeds = seed_genes,
-      r = restart,
-      tau = tau
-    )
-    ranking_results <- create_rankings_cv(
-      rwr,
-      networks,
-      r,
-      name,
-      geneset,
-      method,
-      seed_genes,
-      leftout,
-      mpo$Number_of_Nodes_Multiplex
-    )
-    ranking_results
+  res <- if(hpc){
+    res <- task.pull(input_values, run_individual_random_walk_model)
+		if(comm.rank() == 0){
+			res <- do.call(cbind, res)
+		}	
+		res <- bcast(res)
+    res
+  } else {
+    doParallel::registerDoParallel(cores = threads)
+    res <- foreach::foreach(r = fold_vector) %dopar% {
+      ranking_results <- run_individual_random_walk_model(r)
+    }
+    doParallel::stopImplicitCluster()
+    res
   }
-  doParallel::stopImplicitCluster()
 
-  res
+  res  
 }
 
 calc_metrics_cv <- function(res_combined, res_avg) {
@@ -891,6 +912,7 @@ RWR_CV <- function(data = NULL,
                    threads = 1,
                    hpc = FALSE,
                    create_emedding_matrix = FALSE,
+                   knockouts_to_simulate = c(),
                    verbose = FALSE,
                    write_to_file = FALSE) {
  
