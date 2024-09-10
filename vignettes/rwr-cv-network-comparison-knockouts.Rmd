@@ -1,0 +1,242 @@
+---
+title: "Determining Network Differences with RWR_embedding_comparator"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Determining Network Validity with RWR_embedding_comparator}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, warning=F, message=F}
+library(igraph)
+# library(RWRtoolkit)
+devtools::load_all()
+```
+
+# Introduction 
+This vignette describes the usage of RWR_embedding_comparator wherein a given multiplex is supplied, and an embedding matrix is generated. Each column of the matrix represents an vector embedding of a particular node within the multiplex network with respect to all other nodes. 
+
+
+# Setup
+## Create Multiplex: 
+For this vignette, we will be generating a multiplex by passing in a list of igraph objects:
+
+```{r Loading network}
+# Layer 1
+source <- c("B", "E", "C", "E", "F", "F", "G", "H", "H", "H")
+sink <- c("A", "B", "B", "D", "E", "C", "E", "E", "F", "C")
+weight <- rep(1, length(source))
+edgelist_layer1 <- data.frame(list(source = source, sink = sink, weight = weight))
+l1 <- igraph::graph_from_data_frame(edgelist_layer1, directed=F)
+
+# Layer 2
+source <- c("G", "H", "D", "E", "F", "B", "C", "E")
+sink <- c("D", "E", "B", "B", "C", "A", "A", "C")
+weight <- rep(1, length(source))
+edgelist_layer2 <- data.frame(list(source = source, sink = sink, weight = weight))
+l2 <- igraph::graph_from_data_frame(edgelist_layer2, directed=F)
+
+# Layer 3
+source <- c("E", "E", "A", "A", "F")
+sink <- c("H", "D", "E", "C", "C")
+weight <- rep(1, length(source))
+weight
+edgelist_layer3 <- data.frame(list(source = source, sink = sink, weight = weight))
+l3 <- igraph::graph_from_data_frame(edgelist_layer3, directed=F)
+
+
+par(mfrow= c(1,3), mar=c(1,1,1,1))
+  igraph::plot.igraph(l1, main="Layer 1", vertex.size=28)
+  igraph::plot.igraph(l2, main="Layer 2", vertex.size=28)
+  igraph::plot.igraph(l3, main="Layer 3", vertex.size=28)
+```
+```{r}
+graph_list <- list(l1, l2, l3)
+
+base_embedding <- create_rwr_embedding_matrix(
+    graph_list, 
+    c())
+
+perturbed_embedding <- create_rwr_embedding_matrix(
+    graph_list, 
+    c('G'))
+
+columns <- colnames(base_embedding)[2:dim(base_embedding)[2]]
+
+comparison_vector <- correlation_matrices(base_embedding[, columns], perturbed_embedding[,columns], FALSE, "outputfile.tsv")
+comparison_vector
+```
+We can additionally see how multiple knockouts would have a combinatoric effect on the multiplex network: 
+```{r}
+perturbed_embedding <- create_rwr_embedding_matrix(
+    graph_list, 
+    c('G', 'A'))
+columns <- colnames(base_embedding)[2:dim(base_embedding)[2]]
+
+comparison_vector <- correlation_matrices(base_embedding[, columns], perturbed_embedding[,columns], FALSE, "outputfile.tsv")
+comparison_vector
+```
+
+
+## Creating a network with randomly sampled edges: 
+In order to illustrate the differences between what is considered to be a "well validated" network and a network hat has a poor validation score, we will need to create a similarly sized multiplex (with a similar amount of nodes and edges) with randomly generated edges. First we need to create a new rewired layer for each layer in the multiplex (in this case, just the GO network) and write it to file. Finally we'll need to collate the layer(s) into a multiplex: 
+
+```{r title="Building random network layers", warning=F, message=F}
+write_table <- function(table, path, row_names = F, col_names = T, verbose = FALSE) {
+  if (length(table) == 0 || any(is.na(table))) {
+    warning(sprintf("Table to be saved at %s is empty\n", path))
+  }
+  # Create out_dir if it doesn't exist (avoid warning message if out_dir exists).
+  out_dir <- dirname(path)
+  if (!dir.exists(out_dir)) {
+    dir.create(out_dir, recursive = TRUE)
+  }
+  # Save the table.
+  write.table(table,
+    path,
+    sep = "\t",
+    quote = F,
+    col.names = col_names,
+    row.names = row_names
+  )
+  if (verbose) {
+    message(sprintf("Saved data to file: %s\n", path))
+  }
+}
+
+write_networks_to_file <- function(
+    network,
+    output_file){
+    edgelist <- igraph::get.edgelist(network, names=T)
+    from <- edgelist[,1]
+    to <- edgelist[,2]
+    write_table(
+        data.frame(
+            from = from,
+            to = to
+        ),
+        output_file,
+        col_names=F
+    )
+}
+
+create_random_layer <- function(mpo_layer){
+    num_vertices <- vcount(mpo_layer)
+    num_edges <- ecount(mpo_layer)
+    random_layer <- igraph::erdos.renyi.game(n = num_vertices, p.or.m= num_edges, type = 'gnm')
+    V(random_layer)$name <- V(mpo_layer)$name
+    return(random_layer)
+}
+
+create_layer_and_write_to_file <- function(mpo_layer, file_path){
+    new_layer <- create_random_layer(mpo_layer)
+    write_networks_to_file(network=new_layer, output_file=file_path)
+}
+
+create_random_copy_multiplex <- function(mpo, output_base_path='./'){
+    layer_paths <- c()
+    layer_names <- c()
+    mpo_names <- names(mpo)
+    for (layer_number in seq(1, mpo$Number_of_Layers)){
+        layer <- mpo[[layer_number]]
+        layer_name <- mpo_names[layer_number]
+        output_name <- paste(output_base_path, '/', layer_name, '.tsv', sep='')
+
+        create_layer_and_write_to_file(layer, output_name)
+        
+        layer_paths <- c(layer_paths, output_name)
+        layer_names <- c(layer_names, layer_name)
+    }
+    
+    flist_df <- data.frame(layer_paths, layer_names)
+    write_table(flist_df, paste(output_base_path, 'flist.tsv', sep='/'), row_names=F, col_names=F)
+}
+
+output_dir <- './random_layers'
+create_random_copy_multiplex(nw.mpo, output_dir)
+random_net_filepath <- paste(output_dir, 'randomized_multiplex.Rdata', sep='/')
+RWRtoolkit::RWR_make_multiplex(paste(output_dir, 'flist.tsv', sep='/'), output = random_net_filepath)
+```
+
+With our rewired multiplex now created, we can test both our GO_AT Network and the Erdos.Renyi randomized networks with respect to our gold standard gene set. To do so, first we'll need to create our gold standard gene set and write it to file. 
+
+## Building a "Gold Set"
+We will need a "gold set" of genes to test our multiplex networks against. These "gold standard" genes are ones that are independently curated and defined as being highly related in some biological fashion. 
+
+For our gold set of genes, we will use the well described Jasmonte pathway genes defined by MapMan. We will then need to annotate those genes with a "set name" as gold set files follow the format (where the set name is some defining string and the gene ids are strings that match to node names within the multiplex): 
+
+
+| **Set Name** | **Gene ID** |
+|:---------|:-------------|
+| goldSet | node1 |
+| goldSet | node2 |
+| goldSet | node3 |
+| goldSet | node4 |
+
+We can create our own gold set file with:
+```{r title="Goldset Creation"}
+# Define Genes
+jasmonate_seed_genes <- c(
+	"AT2G44810", "AT1G17420", "AT1G55020", "AT1G67560",
+	"AT1G72520", "AT3G22400", "AT3G45140", "AT5G42650",
+	"AT1G13280", "AT3G25760", "AT3G25770", "AT3G25780",
+	"AT1G09400", "AT1G17990", "AT1G18020", "AT1G76680",
+	"AT1G76690", "AT2G06050", "AT1G17380", "AT1G19180",
+	"AT1G48500", "AT1G70700", "AT1G72450", "AT1G74950",
+	"AT3G17860", "AT3G43440", "AT5G20900"
+)
+# Add annotations
+seed_gene_setname <- rep("jasmonate_mm", length(jasmonate_seed_genes))
+seed_gene_df <- data.frame("set" = seed_gene_setname, "seed" = jasmonate_seed_genes)
+
+# Write File
+goldset_filename <- "./goldset_jasomonate.tsv"
+write.table(seed_gene_df, goldset_filename, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+```
+
+# Multiplex Network Validation Using RWR-CV
+In order to validate our multiplex using RWR-CV, we simply need to supply the multiplex in question and an independently defined gold standard gene set. For this network validation we'll use our GO semantic similarity network and the gold set we just recently generated: 
+
+```{r title="Validate Multiplex Network", warning=FALSE,message=FALSE}
+gold_net_cv_path <- './go_net_cv_kfold/'
+
+comprehensive_net_cv_validation <- RWRtoolkit::RWR_CV(
+  athal_go_multiplex_path, 
+  geneset_path = goldset_filename, 
+  method = 'kfold',
+  folds = 5,
+  outdir = gold_net_cv_path, 
+  plot = TRUE)
+```
+```{r, echo=F, out.width="100%", fig.align="center"}
+image_path <- paste(gold_net_cv_path, "RWR-CV_jasmonate_mm_GO_AT_d0.5_v01_default.plots.png", sep="/")
+
+knitr::include_graphics(image_path)
+```
+
+
+```{r}
+random_net_cv_path <- './random_net_cv_kfold/'
+
+comprehensive_net_cv_validation <- RWRtoolkit::RWR_CV(
+  random_net_filepath, 
+  geneset_path = goldset_filename, 
+  method = 'kfold',
+  folds = 5,
+  outdir = random_net_cv_path, 
+  plot = TRUE)
+```
+```{r, echo=F, out.width="100%", fig.align="center"}
+image_path <- paste(random_net_cv_path, "RWR-CV_jasmonate_mm_randomized_multiplex_default.plots.png", sep="/")
+
+knitr::include_graphics(image_path)
+```
+
+Ultimately, as we rewire the networks, we expect to generally see an AUROC around 0.5 (i.e. the ROC curve moves from bottom left to top right) as the results are completely random. Similarly we expect our AUPRC to approach 0 far quicker than our actual networks as  similarity 
