@@ -1,26 +1,28 @@
 
+check_matrices <- function(mat1, mat2){
+  if (ncol(mat1) != ncol(mat2)) {
+    stop("The matrices must have the same number of columns.")
+  }
+  if(any(colnames(mat1) != colnames(mat2))){
+    stop("Columns must align between the two matrices")
+  }
+}
 
 # Function to calculate correlation between corresponding columns of two matrices using multiprocessing
 correlation_matrices <- function(mat1, mat2, hpc=FALSE, outputfile='correlation_vector.tsv') {
   
   # Define a function to calculate the correlation for a single column pair
   calc_correlation <- function(i) {
-        print("IN CORRELATION", flush=T)
-        print(i, flush=T)
-	print("WEEEEEEE", flush=T)
-    	print(mat1[, i])
-	print(typeof(mat1[,i]))
-	cor_val <- cor(mat1[, i], mat2[, i]) 
-	if (is.na(cor_val)) return(0)
-
-	return(cor_val)	
+    cor_val <- cor(mat1[, i], mat2[, i], use='complete.obs') 
+    if (is.na(cor_val)) return(0)
+    return(1 - cor_val)	
   }
    
   correlations <- NULL
   col_indices <- as.numeric(1:ncol(mat1))
   check_matrices(mat1, mat2)
   if (hpc){
-	output <- task.pull(col_indices, calc_correlation)
+	  output <- pbdMPI::task.pull(col_indices, calc_correlation)
 	if(comm.rank() == 0){
  # Define the number of cores to use
           correlations <- lapply(col_indices, calc_correlation) 
@@ -36,19 +38,19 @@ correlation_matrices <- function(mat1, mat2, hpc=FALSE, outputfile='correlation_
 	  return()
   } else {
 	  # Define the number of cores to use
-	  num_cores <- detectCores() - 1
-	  cl <- makeCluster(num_cores)
+	  num_cores <- parallel::detectCores() - 1
+	  cl <- parallel::makeCluster(num_cores)
 
 	  # Use mclapply to parallelize the correlation calculation across columns
-	  correlations <- mclapply(col_indices, calc_correlation, mc.cores = num_cores)
-	  stopCluster(cl)
+	  correlations <- parallel::mclapply(col_indices, calc_correlation, mc.cores = num_cores)
+	  parallel::stopCluster(cl)
   }
   # Convert the list of correlations to a vector
   correlations <- unlist(correlations)
 
   names(correlations) <- colnames(mat1)
 
-  write.table(data.frame(correlations), file=outputfile, sep='\t') 
+  # if(output_file) write.table(data.frame(correlations), file=outputfile, sep='\t') 
   return(correlations)
 }
 
@@ -72,13 +74,16 @@ combine_ranks_to_embed_matrix <- function(res){
 }
 
 
-create_rwr_embedding_matrix <- function(data, knockouts, output_file, write_to_file, tau, threads, hpc, verbose){
-  data_list <- load_multiplex_data(data, knockouts)
+create_rwr_embedding_matrix <- function(data, knockouts, output_file=NULL, write_to_file=F, tau=1, threads=1, hpc=F, verbose=F){
+  restart <- 0.5
+  # print("READING ROUND 1", flush=T)
+  data_list <- load_multiplex_data(data,  knockouts=knockouts)
   nw_mpo <- data_list$nw.mpo
   nw_adjnorm <- data_list$nw.adjnorm
 
   tau <- get_or_set_tau(nw_mpo, tau)
 
+  # print("LOADING GENE SET", flush=T)
   # Geneset is required.
   geneset_list <- load_geneset(nw_mpo$Pool_of_Nodes, nw_mpo, verbose = verbose)
   geneset <- geneset_list$geneset
@@ -93,8 +98,9 @@ create_rwr_embedding_matrix <- function(data, knockouts, output_file, write_to_f
   method <- updated_data_list$method
 
 
+  # print("RUNNING RWR")
   ############# run RWR  #####################################################
-  res <- RWR(geneset,
+  res <- suppressWarnings(RWR(geneset,
              nw_adjnorm,
              nw_mpo,
              method,
@@ -105,7 +111,7 @@ create_rwr_embedding_matrix <- function(data, knockouts, output_file, write_to_f
              'embedding_mat',
              threads,
              hpc,
-             verbose)
+             verbose))
 
   ############# post process results  ########################################
   base_embedded_matrix <- combine_ranks_to_embed_matrix(res)
