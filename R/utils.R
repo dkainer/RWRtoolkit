@@ -397,14 +397,15 @@ load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5, knockouts=
   nw.adj <- NULL  
   nw.adjonrm <- NULL    
 
+  # TODO: Fix this to be a completely separate function - loading a multiplex from igraph
+  # is fine, but it shouldn't be the same as from file, especially when the igraph method
+  # can include knockouts while the file based method can't. That's too disparate of 
+  # functionality to be the same function
   if (class(filepath_url_or_graphlist) == 'list'){
-    outlist <- make_homogenous_network(filepath_url_or_graphlist, delta)
+    outlist <- make_homogenous_network(filepath_url_or_graphlist, delta, knockout_nodes=knockouts)
     nw.mpo <- outlist$nw.mpo
     nw.adj <- outlist$nw.adj
     nw.adjnorm <- outlist$nw.adjnorm
-
-    knockout_outlist <- make_homogenous_network(filepath_url_or_graphlist, delta, knockout_nodes=knockouts)
-
   } else {
     is_url <- stringr::str_detect(filepath_url_or_graphlist, pattern = "http")
 
@@ -418,8 +419,6 @@ load_multiplex_data <- function(filepath_url_or_graphlist, delta=0.5, knockouts=
 
     if (is.null(nw.mpo)) stop("ERROR: failed to load multiplex RData object") # nolint
   }
-
-
 
   return(list(
     nw.mpo = nw.mpo,
