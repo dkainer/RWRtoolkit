@@ -158,7 +158,7 @@ view_top_network_loe <- function(results,
                                  modname = "") {
   if (cyto) {
     #1.  compress multiplex to aggregate net
-    merged_mp <- merged_with_edgecounts(nw_mpo)$merged_network
+    merged_mp <- merged_with_all_edges(nw_mpo)$merged_network
 
     #2.  extract "ntop" results from "results" as subnet
     top_rows <- results$RWRM_Results[results$RWRM_Results$rank <= ntop, ]
