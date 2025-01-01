@@ -91,7 +91,7 @@ merged_with_edgecounts <- function(mpo, inv=FALSE, verbose=FALSE) {
 
   summed_edge_counts <- rep(0, length(igraph::E(unioned_networks)))
   for (layer in layer_names) {
-    layer_weights <- igraph::get.edge.attribute(unioned_networks, layer)
+    layer_weights <- igraph::edge_attr(unioned_networks, layer)
     weights_no_na <- replace(layer_weights, is.na(layer_weights), 0)
 
     summed_edge_counts <- summed_edge_counts + weights_no_na
