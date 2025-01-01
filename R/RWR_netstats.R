@@ -175,6 +175,13 @@ calculate_basic_statistics <- function(
   }
   title <- sprintf("Network stats for network %s\n", name)
   hrule <- paste0(rep("=", nchar(title)))
+
+  # Identify nodes with no edges (degree == 0)
+  isolated_nodes <- V(g)[degree(g) == 0]
+
+  # Remove isolated nodes
+  g <- delete_vertices(g, isolated_nodes)
+
   vertex_count <- igraph::vcount(g)
   edge_count <- igraph::ecount(g)
   network_diameter <- igraph::diameter(
