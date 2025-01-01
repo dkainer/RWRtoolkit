@@ -177,7 +177,7 @@ calculate_basic_statistics <- function(
   hrule <- paste0(rep("=", nchar(title)))
 
   # Identify nodes with no edges (degree == 0)
-  isolated_nodes <- igraph::V(g)[degree(g) == 0]
+  isolated_nodes <- igraph::V(g)[igraph::degree(g) == 0]
 
   # Remove isolated nodes
   g <- igraph::delete_vertices(g, isolated_nodes)
