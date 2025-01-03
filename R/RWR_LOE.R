@@ -190,18 +190,18 @@ view_top_network_loe <- function(results,
     igraph::V(topresults)$Rank <- NA # nolint: igraph methods
     tmp <- match(igraph::V(topresults)$name, results$RWRM_Results$NodeNames)
     igraph::V(topresults)$Rank <- results$RWRM_Results$rank[tmp] # nolint: igraph methods
+    igraph::V(topresults)$color <- ifelse(igraph::V(topresults)$name %in% seed_geneset$gene, "source",
+                  ifelse(igraph::V(topresults)$name %in% query_geneset$gene, "target", "default"))
 
     RCy3::cytoscapePing()
     RCy3::createNetworkFromIgraph(
       topresults,
-      title = paste0("seeds_to_top", ntop),
+      title = paste0("RWR_LOE Seeds with Top ", ntop),
       collection = modname
     )
-	RCy3::setVisualStyle("Curved")
-    RCy3::layoutNetwork("kamada-kawai")
-    RCy3::setNodeBorderColorDefault(new.color = "#666666")
-    RCy3::setNodeBorderWidthDefault(new.width = 4)
+    RCy3::setVisualStyle("RWRtoolkit_Comp_Athal_Style") 
   }
+	 
 }
 
 #' @keywords internal

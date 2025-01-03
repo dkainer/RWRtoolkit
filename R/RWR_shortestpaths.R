@@ -158,10 +158,13 @@ open_cytoscape <- function(res, source_geneset, target_geneset) {
   ig <- igraph::graph_from_data_frame(res, directed = F)
   igraph::V(ig)$endpoint <- igraph::V(ig)$name %in%
     c(source_geneset$gene, target_geneset$gene)
+
+  igraph::V(ig)$color <- ifelse(igraph::V(ig)$name %in% source_geneset$gene, "source",
+                ifelse(igraph::V(ig)$name %in% target_geneset$gene, "target", "default"))
+  
   RCy3::cytoscapePing()
-  RCy3::createNetworkFromIgraph(ig, "myIgraph")
-  RCy3::setNodeBorderColorDefault(new.color = "#666666")
-  RCy3::setNodeBorderWidthDefault(new.width = 4)
+  RCy3::createNetworkFromIgraph(ig, "RWR_ShortestPaths_Output")
+  RCy3::setVisualStyle("RWRtoolkit_Comp_Athal_Style") 
 }
 
 
